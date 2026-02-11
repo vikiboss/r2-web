@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>R2 Manager</title>
+  <link rel="preconnect" href="https://esm.sh">
+  <link rel="preconnect" href="https://r2.cloudflarestorage.com">
+  <link rel="stylesheet" href="style.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "aws4fetch": "https://esm.sh/aws4fetch@1.0.20",
+        "dayjs": "https://esm.sh/dayjs@1.11.13"
+      }
+    }
+  </script>
+  <script type="module" src="script.js"></script>
+</head>
+<body>
+
+  <!-- Config Dialog -->
+  <dialog id="config-dialog">
+    <form id="config-form" method="dialog">
+      <h2 id="config-title">R2 Manager</h2>
+
+      <!-- R2 Connection -->
+      <div class="config-section">
+        <h3 id="config-section-r2">R2</h3>
+        <div class="field">
+          <label for="cfg-account-id" id="lbl-account-id">Account ID</label>
+          <input id="cfg-account-id" name="accountId" type="text" required autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="cfg-access-key" id="lbl-access-key">Access Key ID</label>
+          <input id="cfg-access-key" name="accessKeyId" type="text" required autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="cfg-secret-key" id="lbl-secret-key">Secret Access Key</label>
+          <input id="cfg-secret-key" name="secretAccessKey" type="password" required autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="cfg-bucket" id="lbl-bucket">Bucket Name</label>
+          <input id="cfg-bucket" name="bucket" type="text" required autocomplete="off">
+        </div>
+      </div>
+
+      <!-- Preferences -->
+      <div class="config-section">
+        <h3 id="config-section-prefs">Preferences</h3>
+        <div class="field-row">
+          <div class="field">
+            <label for="cfg-lang">Language</label>
+            <select id="cfg-lang" name="lang">
+              <option value="zh">中文</option>
+              <option value="en">English</option>
+              <option value="ja">日本語</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="cfg-theme" id="lbl-theme">Theme</label>
+            <select id="cfg-theme" name="theme">
+              <option value="light" id="opt-theme-light">Light</option>
+              <option value="dark" id="opt-theme-dark">Dark</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Upload Settings -->
+      <div class="config-section">
+        <h3 id="config-section-upload">Upload</h3>
+        <div class="field">
+          <label for="cfg-filename-tpl" id="lbl-filename-tpl">Filename Template</label>
+          <input id="cfg-filename-tpl" name="filenameTpl" type="text" autocomplete="off"
+                 placeholder="[name]_[hash:8].[ext]" value="[name]_[hash:8].[ext]">
+          <small class="text-secondary" id="filename-tpl-hint">
+            [name] [ext] [hash:N] [date:FORMAT] [timestamp] [uuid] / = directory
+          </small>
+        </div>
+      </div>
+
+      <div class="flex" style="justify-content:flex-end;gap:8px;margin-top:16px">
+        <button type="button" class="btn secondary" id="config-cancel">Cancel</button>
+        <button type="submit" class="btn primary" id="config-submit">Connect</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- App Shell -->
+  <div id="app" hidden>
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="flex items-center" style="gap:8px">
+        <svg class="icon icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <h1 class="topbar-title">R2 Manager</h1>
+      </div>
+      <div class="flex items-center" style="gap:4px">
+        <button type="button" class="icon-btn" id="theme-toggle" title="Toggle theme">
+          <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <button type="button" class="icon-btn" id="share-btn" title="Share Config">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+        </button>
+        <button type="button" class="icon-btn" id="settings-btn" title="Settings">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <nav aria-label="Breadcrumb">
+        <ol class="breadcrumb" id="breadcrumb">
+          <li><button type="button" class="breadcrumb-btn" data-prefix="">Root</button></li>
+        </ol>
+      </nav>
+      <div class="flex items-center" style="gap:8px">
+        <select id="sort-select" class="toolbar-select" title="Sort">
+          <option value="name">A-Z</option>
+          <option value="date">Date</option>
+          <option value="size">Size</option>
+        </select>
+        <button type="button" class="btn secondary sm" id="new-folder-btn">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><line x1="12" y1="11" x2="12" y2="17"/><line x1="9" y1="14" x2="15" y2="14"/></svg>
+          <span>New Folder</span>
+        </button>
+        <button type="button" class="btn primary sm" id="upload-btn">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span>Upload</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Dropzone Overlay -->
+    <div class="dropzone" id="dropzone" hidden>
+      <div class="dropzone-inner">
+        <svg class="icon icon-xl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <p>Drop files to upload</p>
+      </div>
+    </div>
+
+    <!-- Upload Panel -->
+    <div class="upload-panel" id="upload-panel" hidden>
+      <div class="upload-panel-header">
+        <span id="upload-panel-title">Uploading...</span>
+        <button type="button" class="icon-btn sm" id="upload-panel-close" title="Close">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="upload-panel-body" id="upload-panel-body"></div>
+    </div>
+
+    <!-- File Browser -->
+    <main class="file-browser" id="file-browser">
+      <div class="file-grid" id="skeleton-grid" hidden>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
+      <div class="empty-state" id="empty-state" hidden>
+        <svg class="icon icon-xl text-secondary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <p>This folder is empty</p>
+        <button type="button" class="btn primary sm" id="empty-upload-btn">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Upload Files
+        </button>
+      </div>
+      <div class="file-grid" id="file-grid"></div>
+      <div class="load-more" id="load-more" hidden>
+        <button type="button" class="btn secondary sm" id="load-more-btn">Load More</button>
+      </div>
+    </main>
+  </div>
+
+  <!-- Preview Dialog -->
+  <dialog id="preview-dialog" class="preview-dialog">
+    <div class="preview-header">
+      <span class="preview-filename truncate" id="preview-filename"></span>
+      <div class="flex items-center" style="gap:4px">
+        <button type="button" class="icon-btn sm" id="preview-download" title="Download">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </button>
+        <button type="button" class="icon-btn sm" id="preview-close" title="Close">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="preview-body" id="preview-body"></div>
+    <div class="preview-footer" id="preview-footer"></div>
+  </dialog>
+
+  <!-- Context Menu -->
+  <div class="context-menu" id="context-menu" popover="manual">
+    <button type="button" class="context-menu-item" data-action="preview">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      <span>Preview</span>
+    </button>
+    <button type="button" class="context-menu-item" data-action="download">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      <span>Download</span>
+    </button>
+    <div class="context-menu-sep"></div>
+    <button type="button" class="context-menu-item" data-action="rename">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      <span>Rename</span>
+    </button>
+    <button type="button" class="context-menu-item" data-action="copy">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      <span>Copy</span>
+    </button>
+    <button type="button" class="context-menu-item" data-action="move">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 10 20 15 15 20"/><path d="M4 4v7a4 4 0 0 0 4 4h12"/></svg>
+      <span>Move</span>
+    </button>
+    <div class="context-menu-sep"></div>
+    <button type="button" class="context-menu-item danger" data-action="delete">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+      <span>Delete</span>
+    </button>
+  </div>
+
+  <!-- Prompt Dialog -->
+  <dialog id="prompt-dialog">
+    <form id="prompt-form" method="dialog">
+      <h2 id="prompt-title">Prompt</h2>
+      <div class="field">
+        <label for="prompt-input" id="prompt-label">Value</label>
+        <input id="prompt-input" type="text" required autocomplete="off">
+      </div>
+      <div class="flex" style="justify-content:flex-end;gap:8px;margin-top:16px">
+        <button type="button" class="btn secondary" id="prompt-cancel">Cancel</button>
+        <button type="submit" class="btn primary">OK</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Confirm Dialog -->
+  <dialog id="confirm-dialog">
+    <form id="confirm-form" method="dialog">
+      <h2 id="confirm-title">Confirm</h2>
+      <p id="confirm-message" class="text-secondary"></p>
+      <div class="flex" style="justify-content:flex-end;gap:8px;margin-top:16px">
+        <button type="button" class="btn secondary" id="confirm-cancel">Cancel</button>
+        <button type="submit" class="btn danger">Confirm</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- Hidden File Input -->
+  <input type="file" id="file-input" multiple hidden>
+
+</body>
+</html>

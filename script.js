@@ -1,0 +1,1617 @@
+// ========================================================================
+// R2 Manager — Application Script (ES Module)
+// ========================================================================
+
+import { AwsClient } from 'aws4fetch';
+import dayjs from 'dayjs';
+
+// --- Constants ---
+const STORAGE_KEY = 'r2-manager-config';
+const THEME_KEY = 'r2-manager-theme';
+const LANG_KEY = 'r2-manager-lang';
+const PAGE_SIZE = 100;
+const TOAST_DURATION = 3000;
+const MAX_UPLOAD_SIZE = 5 * 1024 * 1024 * 1024; // 5GB
+
+// File type patterns
+const IMAGE_RE = /\.(jpg|jpeg|png|gif|webp|svg|ico|bmp|avif)$/i;
+const TEXT_RE = /\.(txt|md|json|xml|csv|html|css|js|ts|jsx|tsx|yaml|yml|toml|ini|cfg|conf|log|sh|bash|py|rb|go|rs|java|c|cpp|h|hpp|sql|env|gitignore|dockerfile)$/i;
+const AUDIO_RE = /\.(mp3|wav|ogg|flac|aac|m4a|wma)$/i;
+const VIDEO_RE = /\.(mp4|webm|ogg|mov|avi|mkv|m4v)$/i;
+
+// --- i18n ---
+const I18N = {
+  zh: {
+    appTitle: 'R2 管理器',
+    connectTitle: '连接到 R2',
+    connectDesc: '输入你的 Cloudflare R2 凭据，它们仅保存在浏览器本地。',
+    accountId: '账户 ID',
+    accessKeyId: '访问密钥 ID',
+    secretAccessKey: '秘密访问密钥',
+    bucketName: '存储桶名称',
+    filenameTpl: '文件名模板',
+    filenameTplHint: '占位符: [name] 原始名, [ext] 扩展名, [hash:N] 内容哈希, [date:FORMAT] 日期格式, [timestamp] 时间戳, [uuid] UUID, / 目录分隔',
+    cancel: '取消',
+    connect: '连接',
+    newFolder: '新建文件夹',
+    upload: '上传',
+    dropToUpload: '拖放文件到此处上传',
+    uploading: '上传中...',
+    root: '根目录',
+    emptyFolder: '该文件夹为空',
+    uploadFiles: '上传文件',
+    loadMore: '加载更多',
+    preview: '预览',
+    download: '下载',
+    rename: '重命名',
+    copy: '复制',
+    move: '移动',
+    delete: '删除',
+    confirm: '确认',
+    ok: '确定',
+    deleteConfirmTitle: '删除确认',
+    deleteConfirmMsg: '确定要删除 "{name}" 吗？此操作不可撤销。',
+    deleteFolderConfirmMsg: '确定要删除文件夹 "{name}" 及其所有内容吗？此操作不可撤销。',
+    renameTitle: '重命名',
+    renameLabel: '新名称',
+    copyTitle: '复制到',
+    copyLabel: '目标路径',
+    moveTitle: '移动到',
+    moveLabel: '目标路径',
+    newFolderTitle: '新建文件夹',
+    newFolderLabel: '文件夹名称',
+    authFailed: '认证失败，请检查凭据',
+    corsError: 'CORS 未配置。请在 Cloudflare 仪表盘 → R2 → 存储桶设置中添加 CORS 规则，允许当前域名的 GET/PUT/DELETE/HEAD 请求。',
+    networkError: '网络错误: {msg}',
+    uploadSuccess: '已成功上传 {count} 个文件',
+    uploadPartialFail: '{success} 个上传成功，{fail} 个失败',
+    fileTooLarge: '文件 "{name}" 超过 5GB 限制，不支持分段上传',
+    deleteSuccess: '已删除 "{name}"',
+    renameSuccess: '已重命名为 "{name}"',
+    copySuccess: '已复制到 "{name}"',
+    moveSuccess: '已移动到 "{name}"',
+    folderCreated: '已创建文件夹 "{name}"',
+    previewNotAvailable: '此文件类型暂不支持预览',
+    size: '大小',
+    lastModified: '最后修改',
+    contentType: '类型',
+    settings: '设置',
+    toggleTheme: '切换主题',
+    close: '关闭',
+    shareConfig: '分享配置',
+    shareConfigCopied: '分享链接已复制到剪贴板',
+    configLoadedFromUrl: '已从链接加载配置',
+    preferences: '偏好设置',
+    uploadSettings: '上传设置',
+    r2Connection: 'R2 连接',
+    theme: '主题',
+    themeLight: '浅色',
+    themeDark: '深色',
+    sort: '排序',
+    sortName: '按名称',
+    sortDate: '按日期',
+    sortSize: '按大小',
+  },
+  en: {
+    appTitle: 'R2 Manager',
+    connectTitle: 'Connect to R2',
+    connectDesc: 'Enter your Cloudflare R2 credentials. They are stored locally in your browser.',
+    accountId: 'Account ID',
+    accessKeyId: 'Access Key ID',
+    secretAccessKey: 'Secret Access Key',
+    bucketName: 'Bucket Name',
+    filenameTpl: 'Filename Template',
+    filenameTplHint: 'Placeholders: [name] original, [ext] extension, [hash:N] content hash, [date:FORMAT] date, [timestamp] unix ts, [uuid] UUID, / = directory',
+    cancel: 'Cancel',
+    connect: 'Connect',
+    newFolder: 'New Folder',
+    upload: 'Upload',
+    dropToUpload: 'Drop files to upload',
+    uploading: 'Uploading...',
+    root: 'Root',
+    emptyFolder: 'This folder is empty',
+    uploadFiles: 'Upload Files',
+    loadMore: 'Load More',
+    preview: 'Preview',
+    download: 'Download',
+    rename: 'Rename',
+    copy: 'Copy',
+    move: 'Move',
+    delete: 'Delete',
+    confirm: 'Confirm',
+    ok: 'OK',
+    deleteConfirmTitle: 'Delete Confirmation',
+    deleteConfirmMsg: 'Are you sure you want to delete "{name}"? This cannot be undone.',
+    deleteFolderConfirmMsg: 'Are you sure you want to delete folder "{name}" and all its contents? This cannot be undone.',
+    renameTitle: 'Rename',
+    renameLabel: 'New name',
+    copyTitle: 'Copy to',
+    copyLabel: 'Destination path',
+    moveTitle: 'Move to',
+    moveLabel: 'Destination path',
+    newFolderTitle: 'New Folder',
+    newFolderLabel: 'Folder name',
+    authFailed: 'Authentication failed. Check credentials.',
+    corsError: 'CORS not configured. Go to Cloudflare Dashboard → R2 → Bucket Settings and add a CORS rule allowing GET/PUT/DELETE/HEAD from your origin.',
+    networkError: 'Network error: {msg}',
+    uploadSuccess: 'Successfully uploaded {count} file(s)',
+    uploadPartialFail: '{success} uploaded, {fail} failed',
+    fileTooLarge: 'File "{name}" exceeds 5GB limit. Multipart upload not supported.',
+    deleteSuccess: 'Deleted "{name}"',
+    renameSuccess: 'Renamed to "{name}"',
+    copySuccess: 'Copied to "{name}"',
+    moveSuccess: 'Moved to "{name}"',
+    folderCreated: 'Created folder "{name}"',
+    previewNotAvailable: 'Preview not available for this file type',
+    size: 'Size',
+    lastModified: 'Last Modified',
+    contentType: 'Type',
+    settings: 'Settings',
+    toggleTheme: 'Toggle Theme',
+    close: 'Close',
+    shareConfig: 'Share Config',
+    shareConfigCopied: 'Share link copied to clipboard',
+    configLoadedFromUrl: 'Config loaded from URL',
+    preferences: 'Preferences',
+    uploadSettings: 'Upload',
+    r2Connection: 'R2',
+    theme: 'Theme',
+    themeLight: 'Light',
+    themeDark: 'Dark',
+    sort: 'Sort',
+    sortName: 'By Name',
+    sortDate: 'By Date',
+    sortSize: 'By Size',
+  },
+  ja: {
+    appTitle: 'R2 マネージャー',
+    connectTitle: 'R2 に接続',
+    connectDesc: 'Cloudflare R2 の認証情報を入力してください。ブラウザのローカルに保存されます。',
+    accountId: 'アカウント ID',
+    accessKeyId: 'アクセスキー ID',
+    secretAccessKey: 'シークレットアクセスキー',
+    bucketName: 'バケット名',
+    filenameTpl: 'ファイル名テンプレート',
+    filenameTplHint: 'プレースホルダ: [name] 元名, [ext] 拡張子, [hash:N] ハッシュ, [date:FORMAT] 日付, [timestamp] タイムスタンプ, [uuid] UUID, / ディレクトリ',
+    cancel: 'キャンセル',
+    connect: '接続',
+    newFolder: '新規フォルダ',
+    upload: 'アップロード',
+    dropToUpload: 'ファイルをドロップしてアップロード',
+    uploading: 'アップロード中...',
+    root: 'ルート',
+    emptyFolder: 'このフォルダは空です',
+    uploadFiles: 'ファイルをアップロード',
+    loadMore: 'もっと読み込む',
+    preview: 'プレビュー',
+    download: 'ダウンロード',
+    rename: '名前変更',
+    copy: 'コピー',
+    move: '移動',
+    delete: '削除',
+    confirm: '確認',
+    ok: 'OK',
+    deleteConfirmTitle: '削除の確認',
+    deleteConfirmMsg: '"{name}" を削除してもよろしいですか？この操作は元に戻せません。',
+    deleteFolderConfirmMsg: 'フォルダ "{name}" とその中身をすべて削除しますか？この操作は元に戻せません。',
+    renameTitle: '名前変更',
+    renameLabel: '新しい名前',
+    copyTitle: 'コピー先',
+    copyLabel: 'コピー先パス',
+    moveTitle: '移動先',
+    moveLabel: '移動先パス',
+    newFolderTitle: '新規フォルダ',
+    newFolderLabel: 'フォルダ名',
+    authFailed: '認証に失敗しました。認証情報を確認してください。',
+    corsError: 'CORS が設定されていません。Cloudflare ダッシュボード → R2 → バケット設定で、現在のオリジンからの GET/PUT/DELETE/HEAD を許可する CORS ルールを追加してください。',
+    networkError: 'ネットワークエラー: {msg}',
+    uploadSuccess: '{count} 個のファイルをアップロードしました',
+    uploadPartialFail: '{success} 個成功、{fail} 個失敗',
+    fileTooLarge: 'ファイル "{name}" は 5GB を超えています。マルチパートアップロードは未対応です。',
+    deleteSuccess: '"{name}" を削除しました',
+    renameSuccess: '"{name}" に名前を変更しました',
+    copySuccess: '"{name}" にコピーしました',
+    moveSuccess: '"{name}" に移動しました',
+    folderCreated: 'フォルダ "{name}" を作成しました',
+    previewNotAvailable: 'このファイルタイプはプレビューできません',
+    size: 'サイズ',
+    lastModified: '最終更新',
+    contentType: 'タイプ',
+    settings: '設定',
+    toggleTheme: 'テーマ切替',
+    close: '閉じる',
+    shareConfig: '設定を共有',
+    shareConfigCopied: '共有リンクをクリップボードにコピーしました',
+    configLoadedFromUrl: 'URLから設定を読み込みました',
+    preferences: '設定',
+    uploadSettings: 'アップロード',
+    r2Connection: 'R2',
+    theme: 'テーマ',
+    themeLight: 'ライト',
+    themeDark: 'ダーク',
+    sort: '並び替え',
+    sortName: '名前順',
+    sortDate: '日付順',
+    sortSize: 'サイズ順',
+  },
+};
+
+let currentLang = localStorage.getItem(LANG_KEY) || 'zh';
+
+function t(key, params = {}) {
+  let str = I18N[currentLang]?.[key] || I18N.en[key] || key;
+  for (const [k, v] of Object.entries(params)) {
+    str = str.replace(`{${k}}`, v);
+  }
+  return str;
+}
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem(LANG_KEY, lang);
+}
+
+// --- Helpers ---
+const $ = (sel, ctx = document) => ctx.querySelector(sel);
+
+function formatBytes(bytes) {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  return d.toLocaleDateString(currentLang === 'zh' ? 'zh-CN' : currentLang === 'ja' ? 'ja-JP' : 'en-US', {
+    year: 'numeric', month: 'short', day: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  });
+}
+
+function getFileName(key) {
+  const parts = key.replace(/\/$/, '').split('/');
+  return parts[parts.length - 1];
+}
+
+function getExtension(name) {
+  const i = name.lastIndexOf('.');
+  return i > 0 ? name.slice(i + 1) : '';
+}
+
+function getBaseName(name) {
+  const i = name.lastIndexOf('.');
+  return i > 0 ? name.slice(0, i) : name;
+}
+
+function getMimeType(key) {
+  const ext = getExtension(key).toLowerCase();
+  const map = {
+    jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif',
+    webp: 'image/webp', svg: 'image/svg+xml', ico: 'image/x-icon', bmp: 'image/bmp', avif: 'image/avif',
+    mp4: 'video/mp4', webm: 'video/webm', ogg: 'video/ogg', mov: 'video/quicktime',
+    mp3: 'audio/mpeg', wav: 'audio/wav', flac: 'audio/flac', aac: 'audio/aac', m4a: 'audio/mp4',
+    json: 'application/json', xml: 'application/xml', pdf: 'application/pdf',
+    html: 'text/html', css: 'text/css', js: 'text/javascript', txt: 'text/plain',
+    md: 'text/markdown', csv: 'text/csv',
+  };
+  return map[ext] || 'application/octet-stream';
+}
+
+/** Encode S3 object key for URL path — encode each segment but keep `/` as-is */
+function encodeS3Key(key) {
+  return key.split('/').map(encodeURIComponent).join('/');
+}
+
+
+async function computeFileHash(file) {
+  const buffer = await file.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map(b => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+async function applyFilenameTemplate(template, file) {
+  if (!template?.trim()) return file.name;
+
+  const originalName = file.name;
+  const ext = getExtension(originalName);
+  const base = getBaseName(originalName);
+  const fileHash = await computeFileHash(file);
+
+  let result = template;
+  result = result.replace(/\[name\]/g, base);
+  result = result.replace(/\[ext\]/g, ext);
+  result = result.replace(/\[timestamp\]/g, String(Math.floor(Date.now() / 1000)));
+  result = result.replace(/\[uuid\]/g, crypto.randomUUID());
+  result = result.replace(/\[hash:(\d+)\]/g, (_, n) => fileHash.slice(0, parseInt(n, 10)));
+  result = result.replace(/\[hash\]/g, fileHash.slice(0, 8));
+  result = result.replace(/\[date:([^\]]+)\]/g, (_, format) => dayjs().format(format));
+
+  return result;
+}
+
+
+// ========================================================================
+// ConfigManager
+// ========================================================================
+class ConfigManager {
+  load() {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    } catch { return {}; }
+  }
+
+  save(cfg) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
+  }
+
+  get() {
+    return this.load();
+  }
+
+  clear() {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+
+  isValid() {
+    const c = this.load();
+    return !!(c.accountId && c.accessKeyId && c.secretAccessKey && c.bucket);
+  }
+
+  getEndpoint() {
+    const c = this.load();
+    return `https://${c.accountId}.r2.cloudflarestorage.com`;
+  }
+
+  getBucketUrl() {
+    const c = this.load();
+    return `${this.getEndpoint()}/${c.bucket}`;
+  }
+
+  toBase64() {
+    const cfg = this.load();
+    return btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
+  }
+
+  loadFromBase64(b64) {
+    try {
+      const json = decodeURIComponent(escape(atob(b64)));
+      const cfg = JSON.parse(json);
+      if (cfg.accountId && cfg.accessKeyId && cfg.secretAccessKey && cfg.bucket) {
+        this.save(cfg);
+        return true;
+      }
+    } catch { /* invalid base64 or JSON */ }
+    return false;
+  }
+
+  getShareUrl() {
+    const b64 = this.toBase64();
+    const url = new URL(window.location.href);
+    url.searchParams.set('config', b64);
+    // Clean hash
+    url.hash = '';
+    return url.toString();
+  }
+}
+
+// ========================================================================
+// R2Client
+// ========================================================================
+class R2Client {
+  /** @type {AwsClient} */
+  #client = null;
+  /** @type {ConfigManager} */
+  #config = null;
+
+  init(configManager) {
+    this.#config = configManager;
+    const cfg = configManager.get();
+    this.#client = new AwsClient({
+      accessKeyId: cfg.accessKeyId,
+      secretAccessKey: cfg.secretAccessKey,
+      service: 's3',
+      region: 'auto',
+    });
+  }
+
+  async listObjects(prefix = '', continuationToken = '') {
+    const url = new URL(this.#config.getBucketUrl());
+    url.searchParams.set('list-type', '2');
+    url.searchParams.set('delimiter', '/');
+    url.searchParams.set('max-keys', String(PAGE_SIZE));
+    if (prefix) url.searchParams.set('prefix', prefix);
+    if (continuationToken) url.searchParams.set('continuation-token', continuationToken);
+
+    const res = await this.#client.fetch(url.toString());
+    if (!res.ok) throw new Error(res.status === 403 ? 'AUTH_FAILED' : `HTTP ${res.status}`);
+
+    const text = await res.text();
+    const doc = new DOMParser().parseFromString(text, 'application/xml');
+
+    const folders = [...doc.querySelectorAll('CommonPrefixes > Prefix')].map(el => ({
+      key: el.textContent,
+      isFolder: true,
+    }));
+
+    const files = [...doc.querySelectorAll('Contents')].map(el => ({
+      key: el.querySelector('Key').textContent,
+      size: parseInt(el.querySelector('Size').textContent, 10),
+      lastModified: el.querySelector('LastModified').textContent,
+      isFolder: false,
+    })).filter(f => f.key !== prefix); // filter out the prefix itself
+
+    const isTruncated = doc.querySelector('IsTruncated')?.textContent === 'true';
+    const nextToken = doc.querySelector('NextContinuationToken')?.textContent || '';
+
+    return { folders, files, isTruncated, nextToken };
+  }
+
+  async putObjectSigned(key, contentType) {
+    const url = `${this.#config.getBucketUrl()}/${encodeS3Key(key)}`;
+    const req = await this.#client.sign(url, {
+      method: 'PUT',
+      headers: { 'Content-Type': contentType },
+    });
+    return { url: req.url, headers: Object.fromEntries(req.headers.entries()) };
+  }
+
+  async getObject(key) {
+    const url = `${this.#config.getBucketUrl()}/${encodeS3Key(key)}`;
+    const res = await this.#client.fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res;
+  }
+
+  async getPresignedUrl(key) {
+    const url = `${this.#config.getBucketUrl()}/${encodeS3Key(key)}`;
+    const signed = await this.#client.sign(url, { method: 'GET', aws: { signQuery: true } });
+    return signed.url;
+  }
+
+  async headObject(key) {
+    const url = `${this.#config.getBucketUrl()}/${encodeS3Key(key)}`;
+    const res = await this.#client.fetch(url, { method: 'HEAD' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return {
+      contentType: res.headers.get('content-type'),
+      contentLength: parseInt(res.headers.get('content-length') || '0', 10),
+      lastModified: res.headers.get('last-modified'),
+      etag: res.headers.get('etag'),
+    };
+  }
+
+  async deleteObject(key) {
+    const url = `${this.#config.getBucketUrl()}/${encodeS3Key(key)}`;
+    const res = await this.#client.fetch(url, { method: 'DELETE' });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  }
+
+  async copyObject(src, dest) {
+    const cfg = this.#config.get();
+    const url = `${this.#config.getBucketUrl()}/${encodeS3Key(dest)}`;
+    const res = await this.#client.fetch(url, {
+      method: 'PUT',
+      headers: {
+        'x-amz-copy-source': `/${cfg.bucket}/${encodeS3Key(src)}`,
+      },
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  }
+
+  async createFolder(prefix) {
+    const key = prefix.endsWith('/') ? prefix : prefix + '/';
+    const url = `${this.#config.getBucketUrl()}/${encodeS3Key(key)}`;
+    const res = await this.#client.fetch(url, {
+      method: 'PUT',
+      headers: { 'Content-Length': '0' },
+      body: '',
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  }
+}
+
+// ========================================================================
+// UIManager
+// ========================================================================
+class UIManager {
+  initTheme() {
+    const saved = localStorage.getItem(THEME_KEY);
+    if (saved) {
+      document.documentElement.setAttribute('data-theme', saved);
+    } else {
+      const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    }
+  }
+
+  toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme');
+    const next = current === 'dark' ? 'light' : 'dark';
+    const apply = () => {
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem(THEME_KEY, next);
+    };
+    if (document.startViewTransition) {
+      document.startViewTransition(apply);
+    } else {
+      apply();
+    }
+  }
+
+  setTheme(theme) {
+    const apply = () => {
+      document.documentElement.setAttribute('data-theme', theme);
+      localStorage.setItem(THEME_KEY, theme);
+    };
+    if (document.startViewTransition) {
+      document.startViewTransition(apply);
+    } else {
+      apply();
+    }
+  }
+
+  toast(message, type = 'info') {
+    const container = $('#toast-container');
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.textContent = message;
+    container.appendChild(el);
+    const duration = message.length > 80 ? TOAST_DURATION * 2 : TOAST_DURATION;
+    setTimeout(() => {
+      el.classList.add('removing');
+      el.addEventListener('animationend', () => el.remove());
+    }, duration);
+  }
+
+  showSkeleton() {
+    $('#skeleton-grid').hidden = false;
+    $('#file-grid').hidden = true;
+    $('#empty-state').hidden = true;
+  }
+
+  hideSkeleton() {
+    $('#skeleton-grid').hidden = true;
+    $('#file-grid').hidden = false;
+  }
+
+  showEmptyState() {
+    $('#empty-state').hidden = false;
+    $('#file-grid').hidden = true;
+  }
+
+  hideEmptyState() {
+    $('#empty-state').hidden = true;
+  }
+
+  showContextMenu(x, y, key, isFolder) {
+    const menu = $('#context-menu');
+    menu.dataset.key = key;
+    menu.dataset.isFolder = isFolder;
+
+    // Hide preview/download for folders
+    const previewBtn = $('[data-action="preview"]', menu);
+    const downloadBtn = $('[data-action="download"]', menu);
+    previewBtn.hidden = isFolder;
+    downloadBtn.hidden = isFolder;
+
+    // Position before showing so getBoundingClientRect works after popover opens
+    menu.style.left = x + 'px';
+    menu.style.top = y + 'px';
+    menu.showPopover();
+
+    // Adjust if overflowing viewport
+    const rect = menu.getBoundingClientRect();
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    if (rect.right > vw) menu.style.left = (vw - rect.width - 8) + 'px';
+    if (rect.bottom > vh) menu.style.top = (vh - rect.height - 8) + 'px';
+  }
+
+  hideContextMenu() {
+    const menu = $('#context-menu');
+    try { menu.hidePopover(); } catch { /* already hidden */ }
+  }
+
+  prompt(title, label, defaultValue = '') {
+    return new Promise((resolve) => {
+      const dialog = $('#prompt-dialog');
+      const form = $('#prompt-form');
+      const input = $('#prompt-input');
+      $('#prompt-title').textContent = title;
+      $('#prompt-label').textContent = label;
+      input.value = defaultValue;
+
+      const cleanup = () => {
+        dialog.close();
+        form.removeEventListener('submit', onSubmit);
+        $('#prompt-cancel').removeEventListener('click', onCancel);
+      };
+
+      const onSubmit = (e) => {
+        e.preventDefault();
+        const val = input.value.trim();
+        cleanup();
+        resolve(val || null);
+      };
+
+      const onCancel = () => {
+        cleanup();
+        resolve(null);
+      };
+
+      form.addEventListener('submit', onSubmit);
+      $('#prompt-cancel').addEventListener('click', onCancel);
+      dialog.showModal();
+      input.focus();
+      input.select();
+    });
+  }
+
+  confirm(title, message) {
+    return new Promise((resolve) => {
+      const dialog = $('#confirm-dialog');
+      const form = $('#confirm-form');
+      $('#confirm-title').textContent = title;
+      $('#confirm-message').textContent = message;
+
+      const cleanup = () => {
+        dialog.close();
+        form.removeEventListener('submit', onSubmit);
+        $('#confirm-cancel').removeEventListener('click', onCancel);
+      };
+
+      const onSubmit = (e) => {
+        e.preventDefault();
+        cleanup();
+        resolve(true);
+      };
+
+      const onCancel = () => {
+        cleanup();
+        resolve(false);
+      };
+
+      form.addEventListener('submit', onSubmit);
+      $('#confirm-cancel').addEventListener('click', onCancel);
+      dialog.showModal();
+    });
+  }
+}
+
+// ========================================================================
+// FileExplorer
+// ========================================================================
+class FileExplorer {
+  #r2;
+  #ui;
+  #prefix = '';
+  #continuationToken = '';
+  #thumbnailObserver;
+  #sortBy = 'name';
+
+  constructor(r2, ui) {
+    this.#r2 = r2;
+    this.#ui = ui;
+
+    this.#thumbnailObserver = new IntersectionObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.isIntersecting) {
+          const card = entry.target;
+          const key = card.dataset.key;
+          this.#thumbnailObserver.unobserve(card);
+          this.#lazyLoadThumbnail(card, key);
+        }
+      }
+    }, { rootMargin: '100px' });
+  }
+
+  get currentPrefix() { return this.#prefix; }
+
+  get currentSortBy() { return this.#sortBy; }
+
+  setSortBy(sortBy) {
+    this.#sortBy = sortBy;
+    this.refresh();
+  }
+
+  async navigate(prefix) {
+    this.#prefix = prefix;
+    this.#continuationToken = '';
+    $('#file-grid').innerHTML = '';
+    this.#updateBreadcrumb();
+    await this.#loadPage(true);
+  }
+
+  async loadMore() {
+    if (!this.#continuationToken) return;
+    await this.#loadPage(false);
+  }
+
+  async #loadPage(isInitial) {
+    if (isInitial) this.#ui.showSkeleton();
+    try {
+      const result = await this.#r2.listObjects(this.#prefix, this.#continuationToken);
+      this.#continuationToken = result.isTruncated ? result.nextToken : '';
+
+      if (isInitial) this.#ui.hideSkeleton();
+
+      const items = [...result.folders, ...result.files];
+      const sortedItems = this.#sortItems(items);
+      if (isInitial && sortedItems.length === 0) {
+        this.#ui.showEmptyState();
+      } else {
+        this.#ui.hideEmptyState();
+        this.#renderItems(sortedItems);
+      }
+
+      $('#load-more').hidden = !result.isTruncated;
+    } catch (err) {
+      if (isInitial) this.#ui.hideSkeleton();
+      if (err.message === 'AUTH_FAILED') {
+        this.#ui.toast(t('authFailed'), 'error');
+        throw err;
+      } else if (err instanceof TypeError) {
+        this.#ui.toast(t('corsError'), 'error');
+      } else {
+        this.#ui.toast(t('networkError', { msg: err.message }), 'error');
+      }
+    }
+  }
+
+  #sortItems(items) {
+    const folders = items.filter(i => i.isFolder);
+    const files = items.filter(i => !i.isFolder);
+
+    // Folders always sorted by name
+    folders.sort((a, b) => getFileName(a.key).localeCompare(getFileName(b.key)));
+
+    // Files sorted by current sort method
+    switch (this.#sortBy) {
+      case 'date':
+        files.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified));
+        break;
+      case 'size':
+        files.sort((a, b) => b.size - a.size);
+        break;
+      case 'name':
+      default:
+        files.sort((a, b) => getFileName(a.key).localeCompare(getFileName(b.key)));
+        break;
+    }
+
+    return [...folders, ...files];
+  }
+
+  #renderItems(items) {
+    const grid = $('#file-grid');
+    const frag = document.createDocumentFragment();
+
+    for (const item of items) {
+      const card = this.#createFileCard(item);
+      frag.appendChild(card);
+    }
+
+    grid.appendChild(frag);
+  }
+
+  #createFileCard(item) {
+    const card = document.createElement('div');
+    card.className = 'file-card';
+    card.dataset.key = item.key;
+    card.dataset.isFolder = item.isFolder;
+
+    const name = getFileName(item.key);
+    const isImage = !item.isFolder && IMAGE_RE.test(item.key);
+
+    let iconHtml;
+    if (item.isFolder) {
+      iconHtml = `<div class="file-card-icon folder">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+      </div>`;
+    } else if (isImage) {
+      iconHtml = `<img class="file-card-thumb" alt="" loading="lazy">`;
+    } else {
+      iconHtml = `<div class="file-card-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>`;
+    }
+
+    card.innerHTML = `
+      ${iconHtml}
+      <span class="file-card-name" title="${name}">${name}</span>
+      ${!item.isFolder ? `<span class="file-card-meta">${formatBytes(item.size)}</span>` : ''}
+      <div class="file-card-actions">
+        <button type="button" class="icon-btn sm file-card-menu" title="More">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+        </button>
+      </div>
+    `;
+
+    if (isImage) {
+      this.#thumbnailObserver.observe(card);
+    }
+
+    return card;
+  }
+
+  async #lazyLoadThumbnail(card, key) {
+    try {
+      const url = await this.#r2.getPresignedUrl(key);
+      const img = $('img', card);
+      if (img) img.src = url;
+    } catch { /* ignore thumbnail failures */ }
+  }
+
+  #updateBreadcrumb() {
+    const ol = $('#breadcrumb');
+    ol.innerHTML = '';
+
+    const rootLi = document.createElement('li');
+    rootLi.innerHTML = `<button type="button" class="breadcrumb-btn" data-prefix="">${t('root')}</button>`;
+    ol.appendChild(rootLi);
+
+    if (this.#prefix) {
+      const parts = this.#prefix.replace(/\/$/, '').split('/');
+      let accumulated = '';
+      for (const part of parts) {
+        accumulated += part + '/';
+        const li = document.createElement('li');
+        li.innerHTML = `<button type="button" class="breadcrumb-btn" data-prefix="${accumulated}">${part}</button>`;
+        ol.appendChild(li);
+      }
+    }
+  }
+
+  async refresh() {
+    await this.navigate(this.#prefix);
+  }
+}
+
+// ========================================================================
+// UploadManager
+// ========================================================================
+class UploadManager {
+  #r2;
+  #ui;
+  #explorer;
+  #config;
+  #dragCounter = 0;
+
+  constructor(r2, ui, explorer, config) {
+    this.#r2 = r2;
+    this.#ui = ui;
+    this.#explorer = explorer;
+    this.#config = config;
+  }
+
+  initDragDrop() {
+    const app = $('#app');
+    const dropzone = $('#dropzone');
+
+    app.addEventListener('dragenter', (e) => {
+      e.preventDefault();
+      this.#dragCounter++;
+      dropzone.hidden = false;
+    });
+
+    app.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      this.#dragCounter--;
+      if (this.#dragCounter <= 0) {
+        this.#dragCounter = 0;
+        dropzone.hidden = true;
+      }
+    });
+
+    app.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+    });
+
+    app.addEventListener('drop', (e) => {
+      e.preventDefault();
+      this.#dragCounter = 0;
+      dropzone.hidden = true;
+      const files = [...e.dataTransfer.files];
+      if (files.length > 0) this.uploadFiles(files);
+    });
+  }
+
+  async uploadFiles(files) {
+    const panel = $('#upload-panel');
+    const body = $('#upload-panel-body');
+    const title = $('#upload-panel-title');
+
+    panel.hidden = false;
+    body.innerHTML = '';
+    title.textContent = t('uploading');
+
+    const cfg = this.#config.get();
+    const filenameTpl = cfg.filenameTpl || '';
+
+    // Process files sequentially for template resolution (hash computation)
+    const uploads = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+
+      // Check size
+      if (file.size > MAX_UPLOAD_SIZE) {
+        this.#ui.toast(t('fileTooLarge', { name: file.name }), 'error');
+        continue;
+      }
+
+      const id = `upload-${i}-${Date.now()}`;
+      const displayName = file.name;
+
+      // Apply filename template (async - computes file hash)
+      const processedName = await applyFilenameTemplate(filenameTpl, file);
+      const key = this.#explorer.currentPrefix + processedName;
+      const contentType = file.type || getMimeType(file.name);
+
+      // Create progress UI
+      const item = document.createElement('div');
+      item.className = 'upload-item';
+      item.id = id;
+      item.innerHTML = `
+        <div class="upload-item-name" title="${displayName}">${displayName}</div>
+        <div class="upload-progress">
+          <div class="upload-progress-bar" id="${id}-bar"></div>
+        </div>
+      `;
+      body.appendChild(item);
+
+      uploads.push({ id, key, file, contentType });
+    }
+
+    // Upload concurrently
+    const results = await Promise.allSettled(
+      uploads.map(u => this.#uploadSingleFile(u.id, u.key, u.file, u.contentType))
+    );
+
+    const success = results.filter(r => r.status === 'fulfilled').length;
+    const fail = results.filter(r => r.status === 'rejected').length;
+
+    if (fail === 0) {
+      this.#ui.toast(t('uploadSuccess', { count: success }), 'success');
+    } else {
+      this.#ui.toast(t('uploadPartialFail', { success, fail }), 'error');
+    }
+
+    title.textContent = `${success}/${uploads.length}`;
+    await this.#explorer.refresh();
+  }
+
+  async #uploadSingleFile(id, key, file, contentType) {
+    const signed = await this.#r2.putObjectSigned(key, contentType);
+    const bar = $(`#${id}-bar`);
+
+    if (bar) bar.classList.add('indeterminate');
+
+    const headers = new Headers();
+    for (const [k, v] of Object.entries(signed.headers)) {
+      if (k.toLowerCase() !== 'host') headers.set(k, v);
+    }
+
+    const res = await fetch(signed.url, {
+      method: 'PUT',
+      headers,
+      body: file,
+    });
+
+    if (bar) bar.classList.remove('indeterminate');
+
+    if (!res.ok) {
+      if (bar) bar.classList.add('error');
+      throw new Error(`HTTP ${res.status}`);
+    }
+
+    if (bar) {
+      bar.classList.add('done');
+      bar.style.width = '100%';
+    }
+  }
+}
+
+// ========================================================================
+// FilePreview
+// ========================================================================
+class FilePreview {
+  #r2;
+  #ui;
+  #currentKey = '';
+
+  constructor(r2, ui) {
+    this.#r2 = r2;
+    this.#ui = ui;
+  }
+
+  get currentKey() { return this.#currentKey; }
+
+  async preview(key) {
+    this.#currentKey = key;
+    const dialog = $('#preview-dialog');
+    const body = $('#preview-body');
+    const footer = $('#preview-footer');
+    const filename = $('#preview-filename');
+
+    filename.textContent = getFileName(key);
+    body.innerHTML = '<div style="color:var(--text-tertiary)">Loading...</div>';
+    footer.innerHTML = '';
+    dialog.showModal();
+
+    try {
+      const meta = await this.#r2.headObject(key);
+      footer.innerHTML = `
+        <span>${t('size')}: ${formatBytes(meta.contentLength)}</span>
+        <span>${t('contentType')}: ${meta.contentType || 'unknown'}</span>
+        ${meta.lastModified ? `<span>${t('lastModified')}: ${formatDate(meta.lastModified)}</span>` : ''}
+      `;
+
+      if (IMAGE_RE.test(key)) {
+        const url = await this.#r2.getPresignedUrl(key);
+        body.innerHTML = `<img src="${url}" alt="${getFileName(key)}">`;
+      } else if (VIDEO_RE.test(key)) {
+        const url = await this.#r2.getPresignedUrl(key);
+        body.innerHTML = `<video src="${url}" controls></video>`;
+      } else if (AUDIO_RE.test(key)) {
+        const url = await this.#r2.getPresignedUrl(key);
+        body.innerHTML = `<audio src="${url}" controls></audio>`;
+      } else if (TEXT_RE.test(key)) {
+        const res = await this.#r2.getObject(key);
+        const text = await res.text();
+        body.innerHTML = '';
+        const pre = document.createElement('pre');
+        pre.textContent = text;
+        body.appendChild(pre);
+      } else {
+        body.innerHTML = `<p style="color:var(--text-tertiary)">${t('previewNotAvailable')}</p>`;
+      }
+    } catch (err) {
+      body.innerHTML = `<p style="color:var(--text-danger)">${err.message}</p>`;
+    }
+  }
+
+  async downloadCurrent() {
+    if (!this.#currentKey) return;
+    try {
+      const url = await this.#r2.getPresignedUrl(this.#currentKey);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = getFileName(this.#currentKey);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (err) {
+      this.#ui.toast(t('networkError', { msg: err.message }), 'error');
+    }
+  }
+}
+
+// ========================================================================
+// FileOperations
+// ========================================================================
+class FileOperations {
+  #r2;
+  #ui;
+  #explorer;
+
+  constructor(r2, ui, explorer) {
+    this.#r2 = r2;
+    this.#ui = ui;
+    this.#explorer = explorer;
+  }
+
+  async rename(key, isFolder) {
+    const oldName = getFileName(key);
+    const newName = await this.#ui.prompt(t('renameTitle'), t('renameLabel'), oldName);
+    if (!newName || newName === oldName) return;
+
+    try {
+      const prefix = key.substring(0, key.lastIndexOf(oldName));
+      if (isFolder) {
+        const dest = prefix + newName + '/';
+        await this.#recursiveOperation(key, async (srcKey) => {
+          const relative = srcKey.substring(key.length);
+          await this.#r2.copyObject(srcKey, dest + relative);
+        }, true);
+      } else {
+        const dest = prefix + newName;
+        await this.#r2.copyObject(key, dest);
+        await this.#r2.deleteObject(key);
+      }
+      this.#ui.toast(t('renameSuccess', { name: newName }), 'success');
+      await this.#explorer.refresh();
+    } catch (err) {
+      this.#ui.toast(t('networkError', { msg: err.message }), 'error');
+    }
+  }
+
+  async copy(key, isFolder) {
+    const name = getFileName(key);
+    const currentPrefix = this.#explorer.currentPrefix;
+    const dest = await this.#ui.prompt(t('copyTitle'), t('copyLabel'), currentPrefix + name + (isFolder ? '/' : ''));
+    if (!dest) return;
+
+    try {
+      if (isFolder) {
+        await this.#recursiveOperation(key, async (srcKey) => {
+          const relative = srcKey.substring(key.length);
+          const destKey = (dest.endsWith('/') ? dest : dest + '/') + relative;
+          await this.#r2.copyObject(srcKey, destKey);
+        }, false);
+      } else {
+        await this.#r2.copyObject(key, dest);
+      }
+      this.#ui.toast(t('copySuccess', { name: dest }), 'success');
+      await this.#explorer.refresh();
+    } catch (err) {
+      this.#ui.toast(t('networkError', { msg: err.message }), 'error');
+    }
+  }
+
+  async move(key, isFolder) {
+    const name = getFileName(key);
+    const currentPrefix = this.#explorer.currentPrefix;
+    const dest = await this.#ui.prompt(t('moveTitle'), t('moveLabel'), currentPrefix + name + (isFolder ? '/' : ''));
+    if (!dest) return;
+
+    try {
+      if (isFolder) {
+        await this.#recursiveOperation(key, async (srcKey) => {
+          const relative = srcKey.substring(key.length);
+          const destKey = (dest.endsWith('/') ? dest : dest + '/') + relative;
+          await this.#r2.copyObject(srcKey, destKey);
+        }, true);
+      } else {
+        await this.#r2.copyObject(key, dest);
+        await this.#r2.deleteObject(key);
+      }
+      this.#ui.toast(t('moveSuccess', { name: dest }), 'success');
+      await this.#explorer.refresh();
+    } catch (err) {
+      this.#ui.toast(t('networkError', { msg: err.message }), 'error');
+    }
+  }
+
+  async delete(key, isFolder) {
+    const name = getFileName(key);
+    const msg = isFolder
+      ? t('deleteFolderConfirmMsg', { name })
+      : t('deleteConfirmMsg', { name });
+
+    const ok = await this.#ui.confirm(t('deleteConfirmTitle'), msg);
+    if (!ok) return;
+
+    try {
+      if (isFolder) {
+        await this.#recursiveOperation(key, async (srcKey) => {
+          await this.#r2.deleteObject(srcKey);
+        }, false);
+        // Also delete the folder marker itself
+        try { await this.#r2.deleteObject(key); } catch {}
+      } else {
+        await this.#r2.deleteObject(key);
+      }
+      this.#ui.toast(t('deleteSuccess', { name }), 'success');
+      await this.#explorer.refresh();
+    } catch (err) {
+      this.#ui.toast(t('networkError', { msg: err.message }), 'error');
+    }
+  }
+
+  async download(key) {
+    try {
+      const url = await this.#r2.getPresignedUrl(key);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = getFileName(key);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } catch (err) {
+      this.#ui.toast(t('networkError', { msg: err.message }), 'error');
+    }
+  }
+
+  async #recursiveOperation(prefix, operation, deleteSource) {
+    // List all objects under prefix
+    const allKeys = await this.#collectAllKeys(prefix);
+
+    // Process in batches of 5
+    for (let i = 0; i < allKeys.length; i += 5) {
+      const batch = allKeys.slice(i, i + 5);
+      await Promise.all(batch.map(k => operation(k)));
+    }
+
+    // Delete source objects if needed
+    if (deleteSource) {
+      for (let i = 0; i < allKeys.length; i += 5) {
+        const batch = allKeys.slice(i, i + 5);
+        await Promise.all(batch.map(k => this.#r2.deleteObject(k)));
+      }
+      // Delete the folder marker
+      try { await this.#r2.deleteObject(prefix); } catch {}
+    }
+  }
+
+  async #collectAllKeys(prefix) {
+    let allKeys = [];
+    let token = '';
+    do {
+      const result = await this.#r2.listObjects(prefix, token);
+      for (const file of result.files) {
+        allKeys.push(file.key);
+      }
+      for (const folder of result.folders) {
+        const subKeys = await this.#collectAllKeys(folder.key);
+        allKeys.push(...subKeys);
+      }
+      token = result.isTruncated ? result.nextToken : '';
+    } while (token);
+    return allKeys;
+  }
+}
+
+// ========================================================================
+// App (Orchestrator)
+// ========================================================================
+class App {
+  #config;
+  #r2;
+  #ui;
+  #explorer;
+  #upload;
+  #preview;
+  #ops;
+  #appEventsBound = false;
+
+  constructor() {
+    this.#config = new ConfigManager();
+    this.#r2 = new R2Client();
+    this.#ui = new UIManager();
+
+    this.#ui.initTheme();
+
+    // Check for config in URL parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    const configParam = urlParams.get('config');
+    if (configParam) {
+      if (this.#config.loadFromBase64(configParam)) {
+        // Clean URL without reloading
+        const cleanUrl = new URL(window.location.href);
+        cleanUrl.searchParams.delete('config');
+        window.history.replaceState({}, '', cleanUrl.toString());
+        // If lang is in config, apply it
+        const cfg = this.#config.get();
+        if (cfg.lang) setLang(cfg.lang);
+      }
+    }
+
+    this.#applyI18nToHTML();
+
+    if (this.#config.isValid()) {
+      this.#connectAndLoad();
+      if (configParam) {
+        // Delay toast so UI is ready
+        setTimeout(() => this.#ui.toast(t('configLoadedFromUrl'), 'info'), 500);
+      }
+    } else {
+      this.#showConfigDialog();
+    }
+
+    this.#bindGlobalEvents();
+  }
+
+  #applyI18nToHTML() {
+    // Update static text in HTML
+    document.title = t('appTitle');
+    $('.topbar-title').textContent = t('appTitle');
+
+    // Config dialog — static elements by ID
+    $('#config-title').textContent = t('appTitle');
+    $('#config-section-r2').textContent = t('r2Connection');
+    $('#lbl-account-id').textContent = t('accountId');
+    $('#lbl-access-key').textContent = t('accessKeyId');
+    $('#lbl-secret-key').textContent = t('secretAccessKey');
+    $('#lbl-bucket').textContent = t('bucketName');
+    $('#config-section-prefs').textContent = t('preferences');
+    $('#lbl-theme').textContent = t('theme');
+    $('#opt-theme-light').textContent = t('themeLight');
+    $('#opt-theme-dark').textContent = t('themeDark');
+    $('#config-section-upload').textContent = t('uploadSettings');
+    $('#lbl-filename-tpl').textContent = t('filenameTpl');
+    $('#filename-tpl-hint').textContent = t('filenameTplHint');
+    $('#config-cancel').textContent = t('cancel');
+    $('#config-submit').textContent = t('connect');
+
+    // Sort select options in toolbar
+    const sortSelect = $('#sort-select');
+    if (sortSelect) {
+      const nameOpt = $('option[value="name"]', sortSelect);
+      const dateOpt = $('option[value="date"]', sortSelect);
+      const sizeOpt = $('option[value="size"]', sortSelect);
+      if (nameOpt) nameOpt.textContent = t('sortName');
+      if (dateOpt) dateOpt.textContent = t('sortDate');
+      if (sizeOpt) sizeOpt.textContent = t('sortSize');
+    }
+
+    // Toolbar buttons
+    $('#new-folder-btn span').textContent = t('newFolder');
+    $('#upload-btn span').textContent = t('upload');
+
+    // Dropzone
+    $('#dropzone .dropzone-inner p').textContent = t('dropToUpload');
+
+    // Empty state
+    $('#empty-state p').textContent = t('emptyFolder');
+    $('#empty-upload-btn').lastChild.textContent = ' ' + t('uploadFiles');
+
+    // Load more
+    $('#load-more-btn').textContent = t('loadMore');
+
+    // Context menu — target the span inside each item
+    $('[data-action="preview"] span').textContent = t('preview');
+    $('[data-action="download"] span').textContent = t('download');
+    $('[data-action="rename"] span').textContent = t('rename');
+    $('[data-action="copy"] span').textContent = t('copy');
+    $('[data-action="move"] span').textContent = t('move');
+    $('[data-action="delete"] span').textContent = t('delete');
+
+    // Tooltips
+    $('#theme-toggle').title = t('toggleTheme');
+    $('#share-btn').title = t('shareConfig');
+    $('#settings-btn').title = t('settings');
+    $('#preview-download').title = t('download');
+    $('#preview-close').title = t('close');
+  }
+
+  async #connectAndLoad() {
+    try {
+      this.#r2.init(this.#config);
+      this.#explorer = new FileExplorer(this.#r2, this.#ui);
+      this.#upload = new UploadManager(this.#r2, this.#ui, this.#explorer, this.#config);
+      this.#preview = new FilePreview(this.#r2, this.#ui);
+      this.#ops = new FileOperations(this.#r2, this.#ui, this.#explorer);
+
+      // Apply theme from config
+      const cfg = this.#config.get();
+      if (cfg.theme) {
+        this.#ui.setTheme(cfg.theme);
+      }
+
+      $('#app').hidden = false;
+      if (!this.#appEventsBound) {
+        this.#upload.initDragDrop();
+        this.#bindAppEvents();
+        this.#appEventsBound = true;
+      }
+      await this.#explorer.navigate('');
+    } catch (err) {
+      if (err.message === 'AUTH_FAILED') {
+        this.#config.clear();
+        this.#showConfigDialog();
+      }
+    }
+  }
+
+  #showConfigDialog() {
+    const dialog = $('#config-dialog');
+    const form = $('#config-form');
+
+    // Pre-fill with existing config
+    const cfg = this.#config.get();
+    const accountInput = $('#cfg-account-id');
+    const accessInput = $('#cfg-access-key');
+    const secretInput = $('#cfg-secret-key');
+    const bucketInput = $('#cfg-bucket');
+    const tplInput = $('#cfg-filename-tpl');
+    const langSelect = $('#cfg-lang');
+    const themeSelect = $('#cfg-theme');
+
+    if (cfg.accountId) accountInput.value = cfg.accountId;
+    if (cfg.accessKeyId) accessInput.value = cfg.accessKeyId;
+    if (cfg.secretAccessKey) secretInput.value = cfg.secretAccessKey;
+    if (cfg.bucket) bucketInput.value = cfg.bucket;
+    if (cfg.filenameTpl) tplInput.value = cfg.filenameTpl;
+    if (langSelect) langSelect.value = currentLang;
+    if (themeSelect) themeSelect.value = document.documentElement.getAttribute('data-theme') || 'light';
+
+    // Prevent dismiss without valid config
+    dialog.addEventListener('cancel', (e) => {
+      if (!this.#config.isValid()) e.preventDefault();
+    });
+
+    const onCancel = () => {
+      if (this.#config.isValid()) dialog.close();
+    };
+    $('#config-cancel').onclick = onCancel;
+
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+
+      // Handle language change
+      if (langSelect && langSelect.value !== currentLang) {
+        setLang(langSelect.value);
+      }
+
+      // Handle theme change
+      const newTheme = themeSelect ? themeSelect.value : null;
+      if (newTheme) {
+        this.#ui.setTheme(newTheme);
+      }
+
+      this.#config.save({
+        accountId: accountInput.value.trim(),
+        accessKeyId: accessInput.value.trim(),
+        secretAccessKey: secretInput.value.trim(),
+        bucket: bucketInput.value.trim(),
+        filenameTpl: tplInput ? tplInput.value.trim() : '',
+        theme: newTheme || 'light',
+      });
+
+      dialog.close();
+      this.#applyI18nToHTML();
+      await this.#connectAndLoad();
+    };
+
+    dialog.showModal();
+  }
+
+  #bindGlobalEvents() {
+    // Theme toggle
+    $('#theme-toggle').addEventListener('click', () => this.#ui.toggleTheme());
+
+    // Settings
+    $('#settings-btn').addEventListener('click', () => this.#showConfigDialog());
+
+    // Share config
+    $('#share-btn').addEventListener('click', async () => {
+      if (!this.#config.isValid()) {
+        this.#ui.toast(t('authFailed'), 'error');
+        return;
+      }
+      const url = this.#config.getShareUrl();
+      try {
+        await navigator.clipboard.writeText(url);
+        this.#ui.toast(t('shareConfigCopied'), 'success');
+      } catch {
+        // Fallback: prompt with URL
+        await this.#ui.prompt(t('shareConfig'), 'URL', url);
+      }
+    });
+
+    // Dismiss context menu
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.context-menu') && !e.target.closest('.file-card-menu')) {
+        this.#ui.hideContextMenu();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        this.#ui.hideContextMenu();
+      }
+    });
+  }
+
+  #bindAppEvents() {
+    // Breadcrumb clicks
+    $('#breadcrumb').addEventListener('click', (e) => {
+      const btn = e.target.closest('.breadcrumb-btn');
+      if (btn) {
+        this.#explorer.navigate(btn.dataset.prefix);
+      }
+    });
+
+    // File grid clicks
+    $('#file-grid').addEventListener('click', (e) => {
+      // Menu button
+      const menuBtn = e.target.closest('.file-card-menu');
+      if (menuBtn) {
+        e.stopPropagation();
+        const card = menuBtn.closest('.file-card');
+        const rect = menuBtn.getBoundingClientRect();
+        this.#ui.showContextMenu(rect.right, rect.bottom, card.dataset.key, card.dataset.isFolder === 'true');
+        return;
+      }
+
+      // Card click
+      const card = e.target.closest('.file-card');
+      if (card) {
+        if (card.dataset.isFolder === 'true') {
+          this.#explorer.navigate(card.dataset.key);
+        } else {
+          this.#preview.preview(card.dataset.key);
+        }
+      }
+    });
+
+    // Right-click context menu
+    $('#file-grid').addEventListener('contextmenu', (e) => {
+      const card = e.target.closest('.file-card');
+      if (card) {
+        e.preventDefault();
+        this.#ui.showContextMenu(e.clientX, e.clientY, card.dataset.key, card.dataset.isFolder === 'true');
+      }
+    });
+
+    // Context menu actions
+    $('#context-menu').addEventListener('click', (e) => {
+      const item = e.target.closest('.context-menu-item');
+      if (!item) return;
+
+      const menu = $('#context-menu');
+      const key = menu.dataset.key;
+      const isFolder = menu.dataset.isFolder === 'true';
+      const action = item.dataset.action;
+
+      this.#ui.hideContextMenu();
+
+      switch (action) {
+        case 'preview': this.#preview.preview(key); break;
+        case 'download': this.#ops.download(key); break;
+        case 'rename': this.#ops.rename(key, isFolder); break;
+        case 'copy': this.#ops.copy(key, isFolder); break;
+        case 'move': this.#ops.move(key, isFolder); break;
+        case 'delete': this.#ops.delete(key, isFolder); break;
+      }
+    });
+
+    // Upload button
+    const fileInput = $('#file-input');
+    $('#upload-btn').addEventListener('click', () => fileInput.click());
+    $('#empty-upload-btn').addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) {
+        this.#upload.uploadFiles([...fileInput.files]);
+        fileInput.value = '';
+      }
+    });
+
+    // New folder
+    $('#new-folder-btn').addEventListener('click', async () => {
+      const name = await this.#ui.prompt(t('newFolderTitle'), t('newFolderLabel'));
+      if (!name) return;
+      try {
+        const key = this.#explorer.currentPrefix + name;
+        await this.#r2.createFolder(key);
+        this.#ui.toast(t('folderCreated', { name }), 'success');
+        await this.#explorer.refresh();
+      } catch (err) {
+        this.#ui.toast(t('networkError', { msg: err.message }), 'error');
+      }
+    });
+
+    // Load more
+    $('#load-more-btn').addEventListener('click', () => this.#explorer.loadMore());
+
+    // Preview close
+    $('#preview-close').addEventListener('click', () => $('#preview-dialog').close());
+    $('#preview-download').addEventListener('click', () => this.#preview.downloadCurrent());
+
+    // Upload panel close
+    $('#upload-panel-close').addEventListener('click', () => {
+      $('#upload-panel').hidden = true;
+    });
+
+    // Sort select change in toolbar
+    $('#sort-select').addEventListener('change', (e) => {
+      const value = e.target.value;
+      if (this.#explorer) {
+        this.#explorer.setSortBy(value);
+      }
+      // Save preference
+      const cfg = this.#config.get();
+      cfg.sort = value;
+      this.#config.save(cfg);
+    });
+  }
+}
+
+// --- Boot ---
+new App();
