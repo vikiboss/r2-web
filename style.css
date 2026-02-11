@@ -166,6 +166,12 @@
     }
   }
 
+  .topbar-logo {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+  }
+
   .toolbar {
     display: flex;
     align-items: center;
@@ -187,12 +193,37 @@
   .file-browser {
     padding: var(--sp-4);
     overflow-y: auto;
+
+    /* Density tokens */
+    --fb-grid-min: 160px;
+    --fb-gap: var(--sp-3);
+    --fb-pad: var(--sp-3);
+    --fb-icon: 40px;
+    --fb-name: var(--text-sm);
+
+    &[data-density="compact"] {
+      --fb-grid-min: 120px;
+      --fb-gap: var(--sp-2);
+      --fb-pad: var(--sp-2);
+      --fb-icon: 32px;
+      --fb-name: var(--text-xs);
+    }
+
+    &[data-density="loose"] {
+      --fb-grid-min: 200px;
+      --fb-gap: var(--sp-4);
+      --fb-pad: var(--sp-4);
+      --fb-icon: 48px;
+      --fb-name: var(--text-base);
+    }
   }
 
   .file-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: var(--sp-3);
+    grid-template-columns: repeat(auto-fill, minmax(var(--fb-grid-min), 1fr));
+    gap: var(--fb-gap);
+
+    [data-view="list"] > & { grid-template-columns: 1fr; }
 
     @media (width <= 640px) {
       grid-template-columns: 1fr;
@@ -384,8 +415,9 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: var(--sp-2);
-    padding: var(--sp-3);
+    padding: var(--fb-pad);
     border-radius: var(--radius-lg);
     cursor: pointer;
     transition: background var(--duration-fast);
@@ -395,23 +427,45 @@
     &:hover { background: var(--bg-hover); }
     &:active { background: var(--bg-active); }
     &:hover .file-card-actions { opacity: 1; }
+  }
 
-    @media (width <= 640px) {
+  /* List view card */
+  [data-view="list"] .file-card {
+    flex-direction: row;
+    justify-content: flex-start;
+    min-height: unset;
+    border-radius: var(--radius-sm);
+    gap: var(--sp-3);
+
+    & .file-card-icon,
+    & .file-card-thumb { flex-shrink: 0; }
+    & .file-card-thumb { width: var(--fb-icon); height: var(--fb-icon); }
+    & .file-card-name { flex: 1; min-width: 0; text-align: left; -webkit-line-clamp: 1; line-clamp: 1; }
+    & .file-card-size { flex-shrink: 0; width: 72px; text-align: right; }
+    & .file-card-date { display: block; flex-shrink: 0; width: 140px; text-align: right; }
+    & .file-card-actions { position: static; opacity: 1; }
+  }
+
+  /* Grid view mobile → collapse to rows */
+  @media (width <= 640px) {
+    [data-view="grid"] .file-card {
       flex-direction: row;
       min-height: unset;
-      padding: var(--sp-2) var(--sp-3);
+      justify-content: flex-start;
 
       & .file-card-icon { width: 28px; height: 28px; flex-shrink: 0; }
-      & .file-card-name { text-align: left; line-clamp: 1; }
-      & .file-card-meta { display: none; }
+      & .file-card-name { text-align: left; -webkit-line-clamp: 1; line-clamp: 1; }
+      & .file-card-size { display: none; }
       & .file-card-actions { opacity: 1; position: static; }
       & .file-card-thumb { width: 40px; aspect-ratio: 1; flex-shrink: 0; }
     }
+
+    [data-view="list"] .file-card .file-card-date { display: none; }
   }
 
   .file-card-icon {
-    width: 40px;
-    height: 40px;
+    width: var(--fb-icon);
+    height: var(--fb-icon);
     color: var(--text-tertiary);
     display: flex;
     align-items: center;
@@ -430,7 +484,7 @@
   }
 
   .file-card-name {
-    font-size: var(--text-sm);
+    font-size: var(--fb-name);
     text-align: center;
     word-break: break-all;
     display: -webkit-box;
@@ -441,10 +495,13 @@
     width: 100%;
   }
 
-  .file-card-meta {
+  .file-card-size,
+  .file-card-date {
     font-size: var(--text-xs);
     color: var(--text-tertiary);
   }
+
+  .file-card-date { display: none; }
 
   .file-card-actions {
     position: absolute;
@@ -453,6 +510,24 @@
     opacity: 0;
     transition: opacity var(--duration-fast);
   }
+
+  /* Button Group (view toggle) */
+  .btn-group {
+    display: inline-flex;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+
+    & > .icon-btn {
+      border-radius: 0;
+
+      &:first-child { border-radius: var(--radius-sm) 0 0 var(--radius-sm); }
+      &:last-child { border-radius: 0 var(--radius-sm) var(--radius-sm) 0; }
+      &[aria-pressed="true"] { background: var(--bg-active); color: var(--text-primary); }
+    }
+  }
+
+  /* List view skeleton */
+  [data-view="list"] .skeleton-card { min-height: 40px; }
 
   /* Toast */
   .toast-container {

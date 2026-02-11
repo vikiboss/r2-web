@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
   <title>R2 Manager</title>
+  <link rel="icon" href="favicon.ico" sizes="any">
   <link rel="preconnect" href="https://esm.sh">
   <link rel="preconnect" href="https://r2.cloudflarestorage.com">
   <link rel="stylesheet" href="style.css">
@@ -93,7 +94,7 @@
     <!-- Topbar -->
     <header class="topbar">
       <div class="flex items-center" style="gap:8px">
-        <svg class="icon icon-lg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+        <img src="favicon.ico" alt="" class="topbar-logo">
         <h1 class="topbar-title">R2 Manager</h1>
       </div>
       <div class="flex items-center" style="gap:4px">
@@ -118,6 +119,19 @@
         </ol>
       </nav>
       <div class="flex items-center" style="gap:8px">
+        <div class="btn-group">
+          <button type="button" class="icon-btn sm" id="view-grid-btn" aria-pressed="true" title="网格">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </button>
+          <button type="button" class="icon-btn sm" id="view-list-btn" aria-pressed="false" title="列表">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+          </button>
+        </div>
+        <select id="density-select" class="toolbar-select" title="密度">
+          <option value="compact">紧凑</option>
+          <option value="normal" selected>正常</option>
+          <option value="loose">宽松</option>
+        </select>
         <select id="sort-select" class="toolbar-select" title="Sort">
           <option value="name">A-Z</option>
           <option value="date">Date</option>
@@ -154,7 +168,7 @@
     </div>
 
     <!-- File Browser -->
-    <main class="file-browser" id="file-browser">
+    <main class="file-browser" id="file-browser" data-view="grid" data-density="normal">
       <div class="file-grid" id="skeleton-grid" hidden>
         <div class="skeleton-card"></div>
         <div class="skeleton-card"></div>

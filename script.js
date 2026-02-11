@@ -9,6 +9,8 @@ import dayjs from 'dayjs';
 const STORAGE_KEY = 'r2-manager-config';
 const THEME_KEY = 'r2-manager-theme';
 const LANG_KEY = 'r2-manager-lang';
+const VIEW_KEY = 'r2-manager-view';
+const DENSITY_KEY = 'r2-manager-density';
 const PAGE_SIZE = 100;
 const TOAST_DURATION = 3000;
 const MAX_UPLOAD_SIZE = 5 * 1024 * 1024 * 1024; // 5GB
@@ -91,6 +93,11 @@ const I18N = {
     sortName: '按名称',
     sortDate: '按日期',
     sortSize: '按大小',
+    viewGrid: '网格',
+    viewList: '列表',
+    densityCompact: '紧凑',
+    densityNormal: '正常',
+    densityLoose: '宽松',
   },
   en: {
     appTitle: 'R2 Manager',
@@ -162,6 +169,11 @@ const I18N = {
     sortName: 'By Name',
     sortDate: 'By Date',
     sortSize: 'By Size',
+    viewGrid: 'Grid',
+    viewList: 'List',
+    densityCompact: 'Compact',
+    densityNormal: 'Normal',
+    densityLoose: 'Loose',
   },
   ja: {
     appTitle: 'R2 マネージャー',
@@ -233,6 +245,11 @@ const I18N = {
     sortName: '名前順',
     sortDate: '日付順',
     sortSize: 'サイズ順',
+    viewGrid: 'グリッド',
+    viewList: 'リスト',
+    densityCompact: 'コンパクト',
+    densityNormal: '標準',
+    densityLoose: 'ゆったり',
   },
 };
 
@@ -823,7 +840,10 @@ class FileExplorer {
     card.innerHTML = `
       ${iconHtml}
       <span class="file-card-name" title="${name}">${name}</span>
-      ${!item.isFolder ? `<span class="file-card-meta">${formatBytes(item.size)}</span>` : ''}
+      ${!item.isFolder ? `
+        <span class="file-card-size">${formatBytes(item.size)}</span>
+        <span class="file-card-date">${formatDate(item.lastModified)}</span>
+      ` : ''}
       <div class="file-card-actions">
         <button type="button" class="icon-btn sm file-card-menu" title="More">
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg>
@@ -1339,6 +1359,16 @@ class App {
       if (sizeOpt) sizeOpt.textContent = t('sortSize');
     }
 
+    // View & density
+    $('#view-grid-btn').title = t('viewGrid');
+    $('#view-list-btn').title = t('viewList');
+    const densitySelect = $('#density-select');
+    if (densitySelect) {
+      $('option[value="compact"]', densitySelect).textContent = t('densityCompact');
+      $('option[value="normal"]', densitySelect).textContent = t('densityNormal');
+      $('option[value="loose"]', densitySelect).textContent = t('densityLoose');
+    }
+
     // Toolbar buttons
     $('#new-folder-btn span').textContent = t('newFolder');
     $('#upload-btn span').textContent = t('upload');
@@ -1384,6 +1414,7 @@ class App {
       }
 
       $('#app').hidden = false;
+      this.#restoreViewPrefs();
       if (!this.#appEventsBound) {
         this.#upload.initDragDrop();
         this.#bindAppEvents();
@@ -1396,6 +1427,26 @@ class App {
         this.#showConfigDialog();
       }
     }
+  }
+
+  #restoreViewPrefs() {
+    const view = localStorage.getItem(VIEW_KEY) || 'grid';
+    const density = localStorage.getItem(DENSITY_KEY) || 'normal';
+    this.#setView(view);
+    this.#setDensity(density);
+  }
+
+  #setView(view) {
+    $('#file-browser').dataset.view = view;
+    $('#view-grid-btn').setAttribute('aria-pressed', String(view === 'grid'));
+    $('#view-list-btn').setAttribute('aria-pressed', String(view === 'list'));
+    localStorage.setItem(VIEW_KEY, view);
+  }
+
+  #setDensity(density) {
+    $('#file-browser').dataset.density = density;
+    $('#density-select').value = density;
+    localStorage.setItem(DENSITY_KEY, density);
   }
 
   #showConfigDialog() {
@@ -1599,17 +1650,17 @@ class App {
       $('#upload-panel').hidden = true;
     });
 
-    // Sort select change in toolbar
+    // Sort select
     $('#sort-select').addEventListener('change', (e) => {
-      const value = e.target.value;
-      if (this.#explorer) {
-        this.#explorer.setSortBy(value);
-      }
-      // Save preference
-      const cfg = this.#config.get();
-      cfg.sort = value;
-      this.#config.save(cfg);
+      if (this.#explorer) this.#explorer.setSortBy(e.target.value);
     });
+
+    // View toggle
+    $('#view-grid-btn').addEventListener('click', () => this.#setView('grid'));
+    $('#view-list-btn').addEventListener('click', () => this.#setView('list'));
+
+    // Density select
+    $('#density-select').addEventListener('change', (e) => this.#setDensity(e.target.value));
   }
 }
 
