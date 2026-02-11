@@ -38,6 +38,9 @@ const I18N = {
     newFolder: '新建文件夹',
     upload: '上传',
     dropToUpload: '拖放文件到此处上传',
+    pasteToUpload: '已从剪贴板粘贴 {count} 个文件',
+    uploadHint: '拖放、粘贴或点击上传',
+    pasteHint: '粘贴文件到当前目录',
     uploading: '上传中...',
     root: '根目录',
     emptyFolder: '该文件夹为空',
@@ -63,6 +66,11 @@ const I18N = {
     newFolderTitle: '新建文件夹',
     newFolderLabel: '文件夹名称',
     authFailed: '认证失败，请检查凭据',
+    customDomain: '自定义域名',
+    customDomainHint: '可选，用于生成文件的公开访问链接',
+    copyLink: '复制链接',
+    linkCopied: '链接已复制到剪贴板',
+    noDomain: '未配置自定义域名，请在设置中添加',
     corsError: 'CORS 未配置。请在 Cloudflare 仪表盘 → R2 → 存储桶设置中添加 CORS 规则，允许当前域名的 GET/PUT/DELETE/HEAD 请求。',
     networkError: '网络错误: {msg}',
     uploadSuccess: '已成功上传 {count} 个文件',
@@ -114,6 +122,9 @@ const I18N = {
     newFolder: 'New Folder',
     upload: 'Upload',
     dropToUpload: 'Drop files to upload',
+    pasteToUpload: 'Pasted {count} file(s) from clipboard',
+    uploadHint: 'Drag, paste, or click to upload',
+    pasteHint: 'paste files to current directory',
     uploading: 'Uploading...',
     root: 'Root',
     emptyFolder: 'This folder is empty',
@@ -139,6 +150,11 @@ const I18N = {
     newFolderTitle: 'New Folder',
     newFolderLabel: 'Folder name',
     authFailed: 'Authentication failed. Check credentials.',
+    customDomain: 'Custom Domain',
+    customDomainHint: 'Optional. Used to generate public file URLs.',
+    copyLink: 'Copy Link',
+    linkCopied: 'Link copied to clipboard',
+    noDomain: 'No custom domain configured. Add one in Settings.',
     corsError: 'CORS not configured. Go to Cloudflare Dashboard → R2 → Bucket Settings and add a CORS rule allowing GET/PUT/DELETE/HEAD from your origin.',
     networkError: 'Network error: {msg}',
     uploadSuccess: 'Successfully uploaded {count} file(s)',
@@ -190,6 +206,9 @@ const I18N = {
     newFolder: '新規フォルダ',
     upload: 'アップロード',
     dropToUpload: 'ファイルをドロップしてアップロード',
+    pasteToUpload: 'クリップボードから {count} 個のファイルを貼り付けました',
+    uploadHint: 'ドラッグ、貼り付け、またはクリックでアップロード',
+    pasteHint: '現在のディレクトリにファイルを貼り付け',
     uploading: 'アップロード中...',
     root: 'ルート',
     emptyFolder: 'このフォルダは空です',
@@ -215,6 +234,11 @@ const I18N = {
     newFolderTitle: '新規フォルダ',
     newFolderLabel: 'フォルダ名',
     authFailed: '認証に失敗しました。認証情報を確認してください。',
+    customDomain: 'カスタムドメイン',
+    customDomainHint: '任意。ファイルの公開URLを生成するために使用します。',
+    copyLink: 'リンクをコピー',
+    linkCopied: 'リンクをクリップボードにコピーしました',
+    noDomain: 'カスタムドメインが設定されていません。設定で追加してください。',
     corsError: 'CORS が設定されていません。Cloudflare ダッシュボード → R2 → バケット設定で、現在のオリジンからの GET/PUT/DELETE/HEAD を許可する CORS ルールを追加してください。',
     networkError: 'ネットワークエラー: {msg}',
     uploadSuccess: '{count} 個のファイルをアップロードしました',
@@ -609,11 +633,13 @@ class UIManager {
     menu.dataset.key = key;
     menu.dataset.isFolder = isFolder;
 
-    // Hide preview/download for folders
+    // Hide preview/download/copyLink for folders
     const previewBtn = $('[data-action="preview"]', menu);
     const downloadBtn = $('[data-action="download"]', menu);
+    const copyLinkBtn = $('[data-action="copyLink"]', menu);
     previewBtn.hidden = isFolder;
     downloadBtn.hidden = isFolder;
+    copyLinkBtn.hidden = isFolder;
 
     // Position before showing so getBoundingClientRect works after popover opens
     menu.style.left = x + 'px';
@@ -939,6 +965,25 @@ class UploadManager {
       const files = [...e.dataTransfer.files];
       if (files.length > 0) this.uploadFiles(files);
     });
+
+    // Ctrl+V / Cmd+V paste upload
+    document.addEventListener('paste', (e) => {
+      // Ignore paste inside input/textarea/contenteditable
+      const tag = e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return;
+
+      const items = [...(e.clipboardData?.items || [])];
+      const files = items
+        .filter(item => item.kind === 'file')
+        .map(item => item.getAsFile())
+        .filter(Boolean);
+
+      if (files.length > 0) {
+        e.preventDefault();
+        this.#ui.toast(t('pasteToUpload', { count: files.length }), 'info');
+        this.uploadFiles(files);
+      }
+    });
   }
 
   async uploadFiles(files) {
@@ -1118,11 +1163,13 @@ class FileOperations {
   #r2;
   #ui;
   #explorer;
+  #config;
 
-  constructor(r2, ui, explorer) {
+  constructor(r2, ui, explorer, config) {
     this.#r2 = r2;
     this.#ui = ui;
     this.#explorer = explorer;
+    this.#config = config;
   }
 
   async rename(key, isFolder) {
@@ -1237,6 +1284,21 @@ class FileOperations {
     }
   }
 
+  async copyLink(key) {
+    const cfg = this.#config.get();
+    if (!cfg.customDomain) {
+      this.#ui.toast(t('noDomain'), 'error');
+      return;
+    }
+    const url = `${cfg.customDomain}/${key}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      this.#ui.toast(t('linkCopied'), 'success');
+    } catch {
+      await this.#ui.prompt(t('copyLink'), 'URL', url);
+    }
+  }
+
   async #recursiveOperation(prefix, operation, deleteSource) {
     // List all objects under prefix
     const allKeys = await this.#collectAllKeys(prefix);
@@ -1338,6 +1400,8 @@ class App {
     $('#lbl-access-key').textContent = t('accessKeyId');
     $('#lbl-secret-key').textContent = t('secretAccessKey');
     $('#lbl-bucket').textContent = t('bucketName');
+    $('#lbl-custom-domain').textContent = t('customDomain');
+    $('#custom-domain-hint').textContent = t('customDomainHint');
     $('#config-section-prefs').textContent = t('preferences');
     $('#lbl-theme').textContent = t('theme');
     $('#opt-theme-light').textContent = t('themeLight');
@@ -1374,11 +1438,13 @@ class App {
     $('#upload-btn span').textContent = t('upload');
 
     // Dropzone
-    $('#dropzone .dropzone-inner p').textContent = t('dropToUpload');
+    $('#dropzone-text').textContent = t('dropToUpload');
 
     // Empty state
     $('#empty-state p').textContent = t('emptyFolder');
     $('#empty-upload-btn').lastChild.textContent = ' ' + t('uploadFiles');
+    $('#empty-upload-hint').textContent = t('uploadHint');
+    $('#paste-hint-text').textContent = t('pasteHint');
 
     // Load more
     $('#load-more-btn').textContent = t('loadMore');
@@ -1386,6 +1452,7 @@ class App {
     // Context menu — target the span inside each item
     $('[data-action="preview"] span').textContent = t('preview');
     $('[data-action="download"] span').textContent = t('download');
+    $('[data-action="copyLink"] span').textContent = t('copyLink');
     $('[data-action="rename"] span').textContent = t('rename');
     $('[data-action="copy"] span').textContent = t('copy');
     $('[data-action="move"] span').textContent = t('move');
@@ -1397,6 +1464,14 @@ class App {
     $('#settings-btn').title = t('settings');
     $('#preview-download').title = t('download');
     $('#preview-close').title = t('close');
+
+    // Prompt dialog
+    $('#prompt-cancel').textContent = t('cancel');
+    $('#prompt-ok').textContent = t('ok');
+
+    // Confirm dialog
+    $('#confirm-cancel').textContent = t('cancel');
+    $('#confirm-ok').textContent = t('confirm');
   }
 
   async #connectAndLoad() {
@@ -1405,7 +1480,7 @@ class App {
       this.#explorer = new FileExplorer(this.#r2, this.#ui);
       this.#upload = new UploadManager(this.#r2, this.#ui, this.#explorer, this.#config);
       this.#preview = new FilePreview(this.#r2, this.#ui);
-      this.#ops = new FileOperations(this.#r2, this.#ui, this.#explorer);
+      this.#ops = new FileOperations(this.#r2, this.#ui, this.#explorer, this.#config);
 
       // Apply theme from config
       const cfg = this.#config.get();
@@ -1460,6 +1535,7 @@ class App {
     const secretInput = $('#cfg-secret-key');
     const bucketInput = $('#cfg-bucket');
     const tplInput = $('#cfg-filename-tpl');
+    const domainInput = $('#cfg-custom-domain');
     const langSelect = $('#cfg-lang');
     const themeSelect = $('#cfg-theme');
 
@@ -1468,6 +1544,7 @@ class App {
     if (cfg.secretAccessKey) secretInput.value = cfg.secretAccessKey;
     if (cfg.bucket) bucketInput.value = cfg.bucket;
     if (cfg.filenameTpl) tplInput.value = cfg.filenameTpl;
+    if (cfg.customDomain) domainInput.value = cfg.customDomain;
     if (langSelect) langSelect.value = currentLang;
     if (themeSelect) themeSelect.value = document.documentElement.getAttribute('data-theme') || 'light';
 
@@ -1501,6 +1578,7 @@ class App {
         secretAccessKey: secretInput.value.trim(),
         bucket: bucketInput.value.trim(),
         filenameTpl: tplInput ? tplInput.value.trim() : '',
+        customDomain: domainInput ? domainInput.value.trim().replace(/\/+$/, '') : '',
         theme: newTheme || 'light',
       });
 
@@ -1605,6 +1683,7 @@ class App {
       switch (action) {
         case 'preview': this.#preview.preview(key); break;
         case 'download': this.#ops.download(key); break;
+        case 'copyLink': this.#ops.copyLink(key); break;
         case 'rename': this.#ops.rename(key, isFolder); break;
         case 'copy': this.#ops.copy(key, isFolder); break;
         case 'move': this.#ops.move(key, isFolder); break;

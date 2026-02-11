@@ -45,6 +45,12 @@
           <label for="cfg-bucket" id="lbl-bucket">Bucket Name</label>
           <input id="cfg-bucket" name="bucket" type="text" required autocomplete="off">
         </div>
+        <div class="field">
+          <label for="cfg-custom-domain" id="lbl-custom-domain">自定义域名</label>
+          <input id="cfg-custom-domain" name="customDomain" type="text" autocomplete="off"
+                 placeholder="https://cdn.example.com">
+          <small class="text-secondary" id="custom-domain-hint">可选，用于生成文件的公开访问链接</small>
+        </div>
       </div>
 
       <!-- Preferences -->
@@ -152,7 +158,7 @@
     <div class="dropzone" id="dropzone" hidden>
       <div class="dropzone-inner">
         <svg class="icon icon-xl" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        <p>Drop files to upload</p>
+        <p id="dropzone-text">Drop files to upload</p>
       </div>
     </div>
 
@@ -186,10 +192,14 @@
           <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
           Upload Files
         </button>
+        <small class="text-secondary" id="empty-upload-hint">拖放、粘贴或点击上传</small>
       </div>
       <div class="file-grid" id="file-grid"></div>
       <div class="load-more" id="load-more" hidden>
         <button type="button" class="btn secondary sm" id="load-more-btn">Load More</button>
+      </div>
+      <div class="paste-hint" id="paste-hint">
+        <kbd>Ctrl</kbd> + <kbd>V</kbd> <span id="paste-hint-text">粘贴文件到当前目录</span>
       </div>
     </main>
   </div>
@@ -221,6 +231,10 @@
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       <span>Download</span>
     </button>
+    <button type="button" class="context-menu-item" data-action="copyLink">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+      <span>复制链接</span>
+    </button>
     <div class="context-menu-sep"></div>
     <button type="button" class="context-menu-item" data-action="rename">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
@@ -251,7 +265,7 @@
       </div>
       <div class="flex" style="justify-content:flex-end;gap:8px;margin-top:16px">
         <button type="button" class="btn secondary" id="prompt-cancel">Cancel</button>
-        <button type="submit" class="btn primary">OK</button>
+        <button type="submit" class="btn primary" id="prompt-ok">OK</button>
       </div>
     </form>
   </dialog>
@@ -263,7 +277,7 @@
       <p id="confirm-message" class="text-secondary"></p>
       <div class="flex" style="justify-content:flex-end;gap:8px;margin-top:16px">
         <button type="button" class="btn secondary" id="confirm-cancel">Cancel</button>
-        <button type="submit" class="btn danger">Confirm</button>
+        <button type="submit" class="btn danger" id="confirm-ok">Confirm</button>
       </div>
     </form>
   </dialog>
