@@ -52,6 +52,7 @@
     --radius-md: 6px;
     --radius-lg: 8px;
     --radius-xl: 12px;
+    --radius-full: 9999px;
 
     /* Accent */
     --accent: #F6821F;
@@ -588,16 +589,15 @@
   }
 
   .toast {
+    --_clr: var(--accent);
     display: flex;
     align-items: center;
     gap: var(--sp-2);
-    padding: var(--sp-3) var(--sp-4);
-    padding-left: var(--sp-3);
-    background: color-mix(in oklch, var(--bg-primary) 92%, transparent);
+    padding: var(--sp-2) var(--sp-3);
+    background: color-mix(in oklch, var(--_clr) 8%, var(--bg-primary) 90%);
     backdrop-filter: blur(16px) saturate(180%);
     -webkit-backdrop-filter: blur(16px) saturate(180%);
-    border: 1px solid var(--border-subtle);
-    border-left: 3px solid var(--text-tertiary);
+    border: 1px solid color-mix(in oklch, var(--_clr) 15%, transparent);
     border-radius: var(--radius-lg);
     font-size: var(--text-sm);
     color: var(--text-primary);
@@ -611,22 +611,14 @@
 
     & .toast-icon {
       flex-shrink: 0;
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
+      color: var(--_clr);
     }
 
-    &.success {
-      border-left-color: #4caf50;
-      & .toast-icon { color: #4caf50; }
-    }
-    &.error {
-      border-left-color: var(--text-danger);
-      & .toast-icon { color: var(--text-danger); }
-    }
-    &.info {
-      border-left-color: var(--accent);
-      & .toast-icon { color: var(--accent); }
-    }
+    &.success { --_clr: #4caf50; }
+    &.error { --_clr: var(--text-danger); }
+    &.info { --_clr: var(--accent); }
     &.removing { animation: toast-out var(--duration-normal) var(--ease-out) forwards; }
   }
 
