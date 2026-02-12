@@ -881,12 +881,8 @@
     gap: var(--sp-1);
     font-size: var(--text-xs);
     color: var(--text-tertiary);
-    opacity: 0.5;
-    transition: opacity var(--duration-normal);
     pointer-events: none;
     z-index: 1;
-
-    &:hover { opacity: 0.8; }
 
     & kbd {
       display: inline-block;

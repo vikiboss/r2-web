@@ -27,25 +27,25 @@ const I18N = {
   zh: {
     appTitle: 'R2 Web 文件管理器',
     connectTitle: '连接到 R2',
-    connectDesc: '输入你的 Cloudflare R2 凭据。所有数据仅存储在浏览器本地，不会上传至任何服务器。',
+    connectDesc: '填写你的 R2 凭据即可开始，放心，数据只留在你的浏览器里。',
     accountId: '账户 ID（Account ID）',
     accessKeyId: '访问密钥 ID（Access Key ID）',
     secretAccessKey: '秘密访问密钥（Secret Access Key）',
     bucketName: '存储桶名称（Bucket Name）',
     filenameTpl: '文件名模板（Filename Template）',
     filenameTplHint:
-      '占位符: [name] 原始名, [ext] 扩展名, [hash:N] 内容哈希, [date:FORMAT] 日期格式, [timestamp] 时间戳, [uuid] UUID, / 目录分隔',
+      '占位符: [name] 原始名, [ext] 扩展名, [hash:N] 哈希, [date:FORMAT] 日期, [timestamp] 时间戳, [uuid], / 目录',
     cancel: '取消',
     connect: '连接',
     newFolder: '新建文件夹',
     upload: '上传',
-    dropToUpload: '拖放文件到此处上传',
-    pasteToUpload: '已从剪贴板粘贴 {count} 个文件',
-    uploadHint: '拖放、粘贴或点击上传',
+    dropToUpload: '松手即可上传',
+    pasteToUpload: '已粘贴 {count} 个文件',
+    uploadHint: '拖放、粘贴或点击即可上传',
     pasteHint: '粘贴文件到当前目录',
-    uploading: '上传中...',
+    uploading: '正在上传...',
     root: '根目录',
-    emptyFolder: '该文件夹为空',
+    emptyFolder: '这里空空的，上传点什么吧',
     uploadFiles: '上传文件',
     loadMore: '加载更多',
     preview: '预览',
@@ -55,10 +55,10 @@ const I18N = {
     move: '移动',
     delete: '删除',
     confirm: '确认',
-    ok: '确定',
+    ok: '好的',
     deleteConfirmTitle: '删除确认',
-    deleteConfirmMsg: '确定要删除 "{name}" 吗？此操作不可撤销。',
-    deleteFolderConfirmMsg: '确定要删除文件夹 "{name}" 及其所有内容吗？此操作不可撤销。',
+    deleteConfirmMsg: '确定要删除 "{name}" 吗？删除后无法恢复哦。',
+    deleteFolderConfirmMsg: '确定要删除文件夹 "{name}" 及其所有内容吗？删除后无法恢复哦。',
     renameTitle: '重命名',
     renameLabel: '新名称',
     copyTitle: '复制到',
@@ -67,24 +67,24 @@ const I18N = {
     moveLabel: '目标路径',
     newFolderTitle: '新建文件夹',
     newFolderLabel: '文件夹名称',
-    authFailed: '认证失败，请检查凭据',
+    authFailed: '连接失败了，检查一下凭据吧',
     customDomain: '自定义域名（Custom Domain）',
-    customDomainHint: '可选，配置后可生成文件的公开访问链接并一键复制',
+    customDomainHint: '可选，配置后可一键复制文件的公开链接',
     copyLink: '复制链接',
-    linkCopied: '链接已复制到剪贴板',
-    noDomain: '未配置自定义域名，请在设置中添加以启用链接复制',
+    linkCopied: '链接已复制好啦',
+    noDomain: '还没配置自定义域名，去设置里加一个吧',
     corsError:
-      'CORS 未配置。请在 Cloudflare 仪表盘 → R2 → 存储桶设置中添加 CORS 规则，允许当前域名的 GET/PUT/DELETE/HEAD 请求。',
-    networkError: '网络错误: {msg}',
-    uploadSuccess: '已成功上传 {count} 个文件',
-    uploadPartialFail: '{success} 个上传成功，{fail} 个失败',
-    fileTooLarge: '文件 "{name}" 超过 5GB 限制，请使用 rclone 等工具上传大文件',
-    deleteSuccess: '已删除 "{name}"',
+      'CORS 还没配置好。去 Cloudflare 仪表盘 → R2 → 存储桶设置添加 CORS 规则，允许当前域名的 GET/PUT/DELETE/HEAD 请求即可。',
+    networkError: '网络好像有点问题: {msg}',
+    uploadSuccess: '{count} 个文件上传成功',
+    uploadPartialFail: '{success} 个成功，{fail} 个没能上传',
+    fileTooLarge: '文件 "{name}" 太大了（超过 5GB），试试 rclone 等工具吧',
+    deleteSuccess: '"{name}" 已删除',
     renameSuccess: '已重命名为 "{name}"',
     copySuccess: '已复制到 "{name}"',
     moveSuccess: '已移动到 "{name}"',
-    folderCreated: '已创建文件夹 "{name}"',
-    previewNotAvailable: '此文件类型暂不支持预览',
+    folderCreated: '文件夹 "{name}" 创建好了',
+    previewNotAvailable: '这种文件类型暂时还不能预览',
     size: '大小',
     lastModified: '最后修改',
     contentType: '类型',
@@ -93,7 +93,7 @@ const I18N = {
     close: '关闭',
     shareConfig: '分享配置',
     shareConfigCopied: '分享链接已复制，含凭据请谨慎分享',
-    configLoadedFromUrl: '已从链接加载配置',
+    configLoadedFromUrl: '已从链接加载配置，开始使用吧',
     preferences: '偏好设置',
     uploadSettings: '上传设置',
     r2Connection: 'R2 连接',
@@ -110,8 +110,8 @@ const I18N = {
     densityNormal: '正常',
     densityLoose: '宽松',
     save: '保存',
-    heroDesc: '纯客户端的 Cloudflare R2 存储桶文件管理器。',
-    heroConnect: '连接到 R2',
+    heroDesc: '轻盈优雅的 R2 存储桶管理器，一切在浏览器中完成。',
+    heroConnect: '开始连接',
     heroF1: '简单优雅高效',
     heroF2: '纯本地客户端',
     heroF3: '目录文件管理',
@@ -123,30 +123,30 @@ const I18N = {
     refresh: '刷新',
     logout: '安全退出',
     logoutConfirmTitle: '安全退出',
-    logoutConfirmMsg: '退出后将清除浏览器中保存的所有凭据，存储桶内的文件不受影响。确定退出吗？',
+    logoutConfirmMsg: '退出后会清除浏览器中的凭据，存储桶里的文件不会受影响。确定退出吗？',
   },
   en: {
     appTitle: 'R2 Web File Manager',
     connectTitle: 'Connect to R2',
-    connectDesc: 'Enter your Cloudflare R2 credentials. All data is stored locally in your browser and never sent to any server.',
+    connectDesc: 'Enter your R2 credentials to get started. Everything stays safely in your browser.',
     accountId: 'Account ID',
     accessKeyId: 'Access Key ID',
     secretAccessKey: 'Secret Access Key',
     bucketName: 'Bucket Name',
     filenameTpl: 'Filename Template',
     filenameTplHint:
-      'Placeholders: [name] original, [ext] extension, [hash:N] content hash, [date:FORMAT] date, [timestamp] unix ts, [uuid] UUID, / = directory',
+      'Placeholders: [name] original, [ext] extension, [hash:N] hash, [date:FORMAT] date, [timestamp] ts, [uuid], / = directory',
     cancel: 'Cancel',
     connect: 'Connect',
     newFolder: 'New Folder',
     upload: 'Upload',
-    dropToUpload: 'Drop files to upload',
-    pasteToUpload: 'Pasted {count} file(s) from clipboard',
+    dropToUpload: 'Drop to upload',
+    pasteToUpload: 'Pasted {count} file(s)',
     uploadHint: 'Drag, paste, or click to upload',
-    pasteHint: 'paste files to current directory',
+    pasteHint: 'Paste files to current directory',
     uploading: 'Uploading...',
     root: 'Root',
-    emptyFolder: 'This folder is empty',
+    emptyFolder: 'Nothing here yet — upload something!',
     uploadFiles: 'Upload Files',
     loadMore: 'Load More',
     preview: 'Preview',
@@ -158,9 +158,9 @@ const I18N = {
     confirm: 'Confirm',
     ok: 'OK',
     deleteConfirmTitle: 'Delete Confirmation',
-    deleteConfirmMsg: 'Are you sure you want to delete "{name}"? This cannot be undone.',
+    deleteConfirmMsg: 'Delete "{name}"? This can\'t be undone.',
     deleteFolderConfirmMsg:
-      'Are you sure you want to delete folder "{name}" and all its contents? This cannot be undone.',
+      'Delete folder "{name}" and everything inside? This can\'t be undone.',
     renameTitle: 'Rename',
     renameLabel: 'New name',
     copyTitle: 'Copy to',
@@ -169,24 +169,24 @@ const I18N = {
     moveLabel: 'Destination path',
     newFolderTitle: 'New Folder',
     newFolderLabel: 'Folder name',
-    authFailed: 'Authentication failed. Check credentials.',
+    authFailed: 'Couldn\'t connect — double-check your credentials',
     customDomain: 'Custom Domain',
-    customDomainHint: 'Optional. Enables one-click public URL copying for files.',
+    customDomainHint: 'Optional. Enables one-click public URL copying.',
     copyLink: 'Copy Link',
-    linkCopied: 'Link copied to clipboard',
-    noDomain: 'No custom domain configured. Add one in Settings to enable link copying.',
+    linkCopied: 'Link copied!',
+    noDomain: 'No custom domain yet — add one in Settings to copy links',
     corsError:
-      'CORS not configured. Go to Cloudflare Dashboard → R2 → Bucket Settings and add a CORS rule allowing GET/PUT/DELETE/HEAD from your origin.',
-    networkError: 'Network error: {msg}',
-    uploadSuccess: 'Successfully uploaded {count} file(s)',
-    uploadPartialFail: '{success} uploaded, {fail} failed',
-    fileTooLarge: 'File "{name}" exceeds 5GB limit. Use rclone or similar tools for large files.',
-    deleteSuccess: 'Deleted "{name}"',
+      'CORS isn\'t set up yet. Head to Cloudflare Dashboard → R2 → Bucket Settings and add a CORS rule allowing GET/PUT/DELETE/HEAD from your origin.',
+    networkError: 'Network hiccup: {msg}',
+    uploadSuccess: '{count} file(s) uploaded!',
+    uploadPartialFail: '{success} uploaded, {fail} didn\'t make it',
+    fileTooLarge: '"{name}" is too large (over 5GB) — try rclone for big uploads',
+    deleteSuccess: '"{name}" deleted',
     renameSuccess: 'Renamed to "{name}"',
     copySuccess: 'Copied to "{name}"',
     moveSuccess: 'Moved to "{name}"',
-    folderCreated: 'Created folder "{name}"',
-    previewNotAvailable: 'Preview not available for this file type',
+    folderCreated: 'Folder "{name}" created!',
+    previewNotAvailable: 'Can\'t preview this file type yet',
     size: 'Size',
     lastModified: 'Last Modified',
     contentType: 'Type',
@@ -195,7 +195,7 @@ const I18N = {
     close: 'Close',
     shareConfig: 'Share Config',
     shareConfigCopied: 'Share link copied (contains credentials)',
-    configLoadedFromUrl: 'Config loaded from URL',
+    configLoadedFromUrl: 'Config loaded, ready to go!',
     preferences: 'Preferences',
     uploadSettings: 'Upload',
     r2Connection: 'R2',
@@ -213,8 +213,8 @@ const I18N = {
     densityLoose: 'Loose',
     save: 'Save',
     heroDesc:
-      'A pure client-side Cloudflare R2 bucket file manager.',
-    heroConnect: 'Connect to R2',
+      'A lightweight & elegant R2 bucket manager, all in your browser.',
+    heroConnect: 'Get Started',
     heroF1: 'Simple & elegant',
     heroF2: 'Pure local client',
     heroF3: 'File management',
@@ -226,30 +226,30 @@ const I18N = {
     refresh: 'Refresh',
     logout: 'Logout',
     logoutConfirmTitle: 'Logout',
-    logoutConfirmMsg: 'This will clear all credentials saved in your browser. Files in the bucket are not affected. Continue?',
+    logoutConfirmMsg: 'This will clear your saved credentials. Files in the bucket won\'t be affected. Continue?',
   },
   ja: {
     appTitle: 'R2 Web ファイルマネージャー',
     connectTitle: 'R2 に接続',
-    connectDesc: 'Cloudflare R2 の認証情報を入力してください。すべてのデータはブラウザのローカルにのみ保存され、サーバーには送信されません。',
+    connectDesc: 'R2 の認証情報を入力して始めましょう。データはブラウザにのみ保存されます。',
     accountId: 'アカウント ID（Account ID）',
     accessKeyId: 'アクセスキー ID（Access Key ID）',
     secretAccessKey: 'シークレットアクセスキー（Secret Access Key）',
     bucketName: 'バケット名（Bucket Name）',
     filenameTpl: 'ファイル名テンプレート（Filename Template）',
     filenameTplHint:
-      'プレースホルダ: [name] 元名, [ext] 拡張子, [hash:N] ハッシュ, [date:FORMAT] 日付, [timestamp] タイムスタンプ, [uuid] UUID, / ディレクトリ',
+      'プレースホルダ: [name] 元名, [ext] 拡張子, [hash:N] ハッシュ, [date:FORMAT] 日付, [timestamp] タイムスタンプ, [uuid], / ディレクトリ',
     cancel: 'キャンセル',
     connect: '接続',
     newFolder: '新規フォルダ',
     upload: 'アップロード',
-    dropToUpload: 'ファイルをドロップしてアップロード',
-    pasteToUpload: 'クリップボードから {count} 個のファイルを貼り付けました',
-    uploadHint: 'ドラッグ、貼り付け、またはクリックでアップロード',
+    dropToUpload: 'ドロップしてアップロード',
+    pasteToUpload: '{count} 個のファイルを貼り付けました',
+    uploadHint: 'ドラッグ、貼り付け、クリックでアップロード',
     pasteHint: '現在のディレクトリにファイルを貼り付け',
     uploading: 'アップロード中...',
     root: 'ルート',
-    emptyFolder: 'このフォルダは空です',
+    emptyFolder: 'まだ何もありません — アップロードしてみましょう',
     uploadFiles: 'ファイルをアップロード',
     loadMore: 'もっと読み込む',
     preview: 'プレビュー',
@@ -261,9 +261,9 @@ const I18N = {
     confirm: '確認',
     ok: 'OK',
     deleteConfirmTitle: '削除の確認',
-    deleteConfirmMsg: '"{name}" を削除してもよろしいですか？この操作は元に戻せません。',
+    deleteConfirmMsg: '"{name}" を削除しますか？元に戻せません。',
     deleteFolderConfirmMsg:
-      'フォルダ "{name}" とその中身をすべて削除しますか？この操作は元に戻せません。',
+      'フォルダ "{name}" とその中身をすべて削除しますか？元に戻せません。',
     renameTitle: '名前変更',
     renameLabel: '新しい名前',
     copyTitle: 'コピー先',
@@ -272,24 +272,24 @@ const I18N = {
     moveLabel: '移動先パス',
     newFolderTitle: '新規フォルダ',
     newFolderLabel: 'フォルダ名',
-    authFailed: '認証に失敗しました。認証情報を確認してください。',
+    authFailed: '接続できませんでした — 認証情報を確認してみてください',
     customDomain: 'カスタムドメイン（Custom Domain）',
-    customDomainHint: '任意。設定するとファイルの公開URLをワンクリックでコピーできます。',
+    customDomainHint: '任意。設定するとワンクリックで公開URLをコピーできます。',
     copyLink: 'リンクをコピー',
-    linkCopied: 'リンクをクリップボードにコピーしました',
-    noDomain: 'カスタムドメインが設定されていません。設定で追加するとリンクコピーが有効になります。',
+    linkCopied: 'リンクをコピーしました！',
+    noDomain: 'カスタムドメインがまだ未設定です。設定で追加してみてください。',
     corsError:
-      'CORS が設定されていません。Cloudflare ダッシュボード → R2 → バケット設定で、現在のオリジンからの GET/PUT/DELETE/HEAD を許可する CORS ルールを追加してください。',
-    networkError: 'ネットワークエラー: {msg}',
-    uploadSuccess: '{count} 個のファイルをアップロードしました',
-    uploadPartialFail: '{success} 個成功、{fail} 個失敗',
-    fileTooLarge: 'ファイル "{name}" は 5GB を超えています。rclone などのツールをご利用ください。',
+      'CORS がまだ設定されていません。Cloudflare ダッシュボード → R2 → バケット設定で CORS ルールを追加してください。',
+    networkError: 'ネットワークに問題があるようです: {msg}',
+    uploadSuccess: '{count} 個のファイルをアップロードしました！',
+    uploadPartialFail: '{success} 個成功、{fail} 個は失敗しました',
+    fileTooLarge: '"{name}" は大きすぎます（5GB超）— rclone などをお試しください',
     deleteSuccess: '"{name}" を削除しました',
     renameSuccess: '"{name}" に名前を変更しました',
     copySuccess: '"{name}" にコピーしました',
     moveSuccess: '"{name}" に移動しました',
-    folderCreated: 'フォルダ "{name}" を作成しました',
-    previewNotAvailable: 'このファイルタイプはプレビューできません',
+    folderCreated: 'フォルダ "{name}" を作成しました！',
+    previewNotAvailable: 'このファイルタイプはまだプレビューできません',
     size: 'サイズ',
     lastModified: '最終更新',
     contentType: 'タイプ',
@@ -298,7 +298,7 @@ const I18N = {
     close: '閉じる',
     shareConfig: '設定を共有',
     shareConfigCopied: '共有リンクをコピー（認証情報を含む）',
-    configLoadedFromUrl: 'URLから設定を読み込みました',
+    configLoadedFromUrl: '設定を読み込みました、始めましょう！',
     preferences: '設定',
     uploadSettings: 'アップロード',
     r2Connection: 'R2',
@@ -316,8 +316,8 @@ const I18N = {
     densityLoose: 'ゆったり',
     save: '保存',
     heroDesc:
-      'ピュアクライアントサイドの Cloudflare R2 バケットファイルマネージャー。',
-    heroConnect: 'R2 に接続',
+      '軽量でエレガントな R2 バケットマネージャー、すべてブラウザで完結。',
+    heroConnect: '始めましょう',
     heroF1: 'シンプル＆エレガント',
     heroF2: 'ローカルクライアント',
     heroF3: 'ファイル管理',
@@ -329,7 +329,7 @@ const I18N = {
     refresh: 'リフレッシュ',
     logout: 'ログアウト',
     logoutConfirmTitle: 'ログアウト',
-    logoutConfirmMsg: 'ブラウザに保存されたすべての認証情報が削除されます。バケット内のファイルには影響しません。続行しますか？',
+    logoutConfirmMsg: '保存された認証情報が削除されます。バケット内のファイルには影響しません。続行しますか？',
   },
 }
 
@@ -632,6 +632,15 @@ class R2Client {
       aws: { signQuery: true },
     })
     return signed.url
+  }
+
+  /** @param {string} key */
+  getPublicUrl(key) {
+    const cfg = /** @type {ConfigManager} */ (this.#config).get()
+    if (cfg.customDomain) {
+      return `${cfg.customDomain}/${encodeS3Key(key)}`
+    }
+    return null
   }
 
   /** @param {string} key */
@@ -1154,7 +1163,7 @@ class FileExplorer {
   /** @param {HTMLElement} card @param {string} key */
   async #lazyLoadThumbnail(card, key) {
     try {
-      const url = await this.#r2.getPresignedUrl(key)
+      const url = this.#r2.getPublicUrl(key) ?? await this.#r2.getPresignedUrl(key)
       const img = /** @type {HTMLImageElement} */ ($('img', card))
       if (!img) return
       img.onload = () => img.classList.add('loaded')
@@ -1404,13 +1413,13 @@ class FilePreview {
       `
 
       if (IMAGE_RE.test(key)) {
-        const url = await this.#r2.getPresignedUrl(key)
+        const url = this.#r2.getPublicUrl(key) ?? await this.#r2.getPresignedUrl(key)
         body.innerHTML = `<img src="${url}" alt="${getFileName(key)}">`
       } else if (VIDEO_RE.test(key)) {
-        const url = await this.#r2.getPresignedUrl(key)
+        const url = this.#r2.getPublicUrl(key) ?? await this.#r2.getPresignedUrl(key)
         body.innerHTML = `<video src="${url}" controls></video>`
       } else if (AUDIO_RE.test(key)) {
-        const url = await this.#r2.getPresignedUrl(key)
+        const url = this.#r2.getPublicUrl(key) ?? await this.#r2.getPresignedUrl(key)
         body.innerHTML = `<audio src="${url}" controls></audio>`
       } else if (TEXT_RE.test(key)) {
         const res = await this.#r2.getObject(key)
@@ -1430,7 +1439,7 @@ class FilePreview {
   async downloadCurrent() {
     if (!this.#currentKey) return
     try {
-      const url = await this.#r2.getPresignedUrl(this.#currentKey)
+      const url = this.#r2.getPublicUrl(this.#currentKey) ?? await this.#r2.getPresignedUrl(this.#currentKey)
       const a = document.createElement('a')
       a.href = url
       a.download = getFileName(this.#currentKey)
@@ -1589,7 +1598,7 @@ class FileOperations {
   /** @param {string} key */
   async download(key) {
     try {
-      const url = await this.#r2.getPresignedUrl(key)
+      const url = this.#r2.getPublicUrl(key) ?? await this.#r2.getPresignedUrl(key)
       const a = document.createElement('a')
       a.href = url
       a.download = getFileName(key)
@@ -1608,7 +1617,7 @@ class FileOperations {
       this.#ui.toast(t('noDomain'), 'error')
       return
     }
-    const url = `${cfg.customDomain}/${key}`
+    const url = `${cfg.customDomain}/${encodeS3Key(key)}`
     try {
       await navigator.clipboard.writeText(url)
       this.#ui.toast(t('linkCopied'), 'success')
