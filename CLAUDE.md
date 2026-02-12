@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-R2 Manager — a pure client-side Cloudflare R2 bucket file manager built with vanilla HTML5, CSS3, and ES6+ JavaScript. No build tools, no frameworks, no backend. Deployed at https://r2.viki.moe.
+R2 Web — a pure client-side Cloudflare R2 bucket file manager built with vanilla HTML5, CSS3, and ES6+ JavaScript. No build tools, no frameworks, no backend. Deployed at https://r2.viki.moe.
 
 ## Project Structure
 

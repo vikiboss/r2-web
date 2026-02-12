@@ -25,7 +25,7 @@ const VIDEO_RE = /\.(mp4|webm|ogg|mov|avi|mkv|m4v)$/i
 // --- i18n ---
 const I18N = {
   zh: {
-    appTitle: 'R2 文件管理器',
+    appTitle: 'R2 Web',
     connectTitle: '连接到 R2',
     connectDesc: '填写你的 R2 凭据即可开始，放心，数据只留在你的浏览器里。',
     accountId: '账户 ID（Account ID）',
@@ -113,7 +113,7 @@ const I18N = {
     densityNormal: '正常',
     densityLoose: '宽松',
     save: '保存',
-    heroDesc: '轻盈优雅的 R2 存储桶管理器，一切在浏览器中完成。',
+    heroDesc: '轻盈优雅的 Web 原生 Cloudflare R2 文件管理器，一切皆在浏览器中完成。',
     heroConnect: '开始连接',
     heroF1: '简单优雅高效',
     heroF2: '纯本地客户端',
@@ -129,9 +129,10 @@ const I18N = {
     logoutConfirmMsg: '退出后会清除浏览器中的凭据，存储桶里的文件不会受影响。确定退出吗？',
   },
   en: {
-    appTitle: 'R2 File Manager',
+    appTitle: 'R2 Web',
     connectTitle: 'Connect to R2',
-    connectDesc: 'Enter your R2 credentials to get started. Everything stays safely in your browser.',
+    connectDesc:
+      'Enter your R2 credentials to get started. Everything stays safely in your browser.',
     accountId: 'Account ID',
     accessKeyId: 'Access Key ID',
     secretAccessKey: 'Secret Access Key',
@@ -162,8 +163,7 @@ const I18N = {
     ok: 'OK',
     deleteConfirmTitle: 'Delete Confirmation',
     deleteConfirmMsg: 'Delete "{name}"? This can\'t be undone.',
-    deleteFolderConfirmMsg:
-      'Delete folder "{name}" and everything inside? This can\'t be undone.',
+    deleteFolderConfirmMsg: 'Delete folder "{name}" and everything inside? This can\'t be undone.',
     renameTitle: 'Rename',
     renameLabel: 'New name',
     copyTitle: 'Copy to',
@@ -172,7 +172,7 @@ const I18N = {
     moveLabel: 'Destination path',
     newFolderTitle: 'New Folder',
     newFolderLabel: 'Folder name',
-    authFailed: 'Couldn\'t connect — double-check your credentials',
+    authFailed: "Couldn't connect — double-check your credentials",
     customDomain: 'Custom Domain',
     customDomainHint: 'Optional. Enables one-click public URL copying.',
     copyLink: 'Copy Link',
@@ -182,17 +182,17 @@ const I18N = {
     copyPresigned: 'Copy Pre-signed URL',
     linkCopied: 'Link copied!',
     corsError:
-      'CORS isn\'t set up yet. Head to Cloudflare Dashboard → R2 → Bucket Settings and add a CORS rule allowing GET/PUT/DELETE/HEAD from your origin.',
+      "CORS isn't set up yet. Head to Cloudflare Dashboard → R2 → Bucket Settings and add a CORS rule allowing GET/PUT/DELETE/HEAD from your origin.",
     networkError: 'Network hiccup: {msg}',
     uploadSuccess: '{count} file(s) uploaded!',
-    uploadPartialFail: '{success} uploaded, {fail} didn\'t make it',
+    uploadPartialFail: "{success} uploaded, {fail} didn't make it",
     fileTooLarge: '"{name}" is too large (over 5GB) — try rclone for big uploads',
     deleteSuccess: '"{name}" deleted',
     renameSuccess: 'Renamed to "{name}"',
     copySuccess: 'Copied to "{name}"',
     moveSuccess: 'Moved to "{name}"',
     folderCreated: 'Folder "{name}" created!',
-    previewNotAvailable: 'Can\'t preview this file type yet',
+    previewNotAvailable: "Can't preview this file type yet",
     size: 'Size',
     lastModified: 'Last Modified',
     contentType: 'Type',
@@ -218,8 +218,7 @@ const I18N = {
     densityNormal: 'Normal',
     densityLoose: 'Loose',
     save: 'Save',
-    heroDesc:
-      'A lightweight & elegant R2 bucket manager, all in your browser.',
+    heroDesc: 'A lightweight & elegant R2 bucket manager, all in your browser.',
     heroConnect: 'Get Started',
     heroF1: 'Simple & elegant',
     heroF2: 'Pure local client',
@@ -232,10 +231,11 @@ const I18N = {
     refresh: 'Refresh',
     logout: 'Logout',
     logoutConfirmTitle: 'Logout',
-    logoutConfirmMsg: 'This will clear your saved credentials. Files in the bucket won\'t be affected. Continue?',
+    logoutConfirmMsg:
+      "This will clear your saved credentials. Files in the bucket won't be affected. Continue?",
   },
   ja: {
-    appTitle: 'R2 ファイルマネージャー',
+    appTitle: 'R2 Web',
     connectTitle: 'R2 に接続',
     connectDesc: 'R2 の認証情報を入力して始めましょう。データはブラウザにのみ保存されます。',
     accountId: 'アカウント ID（Account ID）',
@@ -268,8 +268,7 @@ const I18N = {
     ok: 'OK',
     deleteConfirmTitle: '削除の確認',
     deleteConfirmMsg: '"{name}" を削除しますか？元に戻せません。',
-    deleteFolderConfirmMsg:
-      'フォルダ "{name}" とその中身をすべて削除しますか？元に戻せません。',
+    deleteFolderConfirmMsg: 'フォルダ "{name}" とその中身をすべて削除しますか？元に戻せません。',
     renameTitle: '名前変更',
     renameLabel: '新しい名前',
     copyTitle: 'コピー先',
@@ -324,8 +323,7 @@ const I18N = {
     densityNormal: '標準',
     densityLoose: 'ゆったり',
     save: '保存',
-    heroDesc:
-      '軽量でエレガントな R2 バケットマネージャー、すべてブラウザで完結。',
+    heroDesc: '軽量でエレガントな R2 バケットマネージャー、すべてブラウザで完結。',
     heroConnect: '始めましょう',
     heroF1: 'シンプル＆エレガント',
     heroF2: 'ローカルクライアント',
@@ -338,7 +336,8 @@ const I18N = {
     refresh: 'リフレッシュ',
     logout: 'ログアウト',
     logoutConfirmTitle: 'ログアウト',
-    logoutConfirmMsg: '保存された認証情報が削除されます。バケット内のファイルには影響しません。続行しますか？',
+    logoutConfirmMsg:
+      '保存された認証情報が削除されます。バケット内のファイルには影響しません。続行しますか？',
   },
 }
 
@@ -742,8 +741,10 @@ class UIManager {
   /** @param {string} message @param {'info' | 'success' | 'error'} [type] */
   toast(message, type = 'info') {
     const icons = {
-      success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
-      error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+      success:
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+      error:
+        '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
       info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
     }
     const container = $('#toast-container')
@@ -933,7 +934,10 @@ class UIManager {
       }
 
       // Center horizontally, clamp to viewport
-      left = Math.max(GAP, Math.min(left - tipRect.width / 2, window.innerWidth - tipRect.width - GAP))
+      left = Math.max(
+        GAP,
+        Math.min(left - tipRect.width / 2, window.innerWidth - tipRect.width - GAP),
+      )
 
       tip.style.cssText = `left:${left}px;top:${top}px`
       // Force reflow before adding visible class so transition fires
@@ -942,7 +946,10 @@ class UIManager {
     }
 
     const hide = () => {
-      if (showTimer) { clearTimeout(showTimer); showTimer = null }
+      if (showTimer) {
+        clearTimeout(showTimer)
+        showTimer = null
+      }
       tip.classList.remove('visible')
     }
 
@@ -1178,7 +1185,7 @@ class FileExplorer {
   /** @param {HTMLElement} card @param {string} key */
   async #lazyLoadThumbnail(card, key) {
     try {
-      const url = this.#r2.getPublicUrl(key) ?? await this.#r2.getPresignedUrl(key)
+      const url = this.#r2.getPublicUrl(key) ?? (await this.#r2.getPresignedUrl(key))
       const img = /** @type {HTMLImageElement} */ ($('img', card))
       if (!img) return
       img.onload = () => img.classList.add('loaded')
@@ -1428,13 +1435,13 @@ class FilePreview {
       `
 
       if (IMAGE_RE.test(key)) {
-        const url = this.#r2.getPublicUrl(key) ?? await this.#r2.getPresignedUrl(key)
+        const url = this.#r2.getPublicUrl(key) ?? (await this.#r2.getPresignedUrl(key))
         body.innerHTML = `<img src="${url}" alt="${getFileName(key)}">`
       } else if (VIDEO_RE.test(key)) {
-        const url = this.#r2.getPublicUrl(key) ?? await this.#r2.getPresignedUrl(key)
+        const url = this.#r2.getPublicUrl(key) ?? (await this.#r2.getPresignedUrl(key))
         body.innerHTML = `<video src="${url}" controls></video>`
       } else if (AUDIO_RE.test(key)) {
-        const url = this.#r2.getPublicUrl(key) ?? await this.#r2.getPresignedUrl(key)
+        const url = this.#r2.getPublicUrl(key) ?? (await this.#r2.getPresignedUrl(key))
         body.innerHTML = `<audio src="${url}" controls></audio>`
       } else if (TEXT_RE.test(key)) {
         const res = await this.#r2.getObject(key)
@@ -1454,7 +1461,9 @@ class FilePreview {
   async downloadCurrent() {
     if (!this.#currentKey) return
     try {
-      const url = this.#r2.getPublicUrl(this.#currentKey) ?? await this.#r2.getPresignedUrl(this.#currentKey)
+      const url =
+        this.#r2.getPublicUrl(this.#currentKey) ??
+        (await this.#r2.getPresignedUrl(this.#currentKey))
       const a = document.createElement('a')
       a.href = url
       a.download = getFileName(this.#currentKey)
@@ -1613,7 +1622,7 @@ class FileOperations {
   /** @param {string} key */
   async download(key) {
     try {
-      const url = this.#r2.getPublicUrl(key) ?? await this.#r2.getPresignedUrl(key)
+      const url = this.#r2.getPublicUrl(key) ?? (await this.#r2.getPresignedUrl(key))
       const a = document.createElement('a')
       a.href = url
       a.download = getFileName(key)
@@ -1634,7 +1643,7 @@ class FileOperations {
     if (format === 'presigned') {
       url = await this.#r2.getPresignedUrl(key)
     } else {
-      url = this.#r2.getPublicUrl(key) ?? await this.#r2.getPresignedUrl(key)
+      url = this.#r2.getPublicUrl(key) ?? (await this.#r2.getPresignedUrl(key))
     }
 
     let text

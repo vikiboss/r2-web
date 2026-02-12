@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
-    <title>R2 文件管理器</title>
+    <title>R2 Web</title>
     <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="preconnect" href="https://esm.sh" />
     <link rel="preconnect" href="https://r2.cloudflarestorage.com" />
@@ -23,7 +23,7 @@
     <!-- Config Dialog -->
     <dialog id="config-dialog">
       <form id="config-form" method="dialog">
-        <h2 id="config-title">R2 Manager</h2>
+        <h2 id="config-title">R2 Web</h2>
 
         <!-- R2 Connection -->
         <div class="config-section">
@@ -37,7 +37,9 @@
             <input id="cfg-access-key" name="accessKeyId" type="text" required autocomplete="off" />
           </div>
           <div class="field">
-            <label for="cfg-secret-key" id="lbl-secret-key">秘密访问密钥（Secret Access Key）</label>
+            <label for="cfg-secret-key" id="lbl-secret-key">
+              秘密访问密钥（Secret Access Key）
+            </label>
             <input
               id="cfg-secret-key"
               name="secretAccessKey"
@@ -51,7 +53,9 @@
             <input id="cfg-bucket" name="bucket" type="text" required autocomplete="off" />
           </div>
           <div class="field">
-            <label for="cfg-custom-domain" id="lbl-custom-domain">自定义域名（Custom Domain）</label>
+            <label for="cfg-custom-domain" id="lbl-custom-domain">
+              自定义域名（Custom Domain）
+            </label>
             <input
               id="cfg-custom-domain"
               name="customDomain"
@@ -69,7 +73,9 @@
         <div class="config-section">
           <h3 id="config-section-upload">上传设置</h3>
           <div class="field">
-            <label for="cfg-filename-tpl" id="lbl-filename-tpl">文件名模板（Filename Template）</label>
+            <label for="cfg-filename-tpl" id="lbl-filename-tpl">
+              文件名模板（Filename Template）
+            </label>
             <input
               id="cfg-filename-tpl"
               name="filenameTpl"
@@ -98,9 +104,7 @@
           <img src="favicon.ico" alt="" class="hero-badge-icon" />
         </div>
         <h1 class="hero-title" id="hero-title">R2 Manager</h1>
-        <p class="hero-desc" id="hero-desc">
-          纯客户端的 Cloudflare R2 存储桶文件管理器。
-        </p>
+        <p class="hero-desc" id="hero-desc">纯客户端的 Cloudflare R2 存储桶文件管理器。</p>
         <div class="hero-actions">
           <button type="button" class="btn primary" id="hero-connect-btn">
             <svg
@@ -311,7 +315,7 @@
       <header class="topbar">
         <div class="flex items-center" style="gap: 8px">
           <img src="favicon.ico" alt="" class="topbar-logo" />
-          <h1 class="topbar-title">R2 Manager</h1>
+          <h1 class="topbar-title">R2 Web</h1>
         </div>
         <div class="flex items-center" style="gap: 4px">
           <select id="topbar-lang-select" class="toolbar-select">
@@ -708,7 +712,15 @@
           <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
         </svg>
         <span>复制链接</span>
-        <svg class="icon submenu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg
+          class="icon submenu-arrow"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
           <polyline points="9 18 15 12 9 6" />
         </svg>
         <div class="context-submenu">

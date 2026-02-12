@@ -1,8 +1,8 @@
 ![d8c0fec7.png](https://image.viki.moe/github/d8c0fec7.png)
 
-# R2 管理器
+# R2 Web
 
-📁 轻盈优雅的 Web 原生 Cloudflare R2 文件管理器，一切在浏览器中完成。
+📁 轻盈优雅的 Web 原生 Cloudflare R2 文件管理器，一切皆在浏览器中完成。
 
 ![61366da7.png](https://image.viki.moe/github/61366da7.png)
 
