@@ -191,6 +191,8 @@
   }
 
   .file-browser {
+    display: flex;
+    flex-direction: column;
     padding: var(--sp-4);
     overflow-y: auto;
 
@@ -825,8 +827,10 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+    flex: 1;
     gap: var(--sp-3);
-    padding: var(--sp-12) var(--sp-4);
+    padding: var(--sp-4);
     color: var(--text-tertiary);
     text-align: center;
 
@@ -1032,6 +1036,30 @@
   .text-secondary { color: var(--text-secondary); }
   .flex { display: flex; }
   .items-center { align-items: center; }
+
+  /* Global tooltip — positioned via JS, lives at body level */
+  .tooltip {
+    position: fixed;
+    z-index: calc(var(--z-toast) + 10);
+    pointer-events: none;
+    padding: var(--sp-1) var(--sp-2);
+    font-size: var(--text-xs);
+    font-weight: 500;
+    line-height: 1.4;
+    white-space: nowrap;
+    color: var(--text-primary);
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 4px 12px light-dark(
+      color-mix(in oklch, black 8%, transparent),
+      color-mix(in oklch, black 30%, transparent)
+    );
+    opacity: 0;
+    transition: opacity var(--duration-normal) var(--ease-out);
+
+    &.visible { opacity: 1; }
+  }
 }
 
 /* --- Animations --- */
@@ -1069,6 +1097,11 @@
   @keyframes indeterminate {
     0% { background-position: -200% 0; }
     100% { background-position: 200% 0; }
+  }
+
+  /* Refresh button spin */
+  #refresh-btn.refreshing .icon {
+    animation: spin 0.6s ease-in-out;
   }
 
   /* Staggered file card entrance */

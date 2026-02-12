@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
-    <title>R2 Web File Manager</title>
+    <title>R2 Web 文件管理器</title>
     <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="preconnect" href="https://esm.sh" />
     <link rel="preconnect" href="https://r2.cloudflarestorage.com" />
@@ -27,17 +27,17 @@
 
         <!-- R2 Connection -->
         <div class="config-section">
-          <h3 id="config-section-r2">R2</h3>
+          <h3 id="config-section-r2">R2 连接</h3>
           <div class="field">
-            <label for="cfg-account-id" id="lbl-account-id">Account ID</label>
+            <label for="cfg-account-id" id="lbl-account-id">账户 ID（Account ID）</label>
             <input id="cfg-account-id" name="accountId" type="text" required autocomplete="off" />
           </div>
           <div class="field">
-            <label for="cfg-access-key" id="lbl-access-key">Access Key ID</label>
+            <label for="cfg-access-key" id="lbl-access-key">访问密钥 ID（Access Key ID）</label>
             <input id="cfg-access-key" name="accessKeyId" type="text" required autocomplete="off" />
           </div>
           <div class="field">
-            <label for="cfg-secret-key" id="lbl-secret-key">Secret Access Key</label>
+            <label for="cfg-secret-key" id="lbl-secret-key">秘密访问密钥（Secret Access Key）</label>
             <input
               id="cfg-secret-key"
               name="secretAccessKey"
@@ -47,11 +47,11 @@
             />
           </div>
           <div class="field">
-            <label for="cfg-bucket" id="lbl-bucket">Bucket Name</label>
+            <label for="cfg-bucket" id="lbl-bucket">存储桶名称（Bucket Name）</label>
             <input id="cfg-bucket" name="bucket" type="text" required autocomplete="off" />
           </div>
           <div class="field">
-            <label for="cfg-custom-domain" id="lbl-custom-domain">自定义域名</label>
+            <label for="cfg-custom-domain" id="lbl-custom-domain">自定义域名（Custom Domain）</label>
             <input
               id="cfg-custom-domain"
               name="customDomain"
@@ -67,9 +67,9 @@
 
         <!-- Upload Settings -->
         <div class="config-section">
-          <h3 id="config-section-upload">Upload</h3>
+          <h3 id="config-section-upload">上传设置</h3>
           <div class="field">
-            <label for="cfg-filename-tpl" id="lbl-filename-tpl">Filename Template</label>
+            <label for="cfg-filename-tpl" id="lbl-filename-tpl">文件名模板（Filename Template）</label>
             <input
               id="cfg-filename-tpl"
               name="filenameTpl"
@@ -85,8 +85,8 @@
         </div>
 
         <div class="flex" style="justify-content: flex-end; gap: 8px; margin-top: 16px">
-          <button type="button" class="btn secondary" id="config-cancel">Cancel</button>
-          <button type="submit" class="btn primary" id="config-submit">Connect</button>
+          <button type="button" class="btn secondary" id="config-cancel">取消</button>
+          <button type="submit" class="btn primary" id="config-submit">连接</button>
         </div>
       </form>
     </dialog>
@@ -99,8 +99,7 @@
         </div>
         <h1 class="hero-title" id="hero-title">R2 Web Manager</h1>
         <p class="hero-desc" id="hero-desc">
-          A pure client-side Cloudflare R2 bucket file manager. No backend, no framework — your
-          credentials stay in your browser.
+          纯客户端的 Cloudflare R2 存储桶文件管理器。
         </p>
         <div class="hero-actions">
           <button type="button" class="btn primary" id="hero-connect-btn">
@@ -117,7 +116,7 @@
               <polyline points="10 17 15 12 10 7" />
               <line x1="15" y1="12" x2="3" y2="12" />
             </svg>
-            <span id="hero-connect-text">Connect to R2</span>
+            <span id="hero-connect-text">连接到 R2</span>
           </button>
           <a
             href="https://github.com/vikiboss/r2-web"
@@ -149,7 +148,7 @@
                 points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"
               />
             </svg>
-            <span id="hero-f1">Simple & elegant</span>
+            <span id="hero-f1">简单优雅高效</span>
           </div>
           <div class="hero-feature">
             <svg
@@ -164,7 +163,7 @@
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
             </svg>
-            <span id="hero-f2">Pure local client</span>
+            <span id="hero-f2">纯本地客户端</span>
           </div>
           <div class="hero-feature">
             <svg
@@ -180,7 +179,7 @@
                 d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"
               />
             </svg>
-            <span id="hero-f3">File management</span>
+            <span id="hero-f3">目录文件管理</span>
           </div>
           <div class="hero-feature">
             <svg
@@ -195,7 +194,7 @@
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
               <circle cx="12" cy="12" r="3" />
             </svg>
-            <span id="hero-f4">Common type preview</span>
+            <span id="hero-f4">常见类型预览</span>
           </div>
           <div class="hero-feature">
             <svg
@@ -211,7 +210,7 @@
               <polyline points="17 8 12 3 7 8" />
               <line x1="12" y1="3" x2="12" y2="15" />
             </svg>
-            <span id="hero-f5">Drag & paste upload</span>
+            <span id="hero-f5">拖拽粘贴上传</span>
           </div>
           <div class="hero-feature">
             <svg
@@ -228,7 +227,7 @@
               <line x1="14" y1="10" x2="21" y2="3" />
               <line x1="3" y1="21" x2="10" y2="14" />
             </svg>
-            <span id="hero-f6">Auto compress upload</span>
+            <span id="hero-f6">上传自动压缩</span>
           </div>
           <div class="hero-feature">
             <svg
@@ -243,7 +242,7 @@
               <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
               <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
             </svg>
-            <span id="hero-f7">One-click copy link</span>
+            <span id="hero-f7">一键复制外链</span>
           </div>
           <div class="hero-feature">
             <svg
@@ -261,12 +260,12 @@
               <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
               <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
             </svg>
-            <span id="hero-f8">One-click share config</span>
+            <span id="hero-f8">一键分享配置</span>
           </div>
         </div>
       </div>
       <div class="hero-footer">
-        <button type="button" class="icon-btn" id="hero-theme-toggle" title="Toggle theme">
+        <button type="button" class="icon-btn" id="hero-theme-toggle" data-tooltip="切换主题">
           <svg
             class="icon icon-sun"
             viewBox="0 0 24 24"
@@ -320,7 +319,7 @@
             <option value="en">EN</option>
             <option value="ja">日本語</option>
           </select>
-          <button type="button" class="icon-btn" id="theme-toggle" title="Toggle theme">
+          <button type="button" class="icon-btn" id="theme-toggle" data-tooltip="切换主题">
             <svg
               class="icon icon-sun"
               viewBox="0 0 24 24"
@@ -352,7 +351,7 @@
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
             </svg>
           </button>
-          <button type="button" class="icon-btn" id="share-btn" title="Share Config">
+          <button type="button" class="icon-btn" id="share-btn" data-tooltip="分享配置">
             <svg
               class="icon"
               viewBox="0 0 24 24"
@@ -369,7 +368,7 @@
               <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
             </svg>
           </button>
-          <button type="button" class="icon-btn" id="settings-btn" title="Settings">
+          <button type="button" class="icon-btn" id="settings-btn" data-tooltip="设置">
             <svg
               class="icon"
               viewBox="0 0 24 24"
@@ -385,16 +384,47 @@
               />
             </svg>
           </button>
+          <button type="button" class="icon-btn" id="logout-btn" data-tooltip="安全退出">
+            <svg
+              class="icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+          </button>
         </div>
       </header>
 
       <!-- Toolbar -->
       <div class="toolbar">
-        <nav aria-label="Breadcrumb">
-          <ol class="breadcrumb" id="breadcrumb">
-            <li><button type="button" class="breadcrumb-btn" data-prefix="">Root</button></li>
-          </ol>
-        </nav>
+        <div class="flex items-center" style="gap: 4px">
+          <nav aria-label="Breadcrumb">
+            <ol class="breadcrumb" id="breadcrumb">
+              <li><button type="button" class="breadcrumb-btn" data-prefix="">根目录</button></li>
+            </ol>
+          </nav>
+          <button type="button" class="icon-btn sm" id="refresh-btn" data-tooltip="刷新">
+            <svg
+              class="icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <polyline points="23 4 23 10 17 10" />
+              <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+            </svg>
+          </button>
+        </div>
         <div class="flex items-center" style="gap: 8px">
           <div class="btn-group">
             <button
@@ -402,7 +432,7 @@
               class="icon-btn sm"
               id="view-grid-btn"
               aria-pressed="true"
-              title="网格"
+              data-tooltip="网格"
             >
               <svg
                 class="icon"
@@ -424,7 +454,7 @@
               class="icon-btn sm"
               id="view-list-btn"
               aria-pressed="false"
-              title="列表"
+              data-tooltip="列表"
             >
               <svg
                 class="icon"
@@ -444,15 +474,15 @@
               </svg>
             </button>
           </div>
-          <select id="density-select" class="toolbar-select" title="密度">
+          <select id="density-select" class="toolbar-select" data-tooltip="密度">
             <option value="compact">紧凑</option>
             <option value="normal" selected>正常</option>
             <option value="loose">宽松</option>
           </select>
-          <select id="sort-select" class="toolbar-select" title="Sort">
-            <option value="name">A-Z</option>
-            <option value="date">Date</option>
-            <option value="size">Size</option>
+          <select id="sort-select" class="toolbar-select" data-tooltip="排序">
+            <option value="name">按名称</option>
+            <option value="date">按日期</option>
+            <option value="size">按大小</option>
           </select>
           <button type="button" class="btn secondary sm" id="new-folder-btn">
             <svg
@@ -470,7 +500,7 @@
               <line x1="12" y1="11" x2="12" y2="17" />
               <line x1="9" y1="14" x2="15" y2="14" />
             </svg>
-            <span>New Folder</span>
+            <span>新建文件夹</span>
           </button>
           <button type="button" class="btn primary sm" id="upload-btn">
             <svg
@@ -486,7 +516,7 @@
               <polyline points="17 8 12 3 7 8" />
               <line x1="12" y1="3" x2="12" y2="15" />
             </svg>
-            <span>Upload</span>
+            <span>上传</span>
           </button>
         </div>
       </div>
@@ -507,15 +537,15 @@
             <polyline points="17 8 12 3 7 8" />
             <line x1="12" y1="3" x2="12" y2="15" />
           </svg>
-          <p id="dropzone-text">Drop files to upload</p>
+          <p id="dropzone-text">拖放文件到此处上传</p>
         </div>
       </div>
 
       <!-- Upload Panel -->
       <div class="upload-panel" id="upload-panel" hidden>
         <div class="upload-panel-header">
-          <span id="upload-panel-title">Uploading...</span>
-          <button type="button" class="icon-btn sm" id="upload-panel-close" title="Close">
+          <span id="upload-panel-title">上传中...</span>
+          <button type="button" class="icon-btn sm" id="upload-panel-close" data-tooltip="关闭">
             <svg
               class="icon"
               viewBox="0 0 24 24"
@@ -557,7 +587,7 @@
           >
             <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
           </svg>
-          <p>This folder is empty</p>
+          <p>该文件夹为空</p>
           <button type="button" class="btn primary sm" id="empty-upload-btn">
             <svg
               class="icon"
@@ -572,13 +602,13 @@
               <polyline points="17 8 12 3 7 8" />
               <line x1="12" y1="3" x2="12" y2="15" />
             </svg>
-            Upload Files
+            上传文件
           </button>
           <small class="text-secondary" id="empty-upload-hint">拖放、粘贴或点击上传</small>
         </div>
         <div class="file-grid" id="file-grid"></div>
         <div class="load-more" id="load-more" hidden>
-          <button type="button" class="btn secondary sm" id="load-more-btn">Load More</button>
+          <button type="button" class="btn secondary sm" id="load-more-btn">加载更多</button>
         </div>
         <div class="paste-hint" id="paste-hint">
           <kbd>Ctrl</kbd>
@@ -595,7 +625,7 @@
         <div class="preview-header">
           <span class="preview-filename truncate" id="preview-filename"></span>
           <div class="flex items-center" style="gap: 4px">
-            <button type="button" class="icon-btn sm" id="preview-download" title="Download">
+            <button type="button" class="icon-btn sm" id="preview-download" data-tooltip="下载">
               <svg
                 class="icon"
                 viewBox="0 0 24 24"
@@ -610,7 +640,7 @@
                 <line x1="12" y1="15" x2="12" y2="3" />
               </svg>
             </button>
-            <button type="button" class="icon-btn sm" id="preview-close" title="Close">
+            <button type="button" class="icon-btn sm" id="preview-close" data-tooltip="关闭">
               <svg
                 class="icon"
                 viewBox="0 0 24 24"
@@ -646,7 +676,7 @@
           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
           <circle cx="12" cy="12" r="3" />
         </svg>
-        <span>Preview</span>
+        <span>预览</span>
       </button>
       <button type="button" class="context-menu-item" data-action="download">
         <svg
@@ -662,7 +692,7 @@
           <polyline points="7 10 12 15 17 10" />
           <line x1="12" y1="15" x2="12" y2="3" />
         </svg>
-        <span>Download</span>
+        <span>下载</span>
       </button>
       <button type="button" class="context-menu-item" data-action="copyLink">
         <svg
@@ -679,7 +709,7 @@
         </svg>
         <span>复制链接</span>
       </button>
-      <div class="context-menu-sep"></div>
+      <div class="context-menu-sep" id="ctx-sep-file"></div>
       <button type="button" class="context-menu-item" data-action="rename">
         <svg
           class="icon"
@@ -693,7 +723,7 @@
           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
           <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
         </svg>
-        <span>Rename</span>
+        <span>重命名</span>
       </button>
       <button type="button" class="context-menu-item" data-action="copy">
         <svg
@@ -708,7 +738,7 @@
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
         </svg>
-        <span>Copy</span>
+        <span>复制</span>
       </button>
       <button type="button" class="context-menu-item" data-action="move">
         <svg
@@ -723,7 +753,7 @@
           <polyline points="15 10 20 15 15 20" />
           <path d="M4 4v7a4 4 0 0 0 4 4h12" />
         </svg>
-        <span>Move</span>
+        <span>移动</span>
       </button>
       <div class="context-menu-sep"></div>
       <button type="button" class="context-menu-item danger" data-action="delete">
@@ -743,21 +773,21 @@
           <line x1="10" y1="11" x2="10" y2="17" />
           <line x1="14" y1="11" x2="14" y2="17" />
         </svg>
-        <span>Delete</span>
+        <span>删除</span>
       </button>
     </div>
 
     <!-- Prompt Dialog -->
     <dialog id="prompt-dialog">
       <form id="prompt-form" method="dialog">
-        <h2 id="prompt-title">Prompt</h2>
+        <h2 id="prompt-title">提示</h2>
         <div class="field">
-          <label for="prompt-input" id="prompt-label">Value</label>
+          <label for="prompt-input" id="prompt-label">值</label>
           <input id="prompt-input" type="text" required autocomplete="off" />
         </div>
         <div class="flex" style="justify-content: flex-end; gap: 8px; margin-top: 16px">
-          <button type="button" class="btn secondary" id="prompt-cancel">Cancel</button>
-          <button type="submit" class="btn primary" id="prompt-ok">OK</button>
+          <button type="button" class="btn secondary" id="prompt-cancel">取消</button>
+          <button type="submit" class="btn primary" id="prompt-ok">确定</button>
         </div>
       </form>
     </dialog>
@@ -765,17 +795,20 @@
     <!-- Confirm Dialog -->
     <dialog id="confirm-dialog">
       <form id="confirm-form" method="dialog">
-        <h2 id="confirm-title">Confirm</h2>
+        <h2 id="confirm-title">确认</h2>
         <p id="confirm-message" class="text-secondary"></p>
         <div class="flex" style="justify-content: flex-end; gap: 8px; margin-top: 16px">
-          <button type="button" class="btn secondary" id="confirm-cancel">Cancel</button>
-          <button type="submit" class="btn danger" id="confirm-ok">Confirm</button>
+          <button type="button" class="btn secondary" id="confirm-cancel">取消</button>
+          <button type="submit" class="btn danger" id="confirm-ok">确认</button>
         </div>
       </form>
     </dialog>
 
     <!-- Toast Container -->
     <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+    <!-- Tooltip (global, body-level to avoid overflow clipping) -->
+    <div class="tooltip" id="tooltip" role="tooltip"></div>
 
     <!-- Hidden File Input -->
     <input type="file" id="file-input" multiple hidden />

@@ -28,11 +28,11 @@ const I18N = {
     appTitle: 'R2 Web 文件管理器',
     connectTitle: '连接到 R2',
     connectDesc: '输入你的 Cloudflare R2 凭据，它们仅保存在浏览器本地。',
-    accountId: '账户 ID',
-    accessKeyId: '访问密钥 ID',
-    secretAccessKey: '秘密访问密钥',
-    bucketName: '存储桶名称',
-    filenameTpl: '文件名模板',
+    accountId: '账户 ID（Account ID）',
+    accessKeyId: '访问密钥 ID（Access Key ID）',
+    secretAccessKey: '秘密访问密钥（Secret Access Key）',
+    bucketName: '存储桶名称（Bucket Name）',
+    filenameTpl: '文件名模板（Filename Template）',
     filenameTplHint:
       '占位符: [name] 原始名, [ext] 扩展名, [hash:N] 内容哈希, [date:FORMAT] 日期格式, [timestamp] 时间戳, [uuid] UUID, / 目录分隔',
     cancel: '取消',
@@ -68,7 +68,7 @@ const I18N = {
     newFolderTitle: '新建文件夹',
     newFolderLabel: '文件夹名称',
     authFailed: '认证失败，请检查凭据',
-    customDomain: '自定义域名',
+    customDomain: '自定义域名（Custom Domain）',
     customDomainHint: '可选，用于生成文件的公开访问链接',
     copyLink: '复制链接',
     linkCopied: '链接已复制到剪贴板',
@@ -110,7 +110,7 @@ const I18N = {
     densityNormal: '正常',
     densityLoose: '宽松',
     save: '保存',
-    heroDesc: '纯客户端的 Cloudflare R2 存储桶文件管理器。无后端、无框架——凭据仅保存在浏览器中。',
+    heroDesc: '纯客户端的 Cloudflare R2 存储桶文件管理器。',
     heroConnect: '连接到 R2',
     heroF1: '简单优雅高效',
     heroF2: '纯本地客户端',
@@ -120,6 +120,10 @@ const I18N = {
     heroF6: '上传自动压缩',
     heroF7: '一键复制外链',
     heroF8: '一键分享配置',
+    refresh: '刷新',
+    logout: '安全退出',
+    logoutConfirmTitle: '安全退出',
+    logoutConfirmMsg: '退出后将清除本地保存的所有凭据信息，确定要退出吗？',
   },
   en: {
     appTitle: 'R2 Web File Manager',
@@ -209,7 +213,7 @@ const I18N = {
     densityLoose: 'Loose',
     save: 'Save',
     heroDesc:
-      'A pure client-side Cloudflare R2 bucket file manager. No backend, no framework — your credentials stay in your browser.',
+      'A pure client-side Cloudflare R2 bucket file manager.',
     heroConnect: 'Connect to R2',
     heroF1: 'Simple & elegant',
     heroF2: 'Pure local client',
@@ -219,16 +223,20 @@ const I18N = {
     heroF6: 'Auto compress upload',
     heroF7: 'One-click copy link',
     heroF8: 'One-click share config',
+    refresh: 'Refresh',
+    logout: 'Logout',
+    logoutConfirmTitle: 'Logout',
+    logoutConfirmMsg: 'This will clear all locally saved credentials. Are you sure?',
   },
   ja: {
     appTitle: 'R2 Web ファイルマネージャー',
     connectTitle: 'R2 に接続',
     connectDesc: 'Cloudflare R2 の認証情報を入力してください。ブラウザのローカルに保存されます。',
-    accountId: 'アカウント ID',
-    accessKeyId: 'アクセスキー ID',
-    secretAccessKey: 'シークレットアクセスキー',
-    bucketName: 'バケット名',
-    filenameTpl: 'ファイル名テンプレート',
+    accountId: 'アカウント ID（Account ID）',
+    accessKeyId: 'アクセスキー ID（Access Key ID）',
+    secretAccessKey: 'シークレットアクセスキー（Secret Access Key）',
+    bucketName: 'バケット名（Bucket Name）',
+    filenameTpl: 'ファイル名テンプレート（Filename Template）',
     filenameTplHint:
       'プレースホルダ: [name] 元名, [ext] 拡張子, [hash:N] ハッシュ, [date:FORMAT] 日付, [timestamp] タイムスタンプ, [uuid] UUID, / ディレクトリ',
     cancel: 'キャンセル',
@@ -265,7 +273,7 @@ const I18N = {
     newFolderTitle: '新規フォルダ',
     newFolderLabel: 'フォルダ名',
     authFailed: '認証に失敗しました。認証情報を確認してください。',
-    customDomain: 'カスタムドメイン',
+    customDomain: 'カスタムドメイン（Custom Domain）',
     customDomainHint: '任意。ファイルの公開URLを生成するために使用します。',
     copyLink: 'リンクをコピー',
     linkCopied: 'リンクをクリップボードにコピーしました',
@@ -308,7 +316,7 @@ const I18N = {
     densityLoose: 'ゆったり',
     save: '保存',
     heroDesc:
-      'ピュアクライアントサイドの Cloudflare R2 バケットファイルマネージャー。バックエンドなし、フレームワークなし — 認証情報はブラウザに保存されます。',
+      'ピュアクライアントサイドの Cloudflare R2 バケットファイルマネージャー。',
     heroConnect: 'R2 に接続',
     heroF1: 'シンプル＆エレガント',
     heroF2: 'ローカルクライアント',
@@ -318,6 +326,9 @@ const I18N = {
     heroF6: 'アップロード自動圧縮',
     heroF7: 'ワンクリックリンクコピー',
     heroF8: 'ワンクリック設定共有',
+    logout: 'ログアウト',
+    logoutConfirmTitle: 'ログアウト',
+    logoutConfirmMsg: 'ローカルに保存されたすべての認証情報が削除されます。よろしいですか？',
   },
 }
 
@@ -749,13 +760,15 @@ class UIManager {
     menu.dataset.key = key
     menu.dataset.isFolder = String(isFolder)
 
-    // Hide preview/download/copyLink for folders
+    // Hide preview/download/copyLink and their separator for folders
     const previewBtn = $('[data-action="preview"]', menu)
     const downloadBtn = $('[data-action="download"]', menu)
     const copyLinkBtn = $('[data-action="copyLink"]', menu)
+    const fileSep = $('#ctx-sep-file', menu)
     previewBtn.hidden = isFolder
     downloadBtn.hidden = isFolder
     copyLinkBtn.hidden = isFolder
+    fileSep.hidden = isFolder
 
     // Position before showing so getBoundingClientRect works after popover opens
     menu.style.left = x + 'px'
@@ -861,11 +874,76 @@ class UIManager {
       dialog.showModal()
     })
   }
+
+  /** Global tooltip — event-delegated, body-level element avoids overflow clipping */
+  initTooltip() {
+    const tip = /** @type {HTMLElement} */ ($('#tooltip'))
+    /** @type {number | null} */
+    let showTimer = null
+
+    const show = (/** @type {HTMLElement} */ target) => {
+      const text = target.dataset.tooltip
+      if (!text) return
+      tip.textContent = text
+
+      const rect = target.getBoundingClientRect()
+      const GAP = 8
+
+      // Default: below center
+      let top = rect.bottom + GAP
+      let left = rect.left + rect.width / 2
+
+      // Make visible off-screen first to measure
+      tip.style.left = '0px'
+      tip.style.top = '0px'
+      tip.classList.add('visible')
+      const tipRect = tip.getBoundingClientRect()
+      tip.classList.remove('visible')
+
+      // Flip above if overflowing bottom
+      if (top + tipRect.height > window.innerHeight) {
+        top = rect.top - GAP - tipRect.height
+      }
+
+      // Center horizontally, clamp to viewport
+      left = Math.max(GAP, Math.min(left - tipRect.width / 2, window.innerWidth - tipRect.width - GAP))
+
+      tip.style.left = left + 'px'
+      tip.style.top = top + 'px'
+      tip.classList.add('visible')
+    }
+
+    const hide = () => {
+      if (showTimer) { clearTimeout(showTimer); showTimer = null }
+      tip.classList.remove('visible')
+    }
+
+    document.addEventListener('pointerenter', (/** @type {PointerEvent} */ e) => {
+      const target = /** @type {HTMLElement} */ (e.target)?.closest?.('[data-tooltip]')
+      if (!target) return
+      hide()
+      showTimer = setTimeout(() => show(/** @type {HTMLElement} */ (target)), 400)
+    }, true)
+
+    document.addEventListener('pointerleave', (/** @type {PointerEvent} */ e) => {
+      const target = /** @type {HTMLElement} */ (e.target)?.closest?.('[data-tooltip]')
+      if (target) hide()
+    }, true)
+
+    // Hide on any click or scroll
+    document.addEventListener('pointerdown', hide, true)
+    document.addEventListener('scroll', hide, true)
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hide() }, true)
+  }
 }
 
 // ========================================================================
 // FileExplorer
 // ========================================================================
+/** @typedef {{ data: { folders: FileItem[], files: FileItem[], isTruncated: boolean, nextToken: string }, ts: number }} CacheEntry */
+
+const CACHE_TTL = 5 * 60 * 1000 // 5 minutes
+
 class FileExplorer {
   /** @type {R2Client} */ #r2
   /** @type {UIManager} */ #ui
@@ -873,6 +951,8 @@ class FileExplorer {
   #continuationToken = ''
   /** @type {IntersectionObserver} */ #thumbnailObserver
   #sortBy = 'name'
+  /** @type {Map<string, CacheEntry>} */
+  #cache = new Map()
 
   /** @param {R2Client} r2 @param {UIManager} ui */
   constructor(r2, ui) {
@@ -922,11 +1002,21 @@ class FileExplorer {
     await this.#loadPage(false)
   }
 
-  /** @param {boolean} isInitial */
-  async #loadPage(isInitial) {
+  /** @param {boolean} isInitial @param {boolean} [bypassCache] */
+  async #loadPage(isInitial, bypassCache = false) {
     if (isInitial) this.#ui.showSkeleton()
     try {
-      const result = await this.#r2.listObjects(this.#prefix, this.#continuationToken)
+      const cacheKey = `${this.#prefix}::${this.#continuationToken}`
+      const cached = this.#cache.get(cacheKey)
+      let result
+
+      if (!bypassCache && cached && Date.now() - cached.ts < CACHE_TTL) {
+        result = cached.data
+      } else {
+        result = await this.#r2.listObjects(this.#prefix, this.#continuationToken)
+        this.#cache.set(cacheKey, { data: result, ts: Date.now() })
+      }
+
       this.#continuationToken = result.isTruncated ? result.nextToken : ''
 
       if (isInitial) this.#ui.hideSkeleton()
@@ -950,6 +1040,19 @@ class FileExplorer {
         this.#ui.toast(t('corsError'), 'error')
       } else {
         this.#ui.toast(t('networkError', { msg: err.message }), 'error')
+      }
+    }
+  }
+
+  /** Invalidate cache entries matching a prefix */
+  invalidateCache(prefix = '') {
+    if (!prefix) {
+      this.#cache.clear()
+      return
+    }
+    for (const key of this.#cache.keys()) {
+      if (key.startsWith(prefix + '::') || key.startsWith(prefix)) {
+        this.#cache.delete(key)
       }
     }
   }
@@ -1065,7 +1168,11 @@ class FileExplorer {
   }
 
   async refresh() {
-    await this.navigate(this.#prefix)
+    this.invalidateCache(this.#prefix)
+    this.#continuationToken = ''
+    $('#file-grid').innerHTML = ''
+    this.#updateBreadcrumb()
+    await this.#loadPage(true, true)
   }
 }
 
@@ -1554,6 +1661,7 @@ class App {
     this.#ui = new UIManager()
 
     this.#ui.initTheme()
+    this.#ui.initTooltip()
 
     // Check for config in URL parameter
     const urlParams = new URLSearchParams(window.location.search)
@@ -1648,8 +1756,8 @@ class App {
     }
 
     // View & density
-    $('#view-grid-btn').title = t('viewGrid')
-    $('#view-list-btn').title = t('viewList')
+    $('#view-grid-btn').dataset.tooltip = t('viewGrid')
+    $('#view-list-btn').dataset.tooltip = t('viewList')
     const densitySelect = $('#density-select')
     if (densitySelect) {
       $('option[value="compact"]', densitySelect).textContent = t('densityCompact')
@@ -1683,11 +1791,16 @@ class App {
     $('[data-action="delete"] span').textContent = t('delete')
 
     // Tooltips
-    $('#theme-toggle').title = t('toggleTheme')
-    $('#share-btn').title = t('shareConfig')
-    $('#settings-btn').title = t('settings')
-    $('#preview-download').title = t('download')
-    $('#preview-close').title = t('close')
+    $('#theme-toggle').dataset.tooltip = t('toggleTheme')
+    $('#share-btn').dataset.tooltip = t('shareConfig')
+    $('#settings-btn').dataset.tooltip = t('settings')
+    $('#logout-btn').dataset.tooltip = t('logout')
+    $('#preview-download').dataset.tooltip = t('download')
+    $('#preview-close').dataset.tooltip = t('close')
+    $('#hero-theme-toggle').dataset.tooltip = t('toggleTheme')
+    $('#view-grid-btn').dataset.tooltip = t('viewGrid')
+    $('#view-list-btn').dataset.tooltip = t('viewList')
+    $('#upload-panel-close').dataset.tooltip = t('close')
 
     // Prompt dialog
     $('#prompt-cancel').textContent = t('cancel')
@@ -1839,6 +1952,15 @@ class App {
 
     // Settings
     $('#settings-btn').addEventListener('click', () => this.#showConfigDialog())
+
+    // Logout
+    $('#logout-btn').addEventListener('click', async () => {
+      const ok = await this.#ui.confirm(t('logoutConfirmTitle'), t('logoutConfirmMsg'))
+      if (!ok) return
+      this.#config.clear()
+      $('#app').hidden = true
+      this.#showHero()
+    })
 
     // Share config
     $('#share-btn').addEventListener('click', async () => {
