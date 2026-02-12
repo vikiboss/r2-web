@@ -11,6 +11,7 @@ const THEME_KEY = 'r2-manager-theme'
 const LANG_KEY = 'r2-manager-lang'
 const VIEW_KEY = 'r2-manager-view'
 const DENSITY_KEY = 'r2-manager-density'
+const SORT_BY_KEY = 'r2-manager-sort-by'
 const PAGE_SIZE = 100
 const TOAST_DURATION = 3000
 const MAX_UPLOAD_SIZE = 5 * 1024 * 1024 * 1024 // 5GB
@@ -37,7 +38,7 @@ const I18N = {
       '占位符: [name] 原始名, [ext] 扩展名, [hash:N] 哈希, [date:FORMAT] 日期, [timestamp] 时间戳, [uuid], / 目录',
     cancel: '取消',
     connect: '连接',
-    newFolder: '新建文件夹',
+    newFolder: '新建目录',
     upload: '上传',
     dropToUpload: '松手即可上传',
     pasteToUpload: '已粘贴 {count} 个文件',
@@ -58,15 +59,15 @@ const I18N = {
     ok: '好的',
     deleteConfirmTitle: '删除确认',
     deleteConfirmMsg: '确定要删除 "{name}" 吗？删除后无法恢复哦。',
-    deleteFolderConfirmMsg: '确定要删除文件夹 "{name}" 及其所有内容吗？删除后无法恢复哦。',
+    deleteFolderConfirmMsg: '确定要删除目录 "{name}" 及其所有内容吗？删除后无法恢复哦。',
     renameTitle: '重命名',
     renameLabel: '新名称',
     copyTitle: '复制到',
     copyLabel: '目标路径',
     moveTitle: '移动到',
     moveLabel: '目标路径',
-    newFolderTitle: '新建文件夹',
-    newFolderLabel: '文件夹名称',
+    newFolderTitle: '新建目录',
+    newFolderLabel: '目录名称',
     authFailed: '连接失败了，检查一下凭据吧',
     customDomain: '自定义域名（Custom Domain）',
     customDomainHint: '可选，配置后可一键复制文件的公开链接',
@@ -86,7 +87,7 @@ const I18N = {
     renameSuccess: '已重命名为 "{name}"',
     copySuccess: '已复制到 "{name}"',
     moveSuccess: '已移动到 "{name}"',
-    folderCreated: '文件夹 "{name}" 创建好了',
+    folderCreated: '目录 "{name}" 创建好了',
     previewNotAvailable: '这种文件类型暂时还不能预览',
     size: '大小',
     lastModified: '最后修改',
@@ -112,7 +113,7 @@ const I18N = {
     viewGrid: '网格',
     viewList: '列表',
     densityCompact: '紧凑',
-    densityNormal: '正常',
+    densityNormal: '标准',
     densityLoose: '宽松',
     save: '保存',
     heroDesc: '轻盈优雅的 Web 原生 Cloudflare R2 文件管理器，一切皆在浏览器中完成。',
@@ -219,7 +220,7 @@ const I18N = {
     viewGrid: 'Grid',
     viewList: 'List',
     densityCompact: 'Compact',
-    densityNormal: 'Normal',
+    densityNormal: 'Standard',
     densityLoose: 'Loose',
     save: 'Save',
     heroDesc: 'A lightweight & elegant R2 bucket manager, all in your browser.',
@@ -327,7 +328,7 @@ const I18N = {
     viewList: 'リスト',
     densityCompact: 'コンパクト',
     densityNormal: '標準',
-    densityLoose: 'ゆったり',
+    densityLoose: 'ルーズ',
     save: '保存',
     heroDesc: '軽量でエレガントな R2 バケットマネージャー、すべてブラウザで完結。',
     heroConnect: '始めましょう',
@@ -964,7 +965,7 @@ class UIManager {
     for (const el of document.querySelectorAll('[data-tooltip]')) {
       el.addEventListener('mouseenter', () => {
         hide()
-        showTimer = setTimeout(() => show(/** @type {HTMLElement} */ (el)), 400)
+        showTimer = setTimeout(() => show(/** @type {HTMLElement} */ (el)), 100)
       })
       el.addEventListener('mouseleave', hide)
     }
@@ -1140,8 +1141,14 @@ class FileExplorer {
     }
 
     const cmp = comparators[this.#sortBy] ?? byName
-    const directedCmp = this.#sortOrder === 'asc' ? cmp : (/** @type {FileItem} */ a, /** @type {FileItem} */ b) => cmp(b, a)
-    const directedByName = this.#sortOrder === 'asc' ? byName : (/** @type {FileItem} */ a, /** @type {FileItem} */ b) => byName(b, a)
+    const directedCmp =
+      this.#sortOrder === 'asc'
+        ? cmp
+        : (/** @type {FileItem} */ a, /** @type {FileItem} */ b) => cmp(b, a)
+    const directedByName =
+      this.#sortOrder === 'asc'
+        ? byName
+        : (/** @type {FileItem} */ a, /** @type {FileItem} */ b) => byName(b, a)
     return [...folders.toSorted(directedByName), ...files.toSorted(directedCmp)]
   }
 
@@ -1837,17 +1844,6 @@ class App {
     $('#config-cancel').textContent = t('cancel')
     $('#config-submit').textContent = t('save')
 
-    // Sort select options in toolbar
-    const sortSelect = $('#sort-select')
-    if (sortSelect) {
-      const nameOpt = $('option[value="name"]', sortSelect)
-      const dateOpt = $('option[value="date"]', sortSelect)
-      const sizeOpt = $('option[value="size"]', sortSelect)
-      if (nameOpt) nameOpt.textContent = t('sortName')
-      if (dateOpt) dateOpt.textContent = t('sortDate')
-      if (sizeOpt) sizeOpt.textContent = t('sortSize')
-    }
-
     // Sort order tooltips
     $('#sort-asc-btn').dataset.tooltip = t('sortAsc')
     $('#sort-desc-btn').dataset.tooltip = t('sortDesc')
@@ -1855,12 +1851,18 @@ class App {
     // View & density
     $('#view-grid-btn').dataset.tooltip = t('viewGrid')
     $('#view-list-btn').dataset.tooltip = t('viewList')
+
     const densitySelect = $('#density-select')
     if (densitySelect) {
       $('option[value="compact"]', densitySelect).textContent = t('densityCompact')
       $('option[value="normal"]', densitySelect).textContent = t('densityNormal')
       $('option[value="loose"]', densitySelect).textContent = t('densityLoose')
     }
+
+    // Sort buttons tooltips
+    $('#sort-name-btn').dataset.tooltip = t('sortName')
+    $('#sort-date-btn').dataset.tooltip = t('sortDate')
+    $('#sort-size-btn').dataset.tooltip = t('sortSize')
 
     // Toolbar buttons
     $('#new-folder-btn span').textContent = t('newFolder')
@@ -1949,8 +1951,10 @@ class App {
   #restoreViewPrefs() {
     const view = localStorage.getItem(VIEW_KEY) || 'grid'
     const density = localStorage.getItem(DENSITY_KEY) || 'normal'
+    const sortBy = localStorage.getItem(SORT_BY_KEY) || 'name'
     this.#setView(view)
     this.#setDensity(density)
+    this.#setSortBy(sortBy)
   }
 
   /** @param {string} view */
@@ -1967,6 +1971,16 @@ class App {
     const densitySelect = /** @type {HTMLSelectElement} */ ($('#density-select'))
     densitySelect.value = density
     localStorage.setItem(DENSITY_KEY, density)
+  }
+
+  /** @param {string} sortBy */
+  #setSortBy(sortBy) {
+    // Update sort buttons aria-pressed
+    $('#sort-name-btn').setAttribute('aria-pressed', String(sortBy === 'name'))
+    $('#sort-date-btn').setAttribute('aria-pressed', String(sortBy === 'date'))
+    $('#sort-size-btn').setAttribute('aria-pressed', String(sortBy === 'size'))
+    if (this.#explorer) this.#explorer.setSortBy(sortBy)
+    localStorage.setItem(SORT_BY_KEY, sortBy)
   }
 
   /** @param {'asc' | 'desc'} order */
@@ -2269,11 +2283,10 @@ class App {
       $('#upload-panel').hidden = true
     })
 
-    // Sort select
-    $('#sort-select').addEventListener('change', (/** @type {Event} */ e) => {
-      if (this.#explorer)
-        this.#explorer.setSortBy(/** @type {HTMLSelectElement} */ (e.target).value)
-    })
+    // Sort buttons
+    $('#sort-name-btn').addEventListener('click', () => this.#setSortBy('name'))
+    $('#sort-date-btn').addEventListener('click', () => this.#setSortBy('date'))
+    $('#sort-size-btn').addEventListener('click', () => this.#setSortBy('size'))
 
     // Sort order toggle
     $('#sort-asc-btn').addEventListener('click', () => this.#setSortOrder('asc'))

@@ -296,6 +296,17 @@
   .icon-lg { width: 20px; height: 20px; }
   .icon-xl { width: 48px; height: 48px; }
 
+  /* Enhanced icon styling for toolbar buttons */
+  .toolbar .icon-btn svg.icon {
+    stroke-width: 2;
+    transition: all 0.2s ease;
+  }
+
+  .toolbar .icon-btn:hover svg.icon {
+    stroke-width: 2.2;
+    filter: drop-shadow(0 1px 0 rgba(0,0,0,0.05));
+  }
+
   /* Theme toggle icons */
   [data-theme="light"] .icon-moon,
   [data-theme="dark"] .icon-sun { display: none; }
