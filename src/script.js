@@ -103,6 +103,16 @@ const I18N = {
     preferences: '偏好设置',
     uploadSettings: '上传设置',
     r2Connection: 'R2 连接',
+    compressionSettings: '图片压缩',
+    compressMode: '模式',
+    compressModeNone: '暂不开启',
+    compressModeLocal: '本地压缩',
+    compressModeTinify: 'Tinify 服务',
+    compressLevel: '压缩程度',
+    compressLevelBalanced: '平衡模式',
+    compressLevelExtreme: '极致压缩',
+    compressLevelHint: '使用 WebAssembly/Canvas 高性能压缩',
+    compressTinifyHint: 'Key 存储在浏览器本地，出于 Tinify API 跨域问题会经过代理中转。',
     theme: '主题',
     themeLight: '浅色',
     themeDark: '深色',
@@ -210,6 +220,16 @@ const I18N = {
     preferences: 'Preferences',
     uploadSettings: 'Upload',
     r2Connection: 'R2',
+    compressionSettings: 'Image Compression',
+    compressMode: 'Compression Mode',
+    compressModeNone: 'None',
+    compressModeLocal: 'Local',
+    compressModeTinify: 'Tinify Service',
+    compressLevel: 'Compression Level',
+    compressLevelBalanced: 'Balanced',
+    compressLevelExtreme: 'Extreme',
+    compressLevelHint: 'Uses high-performance compression with WebAssembly/Canvas',
+    compressTinifyHint: 'Key is stored locally in your browser. Requests are proxied to avoid CORS issues with the Tinify API.',
     theme: 'Theme',
     themeLight: 'Light',
     themeDark: 'Dark',
@@ -317,6 +337,16 @@ const I18N = {
     preferences: '設定',
     uploadSettings: 'アップロード',
     r2Connection: 'R2',
+    compressionSettings: '画像圧縮',
+    compressMode: '圧縮モード',
+    compressModeNone: 'なし',
+    compressModeLocal: 'ローカル',
+    compressModeTinify: 'Tinify サービス',
+    compressLevel: '圧縮レベル',
+    compressLevelBalanced: 'バランス',
+    compressLevelExtreme: '極端',
+    compressLevelHint: 'WebAssembly/Canvas を使用した高性能圧縮',
+    compressTinifyHint: 'Tinify API の CORS 問題を回避するため、キーはブラウザにローカル保存され、リクエストはプロキシ経由になります。',
     theme: 'テーマ',
     themeLight: 'ライト',
     themeDark: 'ダーク',
@@ -1957,6 +1987,28 @@ class App {
     $('#config-section-upload').textContent = t('uploadSettings')
     $('#lbl-filename-tpl').textContent = t('filenameTpl')
     $('#filename-tpl-hint').textContent = t('filenameTplHint')
+
+    $('#config-section-compression').textContent = t('compressionSettings')
+    $('#lbl-compress-mode').textContent = t('compressMode')
+
+    const compressModeSelect = $('#cfg-compress-mode')
+    if (compressModeSelect) {
+      $('option[value="none"]', compressModeSelect).textContent = t('compressModeNone')
+      $('option[value="local"]', compressModeSelect).textContent = t('compressModeLocal')
+      $('option[value="tinify"]', compressModeSelect).textContent = t('compressModeTinify')
+    }
+
+    $('#lbl-compress-level').textContent = t('compressLevel')
+
+    const compressLevelSelect = $('#cfg-compress-level')
+    if (compressLevelSelect) {
+      $('option[value="balanced"]', compressLevelSelect).textContent = t('compressLevelBalanced')
+      $('option[value="extreme"]', compressLevelSelect).textContent = t('compressLevelExtreme')
+    }
+
+    $('#compress-level-hint').textContent = t('compressLevelHint')
+    $('#compress-tinify-hint').textContent = t('compressTinifyHint')
+
     $('#config-cancel').textContent = t('cancel')
     $('#config-submit').textContent = t('save')
 
