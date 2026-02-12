@@ -29,6 +29,7 @@
 
 - HTML5/CSS3/JavaScript ES6+
 - 原生的 Fetch API、CSS 嵌套、dialog 等元素
+- Import Map + esm.sh，模块化组织代码
 - JSDoc 注释提供类型安全和开发提示
 - dayjs 处理时间，AWS4Fetch 处理 R2 API 调用
 - 代码开源，无任何后端服务，安全可靠
