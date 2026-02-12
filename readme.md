@@ -1,8 +1,10 @@
+![d8c0fec7.png](https://image.viki.moe/github/d8c0fec7.png)
+
 # R2 管理器
 
 📁 轻盈优雅的 R2 存储桶管理器，一切在浏览器中完成。
 
-![screenshot](https://image.viki.moe/github/e5a933e9.png)
+![61366da7.png](https://image.viki.moe/github/61366da7.png)
 
 ## 在线访问
 
@@ -33,7 +35,7 @@
 
 建议在 域 > 域名 > 规则 > 页面规则 配置并开启自定义域名的资源缓存以提高图片等资源加载速度。
 
-![cache](https://image.viki.moe/github/fca0bf44.png)
+![fca0bf44.png](https://image.viki.moe/github/fca0bf44.png)
 
 ## 技术细节
 
