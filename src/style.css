@@ -456,6 +456,7 @@
     transition: background var(--duration-fast);
     position: relative;
     min-height: 100px;
+    overflow: hidden;
 
     &:hover { background: var(--bg-hover); }
     &:active { background: var(--bg-active); }
@@ -514,6 +515,18 @@
     object-fit: cover;
     border-radius: var(--radius-sm);
     background: var(--bg-secondary);
+    animation: skeleton-pulse 1.5s ease-in-out infinite;
+    filter: blur(12px);
+    scale: 1.08;
+    transition:
+      filter var(--duration-slow) var(--ease-out),
+      scale var(--duration-slow) var(--ease-out);
+
+    &.loaded {
+      animation: none;
+      filter: none;
+      scale: 1;
+    }
   }
 
   .file-card-name {

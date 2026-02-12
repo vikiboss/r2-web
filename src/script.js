@@ -948,6 +948,8 @@ class FileExplorer {
   #sortBy = 'name'
   /** @type {Map<string, CacheEntry>} */
   #cache = new Map()
+  /** @type {FileItem[]} All loaded items for current prefix (for local re-sort) */
+  #loadedItems = []
 
   /** @param {R2Client} r2 @param {UIManager} ui */
   constructor(r2, ui) {
@@ -980,13 +982,16 @@ class FileExplorer {
   /** @param {string} sortBy */
   setSortBy(sortBy) {
     this.#sortBy = sortBy
-    this.refresh()
+    if (this.#loadedItems.length === 0) return
+    $('#file-grid').innerHTML = ''
+    this.#renderItems(this.#sortItems(this.#loadedItems))
   }
 
   /** @param {string} prefix */
   async navigate(prefix) {
     this.#prefix = prefix
     this.#continuationToken = ''
+    this.#loadedItems = []
     $('#file-grid').innerHTML = ''
     this.#updateBreadcrumb()
     await this.#loadPage(true)
@@ -1017,12 +1022,22 @@ class FileExplorer {
       if (isInitial) this.#ui.hideSkeleton()
 
       const items = [...result.folders, ...result.files]
-      const sortedItems = this.#sortItems(items)
-      if (isInitial && sortedItems.length === 0) {
-        this.#ui.showEmptyState()
+      this.#loadedItems.push(...items)
+
+      if (isInitial) {
+        // Initial load: sort all and render
+        const sortedItems = this.#sortItems(this.#loadedItems)
+        if (sortedItems.length === 0) {
+          this.#ui.showEmptyState()
+        } else {
+          this.#ui.hideEmptyState()
+          this.#renderItems(sortedItems)
+        }
       } else {
+        // Load more: re-sort everything and re-render
         this.#ui.hideEmptyState()
-        this.#renderItems(sortedItems)
+        $('#file-grid').innerHTML = ''
+        this.#renderItems(this.#sortItems(this.#loadedItems))
       }
 
       /** @type {HTMLElement} */ $('#load-more').hidden = !result.isTruncated
@@ -1136,7 +1151,10 @@ class FileExplorer {
     try {
       const url = await this.#r2.getPresignedUrl(key)
       const img = /** @type {HTMLImageElement} */ ($('img', card))
-      if (img) img.src = url
+      if (!img) return
+      img.onload = () => img.classList.add('loaded')
+      img.onerror = () => img.classList.add('loaded')
+      img.src = url
     } catch {
       /* ignore thumbnail failures */
     }
@@ -1165,6 +1183,7 @@ class FileExplorer {
   async refresh() {
     this.invalidateCache(this.#prefix)
     this.#continuationToken = ''
+    this.#loadedItems = []
     $('#file-grid').innerHTML = ''
     this.#updateBreadcrumb()
     await this.#loadPage(true, true)
