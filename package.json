@@ -1,0 +1,15 @@
+{
+  "name": "r2-web",
+  "private": true,
+  "packageManager": "pnpm@10.29.3",
+  "author": "Viki <hi@viki.moe> (https://github.com/vikiboss)",
+  "license": "MIT",
+  "scripts": {
+    "typecheck": "tsc --noEmit --project jsconfig.json"
+  },
+  "devDependencies": {
+    "aws4fetch": "^1.0.20",
+    "dayjs": "^1.11.19",
+    "typescript": "^5.9.3"
+  }
+}

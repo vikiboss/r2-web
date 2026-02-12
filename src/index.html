@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
-  <title>R2 Web Manager</title>
+  <title>R2 Web File Manager</title>
   <link rel="icon" href="favicon.ico" sizes="any">
   <link rel="preconnect" href="https://esm.sh">
   <link rel="preconnect" href="https://r2.cloudflarestorage.com">
@@ -79,7 +79,7 @@
       <div class="hero-badge">
         <img src="favicon.ico" alt="" class="hero-badge-icon">
       </div>
-      <h1 class="hero-title">R2 Web Manager</h1>
+      <h1 class="hero-title" id="hero-title">R2 Web Manager</h1>
       <p class="hero-desc" id="hero-desc">A pure client-side Cloudflare R2 bucket file manager. No backend, no framework — your credentials stay in your browser.</p>
       <div class="hero-actions">
         <button type="button" class="btn primary" id="hero-connect-btn">
@@ -255,19 +255,21 @@
 
   <!-- Preview Dialog -->
   <dialog id="preview-dialog" class="preview-dialog">
-    <div class="preview-header">
-      <span class="preview-filename truncate" id="preview-filename"></span>
-      <div class="flex items-center" style="gap:4px">
-        <button type="button" class="icon-btn sm" id="preview-download" title="Download">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        </button>
-        <button type="button" class="icon-btn sm" id="preview-close" title="Close">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
+    <div class="dialog-panel">
+      <div class="preview-header">
+        <span class="preview-filename truncate" id="preview-filename"></span>
+        <div class="flex items-center" style="gap:4px">
+          <button type="button" class="icon-btn sm" id="preview-download" title="Download">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          </button>
+          <button type="button" class="icon-btn sm" id="preview-close" title="Close">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
       </div>
+      <div class="preview-body" id="preview-body"></div>
+      <div class="preview-footer" id="preview-footer"></div>
     </div>
-    <div class="preview-body" id="preview-body"></div>
-    <div class="preview-footer" id="preview-footer"></div>
   </dialog>
 
   <!-- Context Menu -->

@@ -9,10 +9,12 @@ R2 Web Manager — a pure client-side Cloudflare R2 bucket file manager built wi
 ## Project Structure
 
 ```
-./src/index.html   — App shell, dialogs, import map (esm.sh CDN for aws4fetch & dayjs)
-./src/style.css    — CSS layers: reset, tokens, base, layout, components, utilities, animations
-./src/script.js    — All application logic in class-based architecture
-./src/plan.md      — Original requirements/spec document
+├── plan.md          — Original requirements/spec document
+├── readme.md        - Readme with project overview, usage instructions
+└── src              - All source code (no build step, so this is also the deploy directory)
+     ├── index.html  — App shell, dialogs, import map (esm.sh CDN for aws4fetch & dayjs)
+     ├── script.js   — CSS layers: reset, tokens, base, layout, components, utilities, animations
+     └── style.css   — All application logic in class-based architecture
 ```
 
 ## Development
@@ -34,16 +36,16 @@ All JS lives in `script.js` as ES6 modules imported via `<script type="importmap
 
 **Key classes (in dependency order):**
 
-| Class | Purpose |
-|---|---|
-| `ConfigManager` | localStorage persistence for credentials, preferences, Base64 config sharing via URL |
-| `R2Client` | S3-compatible API client using `aws4fetch` (ListObjectsV2, PUT, DELETE, HEAD, COPY) |
-| `UIManager` | Theme toggle (ViewTransition API), toasts, dialogs, context menus, skeleton states |
-| `FileExplorer` | Directory navigation, breadcrumbs, sorting, pagination, lazy thumbnail loading (IntersectionObserver) |
-| `UploadManager` | Drag-drop, clipboard paste, file picker uploads; filename template processing |
-| `FilePreview` | Preview images/video/audio/text via pre-signed URLs |
-| `FileOperations` | Rename, copy, move, delete (recursive for folders), link copying |
-| `App` | Main orchestrator — wires all managers together, handles i18n and event binding |
+| Class            | Purpose                                                                                               |
+| ---------------- | ----------------------------------------------------------------------------------------------------- |
+| `ConfigManager`  | localStorage persistence for credentials, preferences, Base64 config sharing via URL                  |
+| `R2Client`       | S3-compatible API client using `aws4fetch` (ListObjectsV2, PUT, DELETE, HEAD, COPY)                   |
+| `UIManager`      | Theme toggle (ViewTransition API), toasts, dialogs, context menus, skeleton states                    |
+| `FileExplorer`   | Directory navigation, breadcrumbs, sorting, pagination, lazy thumbnail loading (IntersectionObserver) |
+| `UploadManager`  | Drag-drop, clipboard paste, file picker uploads; filename template processing                         |
+| `FilePreview`    | Preview images/video/audio/text via pre-signed URLs                                                   |
+| `FileOperations` | Rename, copy, move, delete (recursive for folders), link copying                                      |
+| `App`            | Main orchestrator — wires all managers together, handles i18n and event binding                       |
 
 **External dependencies (CDN via esm.sh):**
 - `aws4fetch@1.0.20` — AWS4 request signing for R2 API

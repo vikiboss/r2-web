@@ -17,27 +17,21 @@
 ```json
 [
   {
-    "AllowedOrigins": [
-      "https://r2.viki.moe",
-      "http://127.0.0.1:5500"
-    ],
-    "AllowedMethods": [
-      "GET",
-      "POST",
-      "PUT",
-      "DELETE",
-      "HEAD"
-    ],
-    "AllowedHeaders": [
-      "authorization",
-      "content-type",
-      "x-amz-content-sha256",
-      "x-amz-date"
-    ],
+    "AllowedOrigins": [ "https://r2.viki.moe" ],
+    "AllowedMethods": [ "GET", "POST", "PUT", "DELETE", "HEAD" ],
+    "AllowedHeaders": [ "authorization", "content-type", "x-amz-content-sha256", "x-amz-date" ],
     "MaxAgeSeconds": 86400
   }
 ]
 ```
+
+## 技术细节
+
+- HTML5/CSS3/JavaScript ES6+
+- 原生的 Fetch API、CSS 嵌套、dialog 等元素
+- JSDoc 注释提供类型安全和开发提示
+- dayjs 处理时间，AWS4Fetch 处理 R2 API 调用
+- 代码开源，无任何后端服务，安全可靠
 
 ## 后续计划
 
@@ -46,7 +40,7 @@
 
 ## 其他
 
-项目使用 Claude 4.6 Opus 完成，如果对开发过程或者 Prompt 感兴趣，请参考 [plan.md](./plan.md)，全是我一个一个字手敲的。
+项目使用 Claude 4.6 Opus 模型 Vibe Coding 完成，如果对开发过程或者提示词感兴趣，请参考 [plan.md](./plan.md)，全是一个字一个字手敲的。
 
 ## License
 

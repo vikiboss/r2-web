@@ -48,17 +48,20 @@
 - 维护一套 CSS 主题，使用 css var 方式，放在 style.css 文件中，通过不同的 layer 等封装常见的 UI 组件，如按钮、输入框、模态框等，确保代码的复用性和样式一致性。
 - 使用 import map 从 esm.sh 引入模块，代码放在 script.js 文件中，使用模块化方式组织代码。
 - 使用原生 fetch、现代 CSS 属性和现代 JavaScript，减少对第三方库或框架的依赖，确保代码轻量高效。
-- 语义化的 HTML 结构，使用 CSS Flex Box 或 Grid 来布局，确保响应式设计。
+- 使用 JSDoc + jsonconfig.json 来提供类型安全和开发提示，提升开发效率和代码质量。
+- 语义化的 HTML 结构，使用 CSS Flexbox 或 Grid 来布局，确保响应式设计。
 - 使用最新的 HTML5、CSS3 和 ES6+ 技术，确保性能和体验优先，不考虑兼容性问题。
 - 合适的 prefetch、preconnect 和 lazy loading 技术来优化性能，尤其是在目录预览和文件预览功能中。
-- 使用 ES6 特性来编写代码，确保代码的可读性和维护性，包括但不限于 const、剪头函数、async、await、Promise.all、模块化等。
+- 使用 ES6 特性来编写代码，确保代码的可读性和维护性，包括但不限于 const、箭头函数、toSorted、Object.groupBy、async/await、Promise.all、模块化等。
 - 尝试 ViewTransition API 等现代化的 Web API 来实现流畅的界面过渡和动画效果，提升用户体验。
 
 ## 目录参考
 
 ```
-- index.html
-- style.css
-- script.js
 - readme.md
+- plan.md
+- src
+  - index.html
+  - style.css
+  - script.js
 ```

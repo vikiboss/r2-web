@@ -24,7 +24,7 @@ const VIDEO_RE = /\.(mp4|webm|ogg|mov|avi|mkv|m4v)$/i;
 // --- i18n ---
 const I18N = {
   zh: {
-    appTitle: 'R2 Web Manager',
+    appTitle: 'R2 Web 文件管理器',
     connectTitle: '连接到 R2',
     connectDesc: '输入你的 Cloudflare R2 凭据，它们仅保存在浏览器本地。',
     accountId: '账户 ID',
@@ -119,7 +119,7 @@ const I18N = {
     heroF8: '一键分享配置',
   },
   en: {
-    appTitle: 'R2 Web Manager',
+    appTitle: 'R2 Web File Manager',
     connectTitle: 'Connect to R2',
     connectDesc: 'Enter your Cloudflare R2 credentials. They are stored locally in your browser.',
     accountId: 'Account ID',
@@ -214,7 +214,7 @@ const I18N = {
     heroF8: 'One-click share config',
   },
   ja: {
-    appTitle: 'R2 Web Manager',
+    appTitle: 'R2 Web ファイルマネージャー',
     connectTitle: 'R2 に接続',
     connectDesc: 'Cloudflare R2 の認証情報を入力してください。ブラウザのローカルに保存されます。',
     accountId: 'アカウント ID',
@@ -310,24 +310,33 @@ const I18N = {
   },
 };
 
-let currentLang = localStorage.getItem(LANG_KEY) || 'zh';
+/** @typedef {keyof typeof I18N} Lang */
+/** @typedef {keyof typeof I18N.en} I18nKey */
+/** @typedef {{ accountId: string; accessKeyId: string; secretAccessKey: string; bucket: string; filenameTpl?: string; customDomain?: string; theme?: string; lang?: string }} R2Config */
+/** @typedef {{ key: string; isFolder: boolean; size?: number; lastModified?: string }} FileItem */
 
+let currentLang = /** @type {Lang} */ (localStorage.getItem(LANG_KEY) || 'zh');
+
+/** @param {I18nKey} key @param {Record<string, string | number>} [params] @returns {string} */
 function t(key, params = {}) {
   let str = I18N[currentLang]?.[key] || I18N.en[key] || key;
   for (const [k, v] of Object.entries(params)) {
-    str = str.replace(`{${k}}`, v);
+    str = str.replace(`{${k}}`, String(v));
   }
   return str;
 }
 
+/** @param {Lang} lang */
 function setLang(lang) {
   currentLang = lang;
   localStorage.setItem(LANG_KEY, lang);
 }
 
 // --- Helpers ---
-const $ = (sel, ctx = document) => ctx.querySelector(sel);
+/** @type {<T extends HTMLElement = HTMLElement>(sel: string, ctx?: ParentNode) => T} */
+const $ = (sel, ctx = document) => /** @type {*} */ (ctx.querySelector(sel));
 
+/** @param {number} bytes @returns {string} */
 function formatBytes(bytes) {
   if (bytes === 0) return '0 B';
   const k = 1024;
@@ -336,6 +345,7 @@ function formatBytes(bytes) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 }
 
+/** @param {string} dateStr @returns {string} */
 function formatDate(dateStr) {
   const d = new Date(dateStr);
   return d.toLocaleDateString(currentLang === 'zh' ? 'zh-CN' : currentLang === 'ja' ? 'ja-JP' : 'en-US', {
@@ -344,23 +354,28 @@ function formatDate(dateStr) {
   });
 }
 
+/** @param {string} key @returns {string} */
 function getFileName(key) {
   const parts = key.replace(/\/$/, '').split('/');
   return parts[parts.length - 1];
 }
 
+/** @param {string} name @returns {string} */
 function getExtension(name) {
   const i = name.lastIndexOf('.');
   return i > 0 ? name.slice(i + 1) : '';
 }
 
+/** @param {string} name @returns {string} */
 function getBaseName(name) {
   const i = name.lastIndexOf('.');
   return i > 0 ? name.slice(0, i) : name;
 }
 
+/** @param {string} key @returns {string} */
 function getMimeType(key) {
   const ext = getExtension(key).toLowerCase();
+  /** @type {Record<string, string>} */
   const map = {
     jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', gif: 'image/gif',
     webp: 'image/webp', svg: 'image/svg+xml', ico: 'image/x-icon', bmp: 'image/bmp', avif: 'image/avif',
@@ -373,12 +388,12 @@ function getMimeType(key) {
   return map[ext] || 'application/octet-stream';
 }
 
-/** Encode S3 object key for URL path — encode each segment but keep `/` as-is */
+/** @param {string} key @returns {string} */
 function encodeS3Key(key) {
   return key.split('/').map(encodeURIComponent).join('/');
 }
 
-
+/** @param {File} file @returns {Promise<string>} */
 async function computeFileHash(file) {
   const buffer = await file.arrayBuffer();
   const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
@@ -387,6 +402,7 @@ async function computeFileHash(file) {
     .join('');
 }
 
+/** @param {string} template @param {File} file @returns {Promise<string>} */
 async function applyFilenameTemplate(template, file) {
   if (!template?.trim()) return file.name;
 
@@ -400,9 +416,9 @@ async function applyFilenameTemplate(template, file) {
   result = result.replace(/\[ext\]/g, ext);
   result = result.replace(/\[timestamp\]/g, String(Math.floor(Date.now() / 1000)));
   result = result.replace(/\[uuid\]/g, crypto.randomUUID());
-  result = result.replace(/\[hash:(\d+)\]/g, (_, n) => fileHash.slice(0, parseInt(n, 10)));
+  result = result.replace(/\[hash:(\d+)\]/g, (_, n) => fileHash.slice(0, parseInt(/** @type {string} */ (n), 10)));
   result = result.replace(/\[hash\]/g, fileHash.slice(0, 8));
-  result = result.replace(/\[date:([^\]]+)\]/g, (_, format) => dayjs().format(format));
+  result = result.replace(/\[date:([^\]]+)\]/g, (_, format) => dayjs().format(/** @type {string} */ (format)));
 
   return result;
 }
@@ -412,16 +428,19 @@ async function applyFilenameTemplate(template, file) {
 // ConfigManager
 // ========================================================================
 class ConfigManager {
+  /** @returns {R2Config} */
   load() {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
-    } catch { return {}; }
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') || {};
+    } catch { return /** @type {R2Config} */ ({}); }
   }
 
+  /** @param {R2Config} cfg */
   save(cfg) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg));
   }
 
+  /** @returns {R2Config} */
   get() {
     return this.load();
   }
@@ -450,6 +469,7 @@ class ConfigManager {
     return btoa(unescape(encodeURIComponent(JSON.stringify(cfg))));
   }
 
+  /** @param {string} b64 @returns {boolean} */
   loadFromBase64(b64) {
     try {
       const json = decodeURIComponent(escape(atob(b64)));
@@ -476,11 +496,12 @@ class ConfigManager {
 // R2Client
 // ========================================================================
 class R2Client {
-  /** @type {AwsClient} */
+  /** @type {AwsClient | null} */
   #client = null;
-  /** @type {ConfigManager} */
+  /** @type {ConfigManager | null} */
   #config = null;
 
+  /** @param {ConfigManager} configManager */
   init(configManager) {
     this.#config = configManager;
     const cfg = configManager.get();
@@ -492,29 +513,32 @@ class R2Client {
     });
   }
 
+  /** @param {string} [prefix] @param {string} [continuationToken] */
   async listObjects(prefix = '', continuationToken = '') {
-    const url = new URL(this.#config.getBucketUrl());
+    const url = new URL(/** @type {ConfigManager} */ (this.#config).getBucketUrl());
     url.searchParams.set('list-type', '2');
     url.searchParams.set('delimiter', '/');
     url.searchParams.set('max-keys', String(PAGE_SIZE));
     if (prefix) url.searchParams.set('prefix', prefix);
     if (continuationToken) url.searchParams.set('continuation-token', continuationToken);
 
-    const res = await this.#client.fetch(url.toString());
+    const res = await /** @type {AwsClient} */ (this.#client).fetch(url.toString());
     if (!res.ok) throw new Error(res.status === 403 ? 'AUTH_FAILED' : `HTTP ${res.status}`);
 
     const text = await res.text();
     const doc = new DOMParser().parseFromString(text, 'application/xml');
 
+    /** @type {FileItem[]} */
     const folders = [...doc.querySelectorAll('CommonPrefixes > Prefix')].map(el => ({
-      key: el.textContent,
+      key: el.textContent ?? '',
       isFolder: true,
     }));
 
+    /** @type {FileItem[]} */
     const files = [...doc.querySelectorAll('Contents')].map(el => ({
-      key: el.querySelector('Key').textContent,
-      size: parseInt(el.querySelector('Size').textContent, 10),
-      lastModified: el.querySelector('LastModified').textContent,
+      key: el.querySelector('Key')?.textContent ?? '',
+      size: parseInt(el.querySelector('Size')?.textContent ?? '0', 10),
+      lastModified: el.querySelector('LastModified')?.textContent ?? '',
       isFolder: false,
     })).filter(f => f.key !== prefix); // filter out the prefix itself
 
@@ -524,31 +548,35 @@ class R2Client {
     return { folders, files, isTruncated, nextToken };
   }
 
+  /** @param {string} key @param {string} contentType */
   async putObjectSigned(key, contentType) {
-    const url = `${this.#config.getBucketUrl()}/${encodeS3Key(key)}`;
-    const req = await this.#client.sign(url, {
+    const url = `${/** @type {ConfigManager} */ (this.#config).getBucketUrl()}/${encodeS3Key(key)}`;
+    const req = await /** @type {AwsClient} */ (this.#client).sign(url, {
       method: 'PUT',
       headers: { 'Content-Type': contentType },
     });
     return { url: req.url, headers: Object.fromEntries(req.headers.entries()) };
   }
 
+  /** @param {string} key */
   async getObject(key) {
-    const url = `${this.#config.getBucketUrl()}/${encodeS3Key(key)}`;
-    const res = await this.#client.fetch(url);
+    const url = `${/** @type {ConfigManager} */ (this.#config).getBucketUrl()}/${encodeS3Key(key)}`;
+    const res = await /** @type {AwsClient} */ (this.#client).fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res;
   }
 
+  /** @param {string} key */
   async getPresignedUrl(key) {
-    const url = `${this.#config.getBucketUrl()}/${encodeS3Key(key)}`;
-    const signed = await this.#client.sign(url, { method: 'GET', aws: { signQuery: true } });
+    const url = `${/** @type {ConfigManager} */ (this.#config).getBucketUrl()}/${encodeS3Key(key)}`;
+    const signed = await /** @type {AwsClient} */ (this.#client).sign(url, { method: 'GET', aws: { signQuery: true } });
     return signed.url;
   }
 
+  /** @param {string} key */
   async headObject(key) {
-    const url = `${this.#config.getBucketUrl()}/${encodeS3Key(key)}`;
-    const res = await this.#client.fetch(url, { method: 'HEAD' });
+    const url = `${/** @type {ConfigManager} */ (this.#config).getBucketUrl()}/${encodeS3Key(key)}`;
+    const res = await /** @type {AwsClient} */ (this.#client).fetch(url, { method: 'HEAD' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return {
       contentType: res.headers.get('content-type'),
@@ -558,16 +586,18 @@ class R2Client {
     };
   }
 
+  /** @param {string} key */
   async deleteObject(key) {
-    const url = `${this.#config.getBucketUrl()}/${encodeS3Key(key)}`;
-    const res = await this.#client.fetch(url, { method: 'DELETE' });
+    const url = `${/** @type {ConfigManager} */ (this.#config).getBucketUrl()}/${encodeS3Key(key)}`;
+    const res = await /** @type {AwsClient} */ (this.#client).fetch(url, { method: 'DELETE' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
   }
 
+  /** @param {string} src @param {string} dest */
   async copyObject(src, dest) {
-    const cfg = this.#config.get();
-    const url = `${this.#config.getBucketUrl()}/${encodeS3Key(dest)}`;
-    const res = await this.#client.fetch(url, {
+    const cfg = /** @type {ConfigManager} */ (this.#config).get();
+    const url = `${/** @type {ConfigManager} */ (this.#config).getBucketUrl()}/${encodeS3Key(dest)}`;
+    const res = await /** @type {AwsClient} */ (this.#client).fetch(url, {
       method: 'PUT',
       headers: {
         'x-amz-copy-source': `/${cfg.bucket}/${encodeS3Key(src)}`,
@@ -576,10 +606,11 @@ class R2Client {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
   }
 
+  /** @param {string} prefix */
   async createFolder(prefix) {
     const key = prefix.endsWith('/') ? prefix : prefix + '/';
-    const url = `${this.#config.getBucketUrl()}/${encodeS3Key(key)}`;
-    const res = await this.#client.fetch(url, {
+    const url = `${/** @type {ConfigManager} */ (this.#config).getBucketUrl()}/${encodeS3Key(key)}`;
+    const res = await /** @type {AwsClient} */ (this.#client).fetch(url, {
       method: 'PUT',
       headers: { 'Content-Length': '0' },
       body: '',
@@ -616,6 +647,7 @@ class UIManager {
     }
   }
 
+  /** @param {string} theme */
   setTheme(theme) {
     const apply = () => {
       document.documentElement.setAttribute('data-theme', theme);
@@ -628,6 +660,7 @@ class UIManager {
     }
   }
 
+  /** @param {string} message @param {'info' | 'success' | 'error'} [type] */
   toast(message, type = 'info') {
     const container = $('#toast-container');
     const el = document.createElement('div');
@@ -661,10 +694,11 @@ class UIManager {
     $('#empty-state').hidden = true;
   }
 
+  /** @param {number} x @param {number} y @param {string} key @param {boolean} isFolder */
   showContextMenu(x, y, key, isFolder) {
     const menu = $('#context-menu');
     menu.dataset.key = key;
-    menu.dataset.isFolder = isFolder;
+    menu.dataset.isFolder = String(isFolder);
 
     // Hide preview/download/copyLink for folders
     const previewBtn = $('[data-action="preview"]', menu);
@@ -692,67 +726,85 @@ class UIManager {
     try { menu.hidePopover(); } catch { /* already hidden */ }
   }
 
+  /** @param {string} title @param {string} label @param {string} [defaultValue] @returns {Promise<string | null>} */
   prompt(title, label, defaultValue = '') {
     return new Promise((resolve) => {
-      const dialog = $('#prompt-dialog');
+      const dialog = /** @type {HTMLDialogElement} */ ($('#prompt-dialog'));
       const form = $('#prompt-form');
-      const input = $('#prompt-input');
+      const input = /** @type {HTMLInputElement} */ ($('#prompt-input'));
       $('#prompt-title').textContent = title;
       $('#prompt-label').textContent = label;
       input.value = defaultValue;
 
-      const cleanup = () => {
-        dialog.close();
-        form.removeEventListener('submit', onSubmit);
-        $('#prompt-cancel').removeEventListener('click', onCancel);
-      };
+      /** @type {string | null} */
+      let result = null;
 
+      /** @param {Event} e */
       const onSubmit = (e) => {
         e.preventDefault();
-        const val = input.value.trim();
-        cleanup();
-        resolve(val || null);
+        result = input.value.trim() || null;
+        dialog.close();
       };
 
-      const onCancel = () => {
-        cleanup();
-        resolve(null);
+      const onCancel = () => dialog.close();
+
+      /** @param {Event} e */
+      const onBackdropClick = (e) => {
+        if (e.target === dialog) dialog.close();
+      };
+
+      const onClose = () => {
+        form.removeEventListener('submit', onSubmit);
+        $('#prompt-cancel').removeEventListener('click', onCancel);
+        dialog.removeEventListener('click', onBackdropClick);
+        resolve(result);
       };
 
       form.addEventListener('submit', onSubmit);
       $('#prompt-cancel').addEventListener('click', onCancel);
+      dialog.addEventListener('click', onBackdropClick);
+      dialog.addEventListener('close', onClose, { once: true });
       dialog.showModal();
       input.focus();
       input.select();
     });
   }
 
+  /** @param {string} title @param {string} message @returns {Promise<boolean>} */
   confirm(title, message) {
     return new Promise((resolve) => {
-      const dialog = $('#confirm-dialog');
+      const dialog = /** @type {HTMLDialogElement} */ ($('#confirm-dialog'));
       const form = $('#confirm-form');
       $('#confirm-title').textContent = title;
       $('#confirm-message').textContent = message;
 
-      const cleanup = () => {
-        dialog.close();
-        form.removeEventListener('submit', onSubmit);
-        $('#confirm-cancel').removeEventListener('click', onCancel);
-      };
+      let result = false;
 
+      /** @param {Event} e */
       const onSubmit = (e) => {
         e.preventDefault();
-        cleanup();
-        resolve(true);
+        result = true;
+        dialog.close();
       };
 
-      const onCancel = () => {
-        cleanup();
-        resolve(false);
+      const onCancel = () => dialog.close();
+
+      /** @param {Event} e */
+      const onBackdropClick = (e) => {
+        if (e.target === dialog) dialog.close();
+      };
+
+      const onClose = () => {
+        form.removeEventListener('submit', onSubmit);
+        $('#confirm-cancel').removeEventListener('click', onCancel);
+        dialog.removeEventListener('click', onBackdropClick);
+        resolve(result);
       };
 
       form.addEventListener('submit', onSubmit);
       $('#confirm-cancel').addEventListener('click', onCancel);
+      dialog.addEventListener('click', onBackdropClick);
+      dialog.addEventListener('close', onClose, { once: true });
       dialog.showModal();
     });
   }
@@ -762,13 +814,14 @@ class UIManager {
 // FileExplorer
 // ========================================================================
 class FileExplorer {
-  #r2;
-  #ui;
+  /** @type {R2Client} */ #r2;
+  /** @type {UIManager} */ #ui;
   #prefix = '';
   #continuationToken = '';
-  #thumbnailObserver;
+  /** @type {IntersectionObserver} */ #thumbnailObserver;
   #sortBy = 'name';
 
+  /** @param {R2Client} r2 @param {UIManager} ui */
   constructor(r2, ui) {
     this.#r2 = r2;
     this.#ui = ui;
@@ -776,8 +829,8 @@ class FileExplorer {
     this.#thumbnailObserver = new IntersectionObserver((entries) => {
       for (const entry of entries) {
         if (entry.isIntersecting) {
-          const card = entry.target;
-          const key = card.dataset.key;
+          const card = /** @type {HTMLElement} */ (entry.target);
+          const key = card.dataset.key ?? '';
           this.#thumbnailObserver.unobserve(card);
           this.#lazyLoadThumbnail(card, key);
         }
@@ -789,11 +842,13 @@ class FileExplorer {
 
   get currentSortBy() { return this.#sortBy; }
 
+  /** @param {string} sortBy */
   setSortBy(sortBy) {
     this.#sortBy = sortBy;
     this.refresh();
   }
 
+  /** @param {string} prefix */
   async navigate(prefix) {
     this.#prefix = prefix;
     this.#continuationToken = '';
@@ -807,6 +862,7 @@ class FileExplorer {
     await this.#loadPage(false);
   }
 
+  /** @param {boolean} isInitial */
   async #loadPage(isInitial) {
     if (isInitial) this.#ui.showSkeleton();
     try {
@@ -824,8 +880,8 @@ class FileExplorer {
         this.#renderItems(sortedItems);
       }
 
-      $('#load-more').hidden = !result.isTruncated;
-    } catch (err) {
+      /** @type {HTMLElement} */ ($('#load-more')).hidden = !result.isTruncated;
+    } catch (/** @type {any} */ err) {
       if (isInitial) this.#ui.hideSkeleton();
       if (err.message === 'AUTH_FAILED') {
         this.#ui.toast(t('authFailed'), 'error');
@@ -838,6 +894,7 @@ class FileExplorer {
     }
   }
 
+  /** @param {FileItem[]} items @returns {FileItem[]} */
   #sortItems(items) {
     const folders = items.filter(i => i.isFolder);
     const files = items.filter(i => !i.isFolder);
@@ -848,10 +905,10 @@ class FileExplorer {
     // Files sorted by current sort method
     switch (this.#sortBy) {
       case 'date':
-        files.sort((a, b) => new Date(b.lastModified) - new Date(a.lastModified));
+        files.sort((a, b) => new Date(b.lastModified ?? 0).getTime() - new Date(a.lastModified ?? 0).getTime());
         break;
       case 'size':
-        files.sort((a, b) => b.size - a.size);
+        files.sort((a, b) => (b.size ?? 0) - (a.size ?? 0));
         break;
       case 'name':
       default:
@@ -862,6 +919,7 @@ class FileExplorer {
     return [...folders, ...files];
   }
 
+  /** @param {FileItem[]} items */
   #renderItems(items) {
     const grid = $('#file-grid');
     const frag = document.createDocumentFragment();
@@ -874,11 +932,12 @@ class FileExplorer {
     grid.appendChild(frag);
   }
 
+  /** @param {FileItem} item @returns {HTMLDivElement} */
   #createFileCard(item) {
     const card = document.createElement('div');
     card.className = 'file-card';
     card.dataset.key = item.key;
-    card.dataset.isFolder = item.isFolder;
+    card.dataset.isFolder = String(item.isFolder);
 
     const name = getFileName(item.key);
     const isImage = !item.isFolder && IMAGE_RE.test(item.key);
@@ -900,8 +959,8 @@ class FileExplorer {
       ${iconHtml}
       <span class="file-card-name" title="${name}">${name}</span>
       ${!item.isFolder ? `
-        <span class="file-card-size">${formatBytes(item.size)}</span>
-        <span class="file-card-date">${formatDate(item.lastModified)}</span>
+        <span class="file-card-size">${formatBytes(item.size ?? 0)}</span>
+        <span class="file-card-date">${formatDate(item.lastModified ?? '')}</span>
       ` : ''}
       <div class="file-card-actions">
         <button type="button" class="icon-btn sm file-card-menu" title="More">
@@ -917,10 +976,11 @@ class FileExplorer {
     return card;
   }
 
+  /** @param {HTMLElement} card @param {string} key */
   async #lazyLoadThumbnail(card, key) {
     try {
       const url = await this.#r2.getPresignedUrl(key);
-      const img = $('img', card);
+      const img = /** @type {HTMLImageElement} */ ($('img', card));
       if (img) img.src = url;
     } catch { /* ignore thumbnail failures */ }
   }
@@ -954,12 +1014,13 @@ class FileExplorer {
 // UploadManager
 // ========================================================================
 class UploadManager {
-  #r2;
-  #ui;
-  #explorer;
-  #config;
+  /** @type {R2Client} */ #r2;
+  /** @type {UIManager} */ #ui;
+  /** @type {FileExplorer} */ #explorer;
+  /** @type {ConfigManager} */ #config;
   #dragCounter = 0;
 
+  /** @param {R2Client} r2 @param {UIManager} ui @param {FileExplorer} explorer @param {ConfigManager} config */
   constructor(r2, ui, explorer, config) {
     this.#r2 = r2;
     this.#ui = ui;
@@ -986,30 +1047,32 @@ class UploadManager {
       }
     });
 
-    app.addEventListener('dragover', (e) => {
+    app.addEventListener('dragover', (/** @type {DragEvent} */ e) => {
       e.preventDefault();
-      e.dataTransfer.dropEffect = 'copy';
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
     });
 
-    app.addEventListener('drop', (e) => {
+    app.addEventListener('drop', (/** @type {DragEvent} */ e) => {
       e.preventDefault();
       this.#dragCounter = 0;
       dropzone.hidden = true;
-      const files = [...e.dataTransfer.files];
+      const files = [...(e.dataTransfer?.files ?? [])];
       if (files.length > 0) this.uploadFiles(files);
     });
 
     // Ctrl+V / Cmd+V paste upload
     document.addEventListener('paste', (e) => {
       // Ignore paste inside input/textarea/contenteditable
-      const tag = e.target.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || e.target.isContentEditable) return;
+      const target = /** @type {HTMLElement} */ (e.target);
+      const tag = target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || target.isContentEditable) return;
 
       const items = [...(e.clipboardData?.items || [])];
+      /** @type {File[]} */
       const files = items
         .filter(item => item.kind === 'file')
         .map(item => item.getAsFile())
-        .filter(Boolean);
+        .filter(/** @returns {f is File} */ (f) => f !== null);
 
       if (files.length > 0) {
         e.preventDefault();
@@ -1019,6 +1082,7 @@ class UploadManager {
     });
   }
 
+  /** @param {File[]} files */
   async uploadFiles(files) {
     const panel = $('#upload-panel');
     const body = $('#upload-panel-body');
@@ -1083,6 +1147,7 @@ class UploadManager {
     await this.#explorer.refresh();
   }
 
+  /** @param {string} id @param {string} key @param {File} file @param {string} contentType */
   async #uploadSingleFile(id, key, file, contentType) {
     const signed = await this.#r2.putObjectSigned(key, contentType);
     const bar = $(`#${id}-bar`);
@@ -1118,10 +1183,11 @@ class UploadManager {
 // FilePreview
 // ========================================================================
 class FilePreview {
-  #r2;
-  #ui;
+  /** @type {R2Client} */ #r2;
+  /** @type {UIManager} */ #ui;
   #currentKey = '';
 
+  /** @param {R2Client} r2 @param {UIManager} ui */
   constructor(r2, ui) {
     this.#r2 = r2;
     this.#ui = ui;
@@ -1129,9 +1195,10 @@ class FilePreview {
 
   get currentKey() { return this.#currentKey; }
 
+  /** @param {string} key */
   async preview(key) {
     this.#currentKey = key;
-    const dialog = $('#preview-dialog');
+    const dialog = /** @type {HTMLDialogElement} */ ($('#preview-dialog'));
     const body = $('#preview-body');
     const footer = $('#preview-footer');
     const filename = $('#preview-filename');
@@ -1168,7 +1235,7 @@ class FilePreview {
       } else {
         body.innerHTML = `<p style="color:var(--text-tertiary)">${t('previewNotAvailable')}</p>`;
       }
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       body.innerHTML = `<p style="color:var(--text-danger)">${err.message}</p>`;
     }
   }
@@ -1183,7 +1250,7 @@ class FilePreview {
       document.body.appendChild(a);
       a.click();
       a.remove();
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       this.#ui.toast(t('networkError', { msg: err.message }), 'error');
     }
   }
@@ -1193,11 +1260,12 @@ class FilePreview {
 // FileOperations
 // ========================================================================
 class FileOperations {
-  #r2;
-  #ui;
-  #explorer;
-  #config;
+  /** @type {R2Client} */ #r2;
+  /** @type {UIManager} */ #ui;
+  /** @type {FileExplorer} */ #explorer;
+  /** @type {ConfigManager} */ #config;
 
+  /** @param {R2Client} r2 @param {UIManager} ui @param {FileExplorer} explorer @param {ConfigManager} config */
   constructor(r2, ui, explorer, config) {
     this.#r2 = r2;
     this.#ui = ui;
@@ -1205,6 +1273,7 @@ class FileOperations {
     this.#config = config;
   }
 
+  /** @param {string} key @param {boolean} isFolder */
   async rename(key, isFolder) {
     const oldName = getFileName(key);
     const newName = await this.#ui.prompt(t('renameTitle'), t('renameLabel'), oldName);
@@ -1214,7 +1283,7 @@ class FileOperations {
       const prefix = key.substring(0, key.lastIndexOf(oldName));
       if (isFolder) {
         const dest = prefix + newName + '/';
-        await this.#recursiveOperation(key, async (srcKey) => {
+        await this.#recursiveOperation(key, async (/** @type {string} */ srcKey) => {
           const relative = srcKey.substring(key.length);
           await this.#r2.copyObject(srcKey, dest + relative);
         }, true);
@@ -1225,11 +1294,12 @@ class FileOperations {
       }
       this.#ui.toast(t('renameSuccess', { name: newName }), 'success');
       await this.#explorer.refresh();
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       this.#ui.toast(t('networkError', { msg: err.message }), 'error');
     }
   }
 
+  /** @param {string} key @param {boolean} isFolder */
   async copy(key, isFolder) {
     const name = getFileName(key);
     const currentPrefix = this.#explorer.currentPrefix;
@@ -1238,7 +1308,7 @@ class FileOperations {
 
     try {
       if (isFolder) {
-        await this.#recursiveOperation(key, async (srcKey) => {
+        await this.#recursiveOperation(key, async (/** @type {string} */ srcKey) => {
           const relative = srcKey.substring(key.length);
           const destKey = (dest.endsWith('/') ? dest : dest + '/') + relative;
           await this.#r2.copyObject(srcKey, destKey);
@@ -1248,11 +1318,12 @@ class FileOperations {
       }
       this.#ui.toast(t('copySuccess', { name: dest }), 'success');
       await this.#explorer.refresh();
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       this.#ui.toast(t('networkError', { msg: err.message }), 'error');
     }
   }
 
+  /** @param {string} key @param {boolean} isFolder */
   async move(key, isFolder) {
     const name = getFileName(key);
     const currentPrefix = this.#explorer.currentPrefix;
@@ -1261,7 +1332,7 @@ class FileOperations {
 
     try {
       if (isFolder) {
-        await this.#recursiveOperation(key, async (srcKey) => {
+        await this.#recursiveOperation(key, async (/** @type {string} */ srcKey) => {
           const relative = srcKey.substring(key.length);
           const destKey = (dest.endsWith('/') ? dest : dest + '/') + relative;
           await this.#r2.copyObject(srcKey, destKey);
@@ -1272,11 +1343,12 @@ class FileOperations {
       }
       this.#ui.toast(t('moveSuccess', { name: dest }), 'success');
       await this.#explorer.refresh();
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       this.#ui.toast(t('networkError', { msg: err.message }), 'error');
     }
   }
 
+  /** @param {string} key @param {boolean} isFolder */
   async delete(key, isFolder) {
     const name = getFileName(key);
     const msg = isFolder
@@ -1298,11 +1370,12 @@ class FileOperations {
       }
       this.#ui.toast(t('deleteSuccess', { name }), 'success');
       await this.#explorer.refresh();
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       this.#ui.toast(t('networkError', { msg: err.message }), 'error');
     }
   }
 
+  /** @param {string} key */
   async download(key) {
     try {
       const url = await this.#r2.getPresignedUrl(key);
@@ -1312,11 +1385,12 @@ class FileOperations {
       document.body.appendChild(a);
       a.click();
       a.remove();
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       this.#ui.toast(t('networkError', { msg: err.message }), 'error');
     }
   }
 
+  /** @param {string} key */
   async copyLink(key) {
     const cfg = this.#config.get();
     if (!cfg.customDomain) {
@@ -1332,6 +1406,7 @@ class FileOperations {
     }
   }
 
+  /** @param {string} prefix @param {(key: string) => Promise<void>} operation @param {boolean} deleteSource */
   async #recursiveOperation(prefix, operation, deleteSource) {
     // List all objects under prefix
     const allKeys = await this.#collectAllKeys(prefix);
@@ -1353,7 +1428,9 @@ class FileOperations {
     }
   }
 
+  /** @param {string} prefix @returns {Promise<string[]>} */
   async #collectAllKeys(prefix) {
+    /** @type {string[]} */
     let allKeys = [];
     let token = '';
     do {
@@ -1375,13 +1452,13 @@ class FileOperations {
 // App (Orchestrator)
 // ========================================================================
 class App {
-  #config;
-  #r2;
-  #ui;
-  #explorer;
-  #upload;
-  #preview;
-  #ops;
+  /** @type {ConfigManager} */ #config;
+  /** @type {R2Client} */ #r2;
+  /** @type {UIManager} */ #ui;
+  /** @type {FileExplorer | null} */ #explorer = null;
+  /** @type {UploadManager | null} */ #upload = null;
+  /** @type {FilePreview | null} */ #preview = null;
+  /** @type {FileOperations | null} */ #ops = null;
   #appEventsBound = false;
 
   constructor() {
@@ -1402,7 +1479,7 @@ class App {
         window.history.replaceState({}, '', cleanUrl.toString());
         // If lang is in config, apply it
         const cfg = this.#config.get();
-        if (cfg.lang) setLang(cfg.lang);
+        if (cfg.lang) setLang(/** @type {Lang} */ (cfg.lang));
       }
     }
 
@@ -1428,6 +1505,8 @@ class App {
     $('.topbar-title').textContent = t('appTitle');
 
     // Hero section
+    const heroTitle = $('#hero-title');
+    if (heroTitle) heroTitle.textContent = t('appTitle');
     const heroDesc = $('#hero-desc');
     if (heroDesc) heroDesc.textContent = t('heroDesc');
     const heroConnectText = $('#hero-connect-text');
@@ -1448,11 +1527,11 @@ class App {
     if (heroF7) heroF7.textContent = t('heroF7');
     const heroF8 = $('#hero-f8');
     if (heroF8) heroF8.textContent = t('heroF8');
-    const heroLangSelect = $('#hero-lang-select');
+    const heroLangSelect = /** @type {HTMLSelectElement} */ ($('#hero-lang-select'));
     if (heroLangSelect) heroLangSelect.value = currentLang;
 
     // Topbar language select
-    const topbarLangSelect = $('#topbar-lang-select');
+    const topbarLangSelect = /** @type {HTMLSelectElement} */ ($('#topbar-lang-select'));
     if (topbarLangSelect) topbarLangSelect.value = currentLang;
 
     // Config dialog — static elements by ID
@@ -1555,10 +1634,10 @@ class App {
         this.#appEventsBound = true;
       }
       await this.#explorer.navigate('');
-    } catch (err) {
+    } catch (/** @type {any} */ err) {
       if (err.message === 'AUTH_FAILED') {
         this.#config.clear();
-        $('#app').hidden = true;
+        /** @type {HTMLElement} */ ($('#app')).hidden = true;
         this.#showHero();
       }
     }
@@ -1571,6 +1650,7 @@ class App {
     this.#setDensity(density);
   }
 
+  /** @param {string} view */
   #setView(view) {
     $('#file-browser').dataset.view = view;
     $('#view-grid-btn').setAttribute('aria-pressed', String(view === 'grid'));
@@ -1578,9 +1658,10 @@ class App {
     localStorage.setItem(VIEW_KEY, view);
   }
 
+  /** @param {string} density */
   #setDensity(density) {
     $('#file-browser').dataset.density = density;
-    $('#density-select').value = density;
+    /** @type {HTMLSelectElement} */ ($('#density-select')).value = density;
     localStorage.setItem(DENSITY_KEY, density);
   }
 
@@ -1600,24 +1681,24 @@ class App {
 
     $('#hero-theme-toggle').addEventListener('click', () => this.#ui.toggleTheme());
 
-    $('#hero-lang-select').addEventListener('change', (e) => {
-      setLang(e.target.value);
+    $('#hero-lang-select').addEventListener('change', (/** @type {Event} */ e) => {
+      setLang(/** @type {Lang} */ (/** @type {HTMLSelectElement} */ (e.target).value));
       this.#applyI18nToHTML();
     });
   }
 
   #showConfigDialog() {
-    const dialog = $('#config-dialog');
-    const form = $('#config-form');
+    const dialog = /** @type {HTMLDialogElement} */ ($('#config-dialog'));
+    const form = /** @type {HTMLFormElement} */ ($('#config-form'));
 
     // Pre-fill with existing config
     const cfg = this.#config.get();
-    const accountInput = $('#cfg-account-id');
-    const accessInput = $('#cfg-access-key');
-    const secretInput = $('#cfg-secret-key');
-    const bucketInput = $('#cfg-bucket');
-    const tplInput = $('#cfg-filename-tpl');
-    const domainInput = $('#cfg-custom-domain');
+    const accountInput = /** @type {HTMLInputElement} */ ($('#cfg-account-id'));
+    const accessInput = /** @type {HTMLInputElement} */ ($('#cfg-access-key'));
+    const secretInput = /** @type {HTMLInputElement} */ ($('#cfg-secret-key'));
+    const bucketInput = /** @type {HTMLInputElement} */ ($('#cfg-bucket'));
+    const tplInput = /** @type {HTMLInputElement} */ ($('#cfg-filename-tpl'));
+    const domainInput = /** @type {HTMLInputElement} */ ($('#cfg-custom-domain'));
 
     if (cfg.accountId) accountInput.value = cfg.accountId;
     if (cfg.accessKeyId) accessInput.value = cfg.accessKeyId;
@@ -1626,21 +1707,21 @@ class App {
     if (cfg.filenameTpl) tplInput.value = cfg.filenameTpl;
     if (cfg.customDomain) domainInput.value = cfg.customDomain;
 
-    const onCancel = () => {
-      dialog.close();
-      if (!this.#config.isValid()) {
-        this.#showHero();
-      }
+    $('#config-cancel').onclick = () => dialog.close();
+
+    const onBackdropClick = (/** @type {Event} */ e) => {
+      if (e.target === dialog) dialog.close();
     };
-    $('#config-cancel').onclick = onCancel;
+    dialog.addEventListener('click', onBackdropClick);
 
-    dialog.addEventListener('cancel', (e) => {
+    dialog.addEventListener('close', () => {
+      dialog.removeEventListener('click', onBackdropClick);
       if (!this.#config.isValid()) {
         this.#showHero();
       }
-    });
+    }, { once: true });
 
-    form.onsubmit = async (e) => {
+    form.onsubmit = async (/** @type {Event} */ e) => {
       e.preventDefault();
 
       this.#config.save({
@@ -1683,14 +1764,15 @@ class App {
     });
 
     // Topbar language select
-    $('#topbar-lang-select').addEventListener('change', (e) => {
-      setLang(e.target.value);
+    $('#topbar-lang-select').addEventListener('change', (/** @type {Event} */ e) => {
+      setLang(/** @type {Lang} */ (/** @type {HTMLSelectElement} */ (e.target).value));
       this.#applyI18nToHTML();
     });
 
     // Dismiss context menu
     document.addEventListener('click', (e) => {
-      if (!e.target.closest('.context-menu') && !e.target.closest('.file-card-menu')) {
+      const target = /** @type {HTMLElement} */ (e.target);
+      if (!target.closest('.context-menu') && !target.closest('.file-card-menu')) {
         this.#ui.hideContextMenu();
       }
     });
@@ -1705,75 +1787,76 @@ class App {
   #bindAppEvents() {
     // Breadcrumb clicks
     $('#breadcrumb').addEventListener('click', (e) => {
-      const btn = e.target.closest('.breadcrumb-btn');
+      const btn = /** @type {HTMLElement | null} */ (/** @type {HTMLElement} */ (e.target).closest('.breadcrumb-btn'));
       if (btn) {
-        this.#explorer.navigate(btn.dataset.prefix);
+        /** @type {FileExplorer} */ (this.#explorer).navigate(btn.dataset.prefix ?? '');
       }
     });
 
     // File grid clicks
     $('#file-grid').addEventListener('click', (e) => {
+      const target = /** @type {HTMLElement} */ (e.target);
       // Menu button
-      const menuBtn = e.target.closest('.file-card-menu');
+      const menuBtn = /** @type {HTMLElement | null} */ (target.closest('.file-card-menu'));
       if (menuBtn) {
         e.stopPropagation();
-        const card = menuBtn.closest('.file-card');
+        const card = /** @type {HTMLElement} */ (menuBtn.closest('.file-card'));
         const rect = menuBtn.getBoundingClientRect();
-        this.#ui.showContextMenu(rect.right, rect.bottom, card.dataset.key, card.dataset.isFolder === 'true');
+        this.#ui.showContextMenu(rect.right, rect.bottom, card.dataset.key ?? '', card.dataset.isFolder === 'true');
         return;
       }
 
       // Card click
-      const card = e.target.closest('.file-card');
+      const card = /** @type {HTMLElement | null} */ (target.closest('.file-card'));
       if (card) {
         if (card.dataset.isFolder === 'true') {
-          this.#explorer.navigate(card.dataset.key);
+          /** @type {FileExplorer} */ (this.#explorer).navigate(card.dataset.key ?? '');
         } else {
-          this.#preview.preview(card.dataset.key);
+          /** @type {FilePreview} */ (this.#preview).preview(card.dataset.key ?? '');
         }
       }
     });
 
     // Right-click context menu
     $('#file-grid').addEventListener('contextmenu', (e) => {
-      const card = e.target.closest('.file-card');
+      const card = /** @type {HTMLElement | null} */ (/** @type {HTMLElement} */ (e.target).closest('.file-card'));
       if (card) {
         e.preventDefault();
-        this.#ui.showContextMenu(e.clientX, e.clientY, card.dataset.key, card.dataset.isFolder === 'true');
+        this.#ui.showContextMenu(e.clientX, e.clientY, card.dataset.key ?? '', card.dataset.isFolder === 'true');
       }
     });
 
     // Context menu actions
     $('#context-menu').addEventListener('click', (e) => {
-      const item = e.target.closest('.context-menu-item');
+      const item = /** @type {HTMLElement | null} */ (/** @type {HTMLElement} */ (e.target).closest('.context-menu-item'));
       if (!item) return;
 
-      const menu = $('#context-menu');
-      const key = menu.dataset.key;
+      const menu = /** @type {HTMLElement} */ ($('#context-menu'));
+      const key = menu.dataset.key ?? '';
       const isFolder = menu.dataset.isFolder === 'true';
       const action = item.dataset.action;
 
       this.#ui.hideContextMenu();
 
       switch (action) {
-        case 'preview': this.#preview.preview(key); break;
-        case 'download': this.#ops.download(key); break;
-        case 'copyLink': this.#ops.copyLink(key); break;
-        case 'rename': this.#ops.rename(key, isFolder); break;
-        case 'copy': this.#ops.copy(key, isFolder); break;
-        case 'move': this.#ops.move(key, isFolder); break;
-        case 'delete': this.#ops.delete(key, isFolder); break;
+        case 'preview': /** @type {FilePreview} */ (this.#preview).preview(key); break;
+        case 'download': /** @type {FileOperations} */ (this.#ops).download(key); break;
+        case 'copyLink': /** @type {FileOperations} */ (this.#ops).copyLink(key); break;
+        case 'rename': /** @type {FileOperations} */ (this.#ops).rename(key, isFolder); break;
+        case 'copy': /** @type {FileOperations} */ (this.#ops).copy(key, isFolder); break;
+        case 'move': /** @type {FileOperations} */ (this.#ops).move(key, isFolder); break;
+        case 'delete': /** @type {FileOperations} */ (this.#ops).delete(key, isFolder); break;
       }
     });
 
     // Upload button
-    const fileInput = $('#file-input');
+    const fileInput = /** @type {HTMLInputElement} */ ($('#file-input'));
     $('#upload-btn').addEventListener('click', () => fileInput.click());
     $('#empty-upload-btn').addEventListener('click', () => fileInput.click());
 
     fileInput.addEventListener('change', () => {
-      if (fileInput.files.length > 0) {
-        this.#upload.uploadFiles([...fileInput.files]);
+      if (fileInput.files && fileInput.files.length > 0) {
+        /** @type {UploadManager} */ (this.#upload).uploadFiles([...fileInput.files]);
         fileInput.value = '';
       }
     });
@@ -1787,17 +1870,21 @@ class App {
         await this.#r2.createFolder(key);
         this.#ui.toast(t('folderCreated', { name }), 'success');
         await this.#explorer.refresh();
-      } catch (err) {
+      } catch (/** @type {any} */ err) {
         this.#ui.toast(t('networkError', { msg: err.message }), 'error');
       }
     });
 
     // Load more
-    $('#load-more-btn').addEventListener('click', () => this.#explorer.loadMore());
+    $('#load-more-btn').addEventListener('click', () => /** @type {FileExplorer} */ (this.#explorer).loadMore());
 
     // Preview close
-    $('#preview-close').addEventListener('click', () => $('#preview-dialog').close());
-    $('#preview-download').addEventListener('click', () => this.#preview.downloadCurrent());
+    const previewDialog = /** @type {HTMLDialogElement} */ ($('#preview-dialog'));
+    $('#preview-close').addEventListener('click', () => previewDialog.close());
+    previewDialog.addEventListener('click', (e) => {
+      if (e.target === previewDialog) previewDialog.close();
+    });
+    $('#preview-download').addEventListener('click', () => /** @type {FilePreview} */ (this.#preview).downloadCurrent());
 
     // Upload panel close
     $('#upload-panel-close').addEventListener('click', () => {
@@ -1805,8 +1892,8 @@ class App {
     });
 
     // Sort select
-    $('#sort-select').addEventListener('change', (e) => {
-      if (this.#explorer) this.#explorer.setSortBy(e.target.value);
+    $('#sort-select').addEventListener('change', (/** @type {Event} */ e) => {
+      if (this.#explorer) this.#explorer.setSortBy(/** @type {HTMLSelectElement} */ (e.target).value);
     });
 
     // View toggle
@@ -1814,7 +1901,7 @@ class App {
     $('#view-list-btn').addEventListener('click', () => this.#setView('list'));
 
     // Density select
-    $('#density-select').addEventListener('change', (e) => this.#setDensity(e.target.value));
+    $('#density-select').addEventListener('change', (/** @type {Event} */ e) => this.#setDensity(/** @type {HTMLSelectElement} */ (e.target).value));
   }
 }
 
