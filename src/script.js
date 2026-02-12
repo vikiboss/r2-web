@@ -1,5 +1,5 @@
 // ========================================================================
-// R2 Web Manager — Application Script (ES Module)
+// R2 Manager — Application Script (ES Module)
 // ========================================================================
 
 import { AwsClient } from 'aws4fetch'
@@ -25,7 +25,7 @@ const VIDEO_RE = /\.(mp4|webm|ogg|mov|avi|mkv|m4v)$/i
 // --- i18n ---
 const I18N = {
   zh: {
-    appTitle: 'R2 Web 文件管理器',
+    appTitle: 'R2 文件管理器',
     connectTitle: '连接到 R2',
     connectDesc: '填写你的 R2 凭据即可开始，放心，数据只留在你的浏览器里。',
     accountId: '账户 ID（Account ID）',
@@ -71,8 +71,11 @@ const I18N = {
     customDomain: '自定义域名（Custom Domain）',
     customDomainHint: '可选，配置后可一键复制文件的公开链接',
     copyLink: '复制链接',
+    copyUrl: '复制 URL',
+    copyMarkdown: '复制 Markdown',
+    copyHtml: '复制 HTML',
+    copyPresigned: '复制预签名 URL',
     linkCopied: '链接已复制好啦',
-    noDomain: '还没配置自定义域名，去设置里加一个吧',
     corsError:
       'CORS 还没配置好。去 Cloudflare 仪表盘 → R2 → 存储桶设置添加 CORS 规则，允许当前域名的 GET/PUT/DELETE/HEAD 请求即可。',
     networkError: '网络好像有点问题: {msg}',
@@ -126,7 +129,7 @@ const I18N = {
     logoutConfirmMsg: '退出后会清除浏览器中的凭据，存储桶里的文件不会受影响。确定退出吗？',
   },
   en: {
-    appTitle: 'R2 Web File Manager',
+    appTitle: 'R2 File Manager',
     connectTitle: 'Connect to R2',
     connectDesc: 'Enter your R2 credentials to get started. Everything stays safely in your browser.',
     accountId: 'Account ID',
@@ -173,8 +176,11 @@ const I18N = {
     customDomain: 'Custom Domain',
     customDomainHint: 'Optional. Enables one-click public URL copying.',
     copyLink: 'Copy Link',
+    copyUrl: 'Copy URL',
+    copyMarkdown: 'Copy Markdown',
+    copyHtml: 'Copy HTML',
+    copyPresigned: 'Copy Pre-signed URL',
     linkCopied: 'Link copied!',
-    noDomain: 'No custom domain yet — add one in Settings to copy links',
     corsError:
       'CORS isn\'t set up yet. Head to Cloudflare Dashboard → R2 → Bucket Settings and add a CORS rule allowing GET/PUT/DELETE/HEAD from your origin.',
     networkError: 'Network hiccup: {msg}',
@@ -229,7 +235,7 @@ const I18N = {
     logoutConfirmMsg: 'This will clear your saved credentials. Files in the bucket won\'t be affected. Continue?',
   },
   ja: {
-    appTitle: 'R2 Web ファイルマネージャー',
+    appTitle: 'R2 ファイルマネージャー',
     connectTitle: 'R2 に接続',
     connectDesc: 'R2 の認証情報を入力して始めましょう。データはブラウザにのみ保存されます。',
     accountId: 'アカウント ID（Account ID）',
@@ -276,8 +282,11 @@ const I18N = {
     customDomain: 'カスタムドメイン（Custom Domain）',
     customDomainHint: '任意。設定するとワンクリックで公開URLをコピーできます。',
     copyLink: 'リンクをコピー',
+    copyUrl: 'URL をコピー',
+    copyMarkdown: 'Markdown をコピー',
+    copyHtml: 'HTML をコピー',
+    copyPresigned: '署名付き URL をコピー',
     linkCopied: 'リンクをコピーしました！',
-    noDomain: 'カスタムドメインがまだ未設定です。設定で追加してみてください。',
     corsError:
       'CORS がまだ設定されていません。Cloudflare ダッシュボード → R2 → バケット設定で CORS ルールを追加してください。',
     networkError: 'ネットワークに問題があるようです: {msg}',
@@ -778,7 +787,7 @@ class UIManager {
     // Hide preview/download/copyLink and their separator for folders
     const previewBtn = $('[data-action="preview"]', menu)
     const downloadBtn = $('[data-action="download"]', menu)
-    const copyLinkBtn = $('[data-action="copyLink"]', menu)
+    const copyLinkBtn = $('#ctx-copy-link', menu)
     const fileSep = $('#ctx-sep-file', menu)
     previewBtn.hidden = isFolder
     downloadBtn.hidden = isFolder
@@ -796,6 +805,12 @@ class UIManager {
     const vh = window.innerHeight
     if (rect.right > vw) menu.style.left = vw - rect.width - 8 + 'px'
     if (rect.bottom > vh) menu.style.top = vh - rect.height - 8 + 'px'
+
+    // Flip submenu to left if it would overflow viewport right edge
+    const submenu = $('.context-submenu', menu)
+    if (submenu) {
+      submenu.classList.toggle('flip-left', rect.right + 160 > vw)
+    }
   }
 
   hideContextMenu() {
@@ -1610,19 +1625,36 @@ class FileOperations {
     }
   }
 
-  /** @param {string} key */
-  async copyLink(key) {
-    const cfg = this.#config.get()
-    if (!cfg.customDomain) {
-      this.#ui.toast(t('noDomain'), 'error')
-      return
+  /** @param {string} key @param {'url'|'markdown'|'html'|'presigned'} format */
+  async copyAs(key, format) {
+    const name = getFileName(key)
+    const isImage = IMAGE_RE.test(key)
+
+    let url
+    if (format === 'presigned') {
+      url = await this.#r2.getPresignedUrl(key)
+    } else {
+      url = this.#r2.getPublicUrl(key) ?? await this.#r2.getPresignedUrl(key)
     }
-    const url = `${cfg.customDomain}/${encodeS3Key(key)}`
+
+    let text
+    switch (format) {
+      case 'markdown':
+        text = isImage ? `![${name}](${url})` : `[${name}](${url})`
+        break
+      case 'html':
+        text = isImage ? `<img src="${url}" alt="${name}">` : `<a href="${url}">${name}</a>`
+        break
+      default: // 'url' and 'presigned'
+        text = url
+        break
+    }
+
     try {
-      await navigator.clipboard.writeText(url)
+      await navigator.clipboard.writeText(text)
       this.#ui.toast(t('linkCopied'), 'success')
     } catch {
-      await this.#ui.prompt(t('copyLink'), 'URL', url)
+      await this.#ui.prompt(t('copyLink'), '', text)
     }
   }
 
@@ -1812,7 +1844,11 @@ class App {
     // Context menu — target the span inside each item
     $('[data-action="preview"] span').textContent = t('preview')
     $('[data-action="download"] span').textContent = t('download')
-    $('[data-action="copyLink"] span').textContent = t('copyLink')
+    $('#ctx-copy-link > span').textContent = t('copyLink')
+    $('[data-action="copyUrl"] span').textContent = t('copyUrl')
+    $('[data-action="copyMarkdown"] span').textContent = t('copyMarkdown')
+    $('[data-action="copyHtml"] span').textContent = t('copyHtml')
+    $('[data-action="copyPresigned"] span').textContent = t('copyPresigned')
     $('[data-action="rename"] span').textContent = t('rename')
     $('[data-action="copy"] span').textContent = t('copy')
     $('[data-action="move"] span').textContent = t('move')
@@ -2099,10 +2135,13 @@ class App {
       )
       if (!item) return
 
+      const action = item.dataset.action
+      // Ignore clicks on the submenu parent (no data-action)
+      if (!action) return
+
       const menu = /** @type {HTMLElement} */ ($('#context-menu'))
       const key = menu.dataset.key ?? ''
       const isFolder = menu.dataset.isFolder === 'true'
-      const action = item.dataset.action
 
       this.#ui.hideContextMenu()
 
@@ -2113,8 +2152,17 @@ class App {
         case 'download':
           /** @type {FileOperations} */ this.#ops.download(key)
           break
-        case 'copyLink':
-          /** @type {FileOperations} */ this.#ops.copyLink(key)
+        case 'copyUrl':
+          /** @type {FileOperations} */ this.#ops.copyAs(key, 'url')
+          break
+        case 'copyMarkdown':
+          /** @type {FileOperations} */ this.#ops.copyAs(key, 'markdown')
+          break
+        case 'copyHtml':
+          /** @type {FileOperations} */ this.#ops.copyAs(key, 'html')
+          break
+        case 'copyPresigned':
+          /** @type {FileOperations} */ this.#ops.copyAs(key, 'presigned')
           break
         case 'rename':
           /** @type {FileOperations} */ this.#ops.rename(key, isFolder)

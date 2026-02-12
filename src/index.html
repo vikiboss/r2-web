@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="light dark" />
-    <title>R2 Web 文件管理器</title>
+    <title>R2 文件管理器</title>
     <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="preconnect" href="https://esm.sh" />
     <link rel="preconnect" href="https://r2.cloudflarestorage.com" />
@@ -23,7 +23,7 @@
     <!-- Config Dialog -->
     <dialog id="config-dialog">
       <form id="config-form" method="dialog">
-        <h2 id="config-title">R2 Web Manager</h2>
+        <h2 id="config-title">R2 Manager</h2>
 
         <!-- R2 Connection -->
         <div class="config-section">
@@ -97,7 +97,7 @@
         <div class="hero-badge">
           <img src="favicon.ico" alt="" class="hero-badge-icon" />
         </div>
-        <h1 class="hero-title" id="hero-title">R2 Web Manager</h1>
+        <h1 class="hero-title" id="hero-title">R2 Manager</h1>
         <p class="hero-desc" id="hero-desc">
           纯客户端的 Cloudflare R2 存储桶文件管理器。
         </p>
@@ -311,7 +311,7 @@
       <header class="topbar">
         <div class="flex items-center" style="gap: 8px">
           <img src="favicon.ico" alt="" class="topbar-logo" />
-          <h1 class="topbar-title">R2 Web Manager</h1>
+          <h1 class="topbar-title">R2 Manager</h1>
         </div>
         <div class="flex items-center" style="gap: 4px">
           <select id="topbar-lang-select" class="toolbar-select">
@@ -694,7 +694,7 @@
         </svg>
         <span>下载</span>
       </button>
-      <button type="button" class="context-menu-item" data-action="copyLink">
+      <div class="context-menu-item has-submenu" id="ctx-copy-link">
         <svg
           class="icon"
           viewBox="0 0 24 24"
@@ -708,7 +708,25 @@
           <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
         </svg>
         <span>复制链接</span>
-      </button>
+        <svg class="icon submenu-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+        <div class="context-submenu">
+          <button type="button" class="context-menu-item" data-action="copyUrl">
+            <span>URL</span>
+          </button>
+          <button type="button" class="context-menu-item" data-action="copyMarkdown">
+            <span>Markdown</span>
+          </button>
+          <button type="button" class="context-menu-item" data-action="copyHtml">
+            <span>HTML</span>
+          </button>
+          <div class="context-menu-sep"></div>
+          <button type="button" class="context-menu-item" data-action="copyPresigned">
+            <span>Pre-signed URL</span>
+          </button>
+        </div>
+      </div>
       <div class="context-menu-sep" id="ctx-sep-file"></div>
       <button type="button" class="context-menu-item" data-action="rename">
         <svg
