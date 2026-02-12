@@ -16,7 +16,7 @@ const DENSITY_KEY = 'r2-manager-density'
 const SORT_BY_KEY = 'r2-manager-sort-by'
 const PAGE_SIZE = 100
 const TOAST_DURATION = 3000
-const MAX_UPLOAD_SIZE = 5 * 1024 * 1024 * 1024 // 5GB
+const MAX_UPLOAD_SIZE = 300 * 1024 * 1024 // 300 MB
 
 // File type patterns
 const IMAGE_RE = /\.(jpg|jpeg|png|gif|webp|svg|ico|bmp|avif)$/i
@@ -37,7 +37,7 @@ const I18N = {
     bucketName: '存储桶名称（Bucket Name）',
     filenameTpl: '文件名模板（Filename Template）',
     filenameTplHint:
-      '占位符: [name] 原始名, [ext] 扩展名, [hash:N] 哈希, [date:FORMAT] 日期, [timestamp] 时间戳, [uuid], / 目录',
+      '占位符: [name] 原始名, [ext] 扩展名, [hash:N] 哈希, [date:FORMAT] 日期, [timestamp] 时间戳, [uuid], 斜杠代表目录',
     cancel: '取消',
     connect: '连接',
     newFolder: '新建目录',
@@ -375,8 +375,6 @@ function setLang(lang) {
 // --- Helpers ---
 /** @type {<T extends HTMLElement = HTMLElement>(sel: string, ctx?: ParentNode) => T} */
 const $ = (sel, ctx = document) => /** @type {*} */ (ctx.querySelector(sel))
-
-
 
 /** @param {string} dateStr @returns {string} */
 function formatDate(dateStr) {
@@ -1269,8 +1267,6 @@ async function compressFile(file, config, onStatus) {
     return file
   }
 
-
-
   try {
     const originalSize = file.size
 
@@ -1294,8 +1290,6 @@ async function compressFile(file, config, onStatus) {
         options.maxSizeMB = 0.2 // Aggressive size limit
         options.maxWidthOrHeight = 1280
         options.initialQuality = 0.6
-      } else if (level === 'original') {
-        return file
       } else {
         // Balanced (Default)
         options.maxSizeMB = 1
@@ -1309,7 +1303,7 @@ async function compressFile(file, config, onStatus) {
       if (savings > 0) {
         onStatus &&
           onStatus(
-            `本地压缩: ${filesize(originalSize)} -> ${filesize(compressedBlob.size)} (省 ${savings}%)`
+            `本地压缩: ${filesize(originalSize)} -> ${filesize(compressedBlob.size)} (省 ${savings}%)`,
           )
         return compressedBlob
       }
@@ -1321,7 +1315,7 @@ async function compressFile(file, config, onStatus) {
 
       onStatus && onStatus('Cloud 压缩中...')
 
-      const apiUrl = new URL("https://api.tinify.com/shrink")
+      const apiUrl = new URL('https://api.tinify.com/shrink')
       apiUrl.searchParams.set('proxy-host', 'api.tinify.com') // Ensure proxy is used for upload
       apiUrl.host = 'proxy.viki.moe' // Force upload through proxy to avoid CORS
 
@@ -1349,7 +1343,7 @@ async function compressFile(file, config, onStatus) {
       if (savings > 0) {
         onStatus &&
           onStatus(
-            `Tinify: ${filesize(originalSize)} -> ${filesize(compressedBlob.size)} (省 ${savings}%)`
+            `Tinify: ${filesize(originalSize)} -> ${filesize(compressedBlob.size)} (省 ${savings}%)`,
           )
       }
 
@@ -1503,7 +1497,7 @@ class UploadManager {
     /**
      * @param {string} msg
      */
-    const updateStatus = (msg) => {
+    const updateStatus = msg => {
       const nameEl = $(`#${id} .upload-item-name`)
       if (nameEl) {
         let original = nameEl.dataset.originalName
@@ -1906,7 +1900,7 @@ class App {
       this.#connectAndLoad()
       if (configParam) {
         // Delay toast so UI is ready
-        setTimeout(() => this.#ui.toast(t('configLoadedFromUrl'), 'info'), 500)
+        setTimeout(() => this.#ui.toast(t('configLoadedFromUrl'), 'success'), 500)
       }
     } else {
       this.#showHero()

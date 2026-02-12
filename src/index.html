@@ -87,30 +87,29 @@
               value="[name]_[hash:8].[ext]"
             />
             <small class="text-secondary" id="filename-tpl-hint">
-              [name] [ext] [hash:N] [date:FORMAT] [timestamp] [uuid] / = directory
+              [name] [ext] [hash:N] [date:FORMAT] [timestamp] [uuid]
             </small>
           </div>
         </div>
 
         <!-- Image Compression -->
         <div class="config-section">
-          <h3 id="config-section-compression">图片压缩 (Image Compression)</h3>
+          <h3 id="config-section-compression">图片压缩</h3>
           <div class="field">
-            <label for="cfg-compress-mode" id="lbl-compress-mode">模式 (Mode)</label>
+            <label for="cfg-compress-mode" id="lbl-compress-mode">模式</label>
             <select id="cfg-compress-mode" name="compressMode">
-              <option value="none">暂不开启 (None)</option>
-              <option value="local" selected>本地压缩 (Local)</option>
-              <option value="tinify">Tinify (Cloud)</option>
+              <option value="none">暂不开启</option>
+              <option value="local" selected>本地压缩</option>
+              <option value="tinify">Tinify 服务</option>
             </select>
           </div>
 
           <div id="compress-local-options">
             <div class="field">
-              <label for="cfg-compress-level" id="lbl-compress-level">压缩程度 (Level)</label>
+              <label for="cfg-compress-level" id="lbl-compress-level">压缩程度</label>
               <select id="cfg-compress-level" name="compressLevel">
-                <option value="balanced" selected>平衡模式 (Balanced)</option>
-                <option value="extreme">极致压缩 (Extreme)</option>
-                <option value="original">保持原图 (Original)</option>
+                <option value="balanced" selected>平衡模式</option>
+                <option value="extreme">极致压缩</option>
               </select>
               <small class="text-secondary">使用 WebAssembly/Canvas 高性能压缩</small>
             </div>
@@ -124,10 +123,10 @@
                 name="tinifyKey"
                 type="password"
                 autocomplete="off"
-                placeholder="Key from tinypng.com"
+                placeholder="来自 tinify.com 的 Key"
               />
               <small class="text-secondary">
-                <span class="warning-icon">⚠️</span> Key stored locally. Requests sent directly from browser.
+                <span class="warning-icon">⚠️</span> Key 存储在浏览器本地。请求将直接从浏览器发出。出于跨域问题会经过代理中转。
               </small>
             </div>
           </div>
