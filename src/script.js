@@ -406,7 +406,7 @@ function setLang(lang) {
 /** @type {<T extends HTMLElement = HTMLElement>(sel: string, ctx?: ParentNode) => T} */
 const $ = (sel, ctx = document) => /** @type {*} */ (ctx.querySelector(sel))
 
-/** @param {string} dateStr @returns {string} */
+/** @param {string|number|Date} dateStr @returns {string} */
 function formatDate(dateStr) {
   const d = new Date(dateStr)
   return d.toLocaleDateString(
@@ -809,11 +809,13 @@ class UIManager {
     $('#empty-state').hidden = true
   }
 
-  /** @param {number} x @param {number} y @param {string} key @param {boolean} isFolder */
-  showContextMenu(x, y, key, isFolder) {
+  /** @param {number} x @param {number} y @param {string} key @param {boolean} isFolder @param {{size?: number, mod?: number}} [meta] */
+  showContextMenu(x, y, key, isFolder, meta = {}) {
     const menu = $('#context-menu')
     menu.dataset.key = key
     menu.dataset.isFolder = String(isFolder)
+    if (meta.size !== undefined) menu.dataset.size = String(meta.size)
+    if (meta.mod !== undefined) menu.dataset.mod = String(meta.mod)
 
     // Hide preview/download/copyLink and their separator for folders
     const previewBtn = $('[data-action="preview"]', menu)
@@ -1194,6 +1196,12 @@ class FileExplorer {
     card.className = 'file-card'
     card.dataset.key = item.key
     card.dataset.isFolder = String(item.isFolder)
+    if (!item.isFolder) {
+      card.dataset.size = String(item.size ?? 0)
+      if (item.lastModified) {
+        card.dataset.mod = String(new Date(item.lastModified).getTime())
+      }
+    }
 
     const name = getFileName(item.key)
     const isImage = !item.isFolder && IMAGE_RE.test(item.key)
@@ -1590,8 +1598,9 @@ class FilePreview {
     return this.#currentKey
   }
 
-  /** @param {string} key */
-  async preview(key) {
+  /** @param {{key: string, size?: number, lastModified?: number}} item */
+  async preview(item) {
+    const key = item.key
     this.#currentKey = key
     const dialog = /** @type {HTMLDialogElement} */ ($('#preview-dialog'))
     const body = $('#preview-body')
@@ -1604,7 +1613,12 @@ class FilePreview {
     dialog.showModal()
 
     try {
-      const meta = await this.#r2.headObject(key)
+      const meta = {
+        contentLength: item.size ?? 0,
+        contentType: getMimeType(key),
+        lastModified: item.lastModified ? new Date(item.lastModified) : undefined,
+      }
+
       footer.innerHTML = `
         <span>${t('size')}: ${filesize(meta.contentLength)}</span>
         <span>${t('contentType')}: ${meta.contentType || 'unknown'}</span>
@@ -2350,6 +2364,10 @@ class App {
           rect.bottom,
           card.dataset.key ?? '',
           card.dataset.isFolder === 'true',
+          {
+            size: Number(card.dataset.size ?? 0),
+            mod: Number(card.dataset.mod ?? 0),
+          },
         )
         return
       }
@@ -2360,7 +2378,11 @@ class App {
         if (card.dataset.isFolder === 'true') {
           /** @type {FileExplorer} */ this.#explorer.navigate(card.dataset.key ?? '')
         } else {
-          /** @type {FilePreview} */ this.#preview.preview(card.dataset.key ?? '')
+          /** @type {FilePreview} */ this.#preview.preview({
+            key: card.dataset.key ?? '',
+            size: Number(card.dataset.size ?? 0),
+            lastModified: Number(card.dataset.mod ?? 0),
+          })
         }
       }
     })
@@ -2377,6 +2399,10 @@ class App {
           e.clientY,
           card.dataset.key ?? '',
           card.dataset.isFolder === 'true',
+          {
+            size: Number(card.dataset.size ?? 0),
+            mod: Number(card.dataset.mod ?? 0),
+          },
         )
       }
     })
@@ -2400,7 +2426,11 @@ class App {
 
       switch (action) {
         case 'preview':
-          /** @type {FilePreview} */ this.#preview.preview(key)
+          /** @type {FilePreview} */ this.#preview.preview({
+            key,
+            size: Number(menu.dataset.size ?? 0),
+            lastModified: Number(menu.dataset.mod ?? 0),
+          })
           break
         case 'download':
           /** @type {FileOperations} */ this.#ops.download(key)
