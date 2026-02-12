@@ -326,6 +326,7 @@ const I18N = {
     heroF6: 'アップロード自動圧縮',
     heroF7: 'ワンクリックリンクコピー',
     heroF8: 'ワンクリック設定共有',
+    refresh: 'リフレッシュ',
     logout: 'ログアウト',
     logoutConfirmTitle: 'ログアウト',
     logoutConfirmMsg: 'ローカルに保存されたすべての認証情報が削除されます。よろしいですか？',
