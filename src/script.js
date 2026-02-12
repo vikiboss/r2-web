@@ -4,6 +4,8 @@
 
 import { AwsClient } from 'aws4fetch'
 import dayjs from 'dayjs'
+import imageCompression from 'browser-image-compression'
+import { filesize } from 'filesize'
 
 // --- Constants ---
 const STORAGE_KEY = 'r2-manager-config'
@@ -350,7 +352,7 @@ const I18N = {
 
 /** @typedef {keyof typeof I18N} Lang */
 /** @typedef {keyof typeof I18N.en} I18nKey */
-/** @typedef {{ accountId: string; accessKeyId: string; secretAccessKey: string; bucket: string; filenameTpl?: string; customDomain?: string; theme?: string; lang?: string }} R2Config */
+/** @typedef {{ accountId: string; accessKeyId: string; secretAccessKey: string; bucket: string; filenameTpl?: string; customDomain?: string; theme?: string; lang?: string; compressMode?: string; compressLevel?: string; tinifyKey?: string }} R2Config */
 /** @typedef {{ key: string; isFolder: boolean; size?: number; lastModified?: string }} FileItem */
 
 let currentLang = /** @type {Lang} */ (localStorage.getItem(LANG_KEY) || 'zh')
@@ -374,14 +376,7 @@ function setLang(lang) {
 /** @type {<T extends HTMLElement = HTMLElement>(sel: string, ctx?: ParentNode) => T} */
 const $ = (sel, ctx = document) => /** @type {*} */ (ctx.querySelector(sel))
 
-/** @param {number} bytes @returns {string} */
-function formatBytes(bytes) {
-  if (bytes === 0) return '0 B'
-  const k = 1024
-  const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
-  const i = Math.floor(Math.log(bytes) / Math.log(k))
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
-}
+
 
 /** @param {string} dateStr @returns {string} */
 function formatDate(dateStr) {
@@ -1194,7 +1189,7 @@ class FileExplorer {
       ${
         !item.isFolder
           ? `
-        <span class="file-card-size">${formatBytes(item.size ?? 0)}</span>
+        <span class="file-card-size">${filesize(item.size ?? 0)}</span>
         <span class="file-card-date">${formatDate(item.lastModified ?? '')}</span>
       `
           : ''
@@ -1260,6 +1255,114 @@ class FileExplorer {
 // ========================================================================
 // UploadManager
 // ========================================================================
+/**
+ * Compress image file based on configuration
+ * @param {File} file - Original file
+ * @param {R2Config} config - R2Config object
+ * @param {function(string):void} onStatus - Callback to update status text
+ * @returns {Promise<File>}
+ */
+async function compressFile(file, config, onStatus) {
+  // Only compress images (JPG/JPEG/PNG)
+  const allowCompress = /\.(jpg|jpeg|png)$/i.test(file.name)
+  if (!allowCompress || !config.compressMode || config.compressMode === 'none') {
+    return file
+  }
+
+
+
+  try {
+    const originalSize = file.size
+
+    // --- Local Mode ---
+    if (config.compressMode === 'local') {
+      onStatus && onStatus('压缩中...')
+
+      // Browser Image Compression Options
+      // Uses OffscreenCanvas / Web Workers if available (Modern Browser Features)
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+        fileType: file.type,
+        initialQuality: 0.8,
+      }
+
+      // Map levels
+      const level = config.compressLevel || 'balanced'
+      if (level === 'extreme') {
+        options.maxSizeMB = 0.2 // Aggressive size limit
+        options.maxWidthOrHeight = 1280
+        options.initialQuality = 0.6
+      } else if (level === 'original') {
+        return file
+      } else {
+        // Balanced (Default)
+        options.maxSizeMB = 1
+        options.initialQuality = 0.8
+      }
+
+      const compressedBlob = await imageCompression(file, options)
+
+      // Feedback
+      const savings = Math.round((1 - compressedBlob.size / originalSize) * 100)
+      if (savings > 0) {
+        onStatus &&
+          onStatus(
+            `本地压缩: ${filesize(originalSize)} -> ${filesize(compressedBlob.size)} (省 ${savings}%)`
+          )
+        return compressedBlob
+      }
+    }
+
+    // --- Tinify Mode ---
+    if (config.compressMode === 'tinify') {
+      if (!config.tinifyKey) return file
+
+      onStatus && onStatus('Cloud 压缩中...')
+
+      const apiUrl = new URL("https://api.tinify.com/shrink")
+      apiUrl.searchParams.set('proxy-host', 'api.tinify.com') // Ensure proxy is used for upload
+      apiUrl.host = 'proxy.viki.moe' // Force upload through proxy to avoid CORS
+
+      // Tinify API Call
+      const response = await fetch(apiUrl.toString(), {
+        method: 'POST',
+        headers: {
+          Authorization: 'Basic ' + btoa('api:' + config.tinifyKey),
+        },
+        body: file,
+      })
+
+      if (!response.ok) throw new Error('Tinify API Error')
+
+      const data = await response.json()
+      const url = new URL(data.output.url)
+      url.searchParams.set('proxy-host', 'api.tinify.com') // Ensure proxy is used for download
+      url.host = 'proxy.viki.moe' // Force download through proxy to avoid CORS
+
+      // Download result
+      const compressedRes = await fetch(url.toString())
+      const compressedBlob = await compressedRes.blob()
+
+      const savings = Math.round((1 - compressedBlob.size / originalSize) * 100)
+      if (savings > 0) {
+        onStatus &&
+          onStatus(
+            `Tinify: ${filesize(originalSize)} -> ${filesize(compressedBlob.size)} (省 ${savings}%)`
+          )
+      }
+
+      return new File([compressedBlob], file.name, { type: file.type })
+    }
+  } catch (error) {
+    console.error('Compression failed:', error)
+    onStatus && onStatus('压缩失败，使用原图')
+  }
+
+  return file
+}
+
 class UploadManager {
   /** @type {R2Client} */ #r2
   /** @type {UIManager} */ #ui
@@ -1396,6 +1499,25 @@ class UploadManager {
 
   /** @param {string} id @param {string} key @param {File} file @param {string} contentType */
   async #uploadSingleFile(id, key, file, contentType) {
+    // --- Compression Step ---
+    /**
+     * @param {string} msg
+     */
+    const updateStatus = (msg) => {
+      const nameEl = $(`#${id} .upload-item-name`)
+      if (nameEl) {
+        let original = nameEl.dataset.originalName
+        if (!original) {
+          original = nameEl.textContent || ''
+          nameEl.dataset.originalName = original
+        }
+        nameEl.textContent = `${original} (${msg})`
+      }
+    }
+    // Execute compression (if enabled)
+    file = await compressFile(file, this.#config.get(), updateStatus)
+    // ------------------------
+
     const signed = await this.#r2.putObjectSigned(key, contentType)
     const bar = $(`#${id}-bar`)
 
@@ -1460,7 +1582,7 @@ class FilePreview {
     try {
       const meta = await this.#r2.headObject(key)
       footer.innerHTML = `
-        <span>${t('size')}: ${formatBytes(meta.contentLength)}</span>
+        <span>${t('size')}: ${filesize(meta.contentLength)}</span>
         <span>${t('contentType')}: ${meta.contentType || 'unknown'}</span>
         ${meta.lastModified ? `<span>${t('lastModified')}: ${formatDate(meta.lastModified)}</span>` : ''}
       `
@@ -2025,12 +2147,36 @@ class App {
     const tplInput = /** @type {HTMLInputElement} */ ($('#cfg-filename-tpl'))
     const domainInput = /** @type {HTMLInputElement} */ ($('#cfg-custom-domain'))
 
+    // Compression Inputs
+    const compressModeInput = /** @type {HTMLSelectElement} */ ($('#cfg-compress-mode'))
+    const compressLevelInput = /** @type {HTMLSelectElement} */ ($('#cfg-compress-level'))
+    const tinifyKeyInput = /** @type {HTMLInputElement} */ ($('#cfg-tinify-key'))
+
     if (cfg.accountId) accountInput.value = cfg.accountId
     if (cfg.accessKeyId) accessInput.value = cfg.accessKeyId
     if (cfg.secretAccessKey) secretInput.value = cfg.secretAccessKey
     if (cfg.bucket) bucketInput.value = cfg.bucket
     if (cfg.filenameTpl) tplInput.value = cfg.filenameTpl
     if (cfg.customDomain) domainInput.value = cfg.customDomain
+
+    // Fill Compression fields
+    if (compressModeInput) compressModeInput.value = cfg.compressMode || 'none'
+    if (compressLevelInput) compressLevelInput.value = cfg.compressLevel || 'balanced'
+    if (tinifyKeyInput) tinifyKeyInput.value = cfg.tinifyKey || ''
+
+    // Visibility Logic
+    const updateCompressVisibility = () => {
+      const mode = compressModeInput ? compressModeInput.value : 'none'
+      const localOpts = $('#compress-local-options')
+      const tinifyOpts = $('#compress-tinify-options')
+      if (localOpts) localOpts.hidden = mode !== 'local'
+      if (tinifyOpts) tinifyOpts.hidden = mode !== 'tinify'
+    }
+
+    if (compressModeInput) {
+      compressModeInput.onchange = updateCompressVisibility
+      updateCompressVisibility() // Init
+    }
 
     $('#config-cancel').onclick = () => dialog.close()
 
@@ -2060,6 +2206,9 @@ class App {
         bucket: bucketInput.value.trim(),
         filenameTpl: tplInput ? tplInput.value.trim() : '',
         customDomain: domainInput ? domainInput.value.trim().replace(/\/+$/, '') : '',
+        compressMode: compressModeInput ? compressModeInput.value : 'none',
+        compressLevel: compressLevelInput ? compressLevelInput.value : 'balanced',
+        tinifyKey: tinifyKeyInput ? tinifyKeyInput.value.trim() : '',
       })
 
       dialog.close()

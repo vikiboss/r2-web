@@ -13,7 +13,9 @@
       {
         "imports": {
           "aws4fetch": "https://esm.sh/aws4fetch@1.0.20",
-          "dayjs": "https://esm.sh/dayjs@1.11.13"
+          "dayjs": "https://esm.sh/dayjs@1.11.13",
+          "browser-image-compression": "https://esm.sh/browser-image-compression@2.0.2",
+          "filesize": "https://esm.sh/filesize@10.1.0"
         }
       }
     </script>
@@ -87,6 +89,47 @@
             <small class="text-secondary" id="filename-tpl-hint">
               [name] [ext] [hash:N] [date:FORMAT] [timestamp] [uuid] / = directory
             </small>
+          </div>
+        </div>
+
+        <!-- Image Compression -->
+        <div class="config-section">
+          <h3 id="config-section-compression">图片压缩 (Image Compression)</h3>
+          <div class="field">
+            <label for="cfg-compress-mode" id="lbl-compress-mode">模式 (Mode)</label>
+            <select id="cfg-compress-mode" name="compressMode">
+              <option value="none">暂不开启 (None)</option>
+              <option value="local" selected>本地压缩 (Local)</option>
+              <option value="tinify">Tinify (Cloud)</option>
+            </select>
+          </div>
+
+          <div id="compress-local-options">
+            <div class="field">
+              <label for="cfg-compress-level" id="lbl-compress-level">压缩程度 (Level)</label>
+              <select id="cfg-compress-level" name="compressLevel">
+                <option value="balanced" selected>平衡模式 (Balanced)</option>
+                <option value="extreme">极致压缩 (Extreme)</option>
+                <option value="original">保持原图 (Original)</option>
+              </select>
+              <small class="text-secondary">使用 WebAssembly/Canvas 高性能压缩</small>
+            </div>
+          </div>
+
+          <div id="compress-tinify-options" hidden>
+            <div class="field">
+              <label for="cfg-tinify-key" id="lbl-tinify-key">Tinify API Key</label>
+              <input
+                id="cfg-tinify-key"
+                name="tinifyKey"
+                type="password"
+                autocomplete="off"
+                placeholder="Key from tinypng.com"
+              />
+              <small class="text-secondary">
+                <span class="warning-icon">⚠️</span> Key stored locally. Requests sent directly from browser.
+              </small>
+            </div>
           </div>
         </div>
 

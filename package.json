@@ -9,7 +9,9 @@
   },
   "devDependencies": {
     "aws4fetch": "^1.0.20",
+    "browser-image-compression": "^2.0.2",
     "dayjs": "^1.11.19",
+    "filesize": "^11.0.13",
     "typescript": "^5.9.3"
   }
 }
