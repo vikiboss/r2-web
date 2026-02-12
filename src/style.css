@@ -228,7 +228,11 @@
 
     [data-view="list"] > & { grid-template-columns: 1fr; }
 
-    @media (width <= 640px) {
+    @media (320px <= width <= 640px) {
+      grid-template-columns: 2fr;
+    }
+
+    @media (width <= 320px) {
       grid-template-columns: 1fr;
     }
   }
@@ -590,6 +594,12 @@
     display: inline-flex;
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
+
+    &.view-toggle {
+      @media (width <= 640px) {
+        display: none;
+      }
+    }
 
     & > .icon-btn {
       border-radius: 0;
@@ -955,6 +965,7 @@
     transform: translateX(-50%);
     display: flex;
     align-items: center;
+    text-wrap: nowrap;
     gap: var(--sp-1);
     font-size: var(--text-xs);
     color: var(--text-tertiary);
