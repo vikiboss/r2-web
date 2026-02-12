@@ -2,7 +2,7 @@
 
 # R2 管理器
 
-📁 轻盈优雅的 R2 存储桶管理器，一切在浏览器中完成。
+📁 轻盈优雅的 Web 原生 Cloudflare R2 文件管理器，一切在浏览器中完成。
 
 ![61366da7.png](https://image.viki.moe/github/61366da7.png)
 
