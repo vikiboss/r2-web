@@ -27,7 +27,7 @@ const I18N = {
   zh: {
     appTitle: 'R2 Web 文件管理器',
     connectTitle: '连接到 R2',
-    connectDesc: '输入你的 Cloudflare R2 凭据，它们仅保存在浏览器本地。',
+    connectDesc: '输入你的 Cloudflare R2 凭据。所有数据仅存储在浏览器本地，不会上传至任何服务器。',
     accountId: '账户 ID（Account ID）',
     accessKeyId: '访问密钥 ID（Access Key ID）',
     secretAccessKey: '秘密访问密钥（Secret Access Key）',
@@ -69,16 +69,16 @@ const I18N = {
     newFolderLabel: '文件夹名称',
     authFailed: '认证失败，请检查凭据',
     customDomain: '自定义域名（Custom Domain）',
-    customDomainHint: '可选，用于生成文件的公开访问链接',
+    customDomainHint: '可选，配置后可生成文件的公开访问链接并一键复制',
     copyLink: '复制链接',
     linkCopied: '链接已复制到剪贴板',
-    noDomain: '未配置自定义域名，请在设置中添加',
+    noDomain: '未配置自定义域名，请在设置中添加以启用链接复制',
     corsError:
       'CORS 未配置。请在 Cloudflare 仪表盘 → R2 → 存储桶设置中添加 CORS 规则，允许当前域名的 GET/PUT/DELETE/HEAD 请求。',
     networkError: '网络错误: {msg}',
     uploadSuccess: '已成功上传 {count} 个文件',
     uploadPartialFail: '{success} 个上传成功，{fail} 个失败',
-    fileTooLarge: '文件 "{name}" 超过 5GB 限制，不支持分段上传',
+    fileTooLarge: '文件 "{name}" 超过 5GB 限制，请使用 rclone 等工具上传大文件',
     deleteSuccess: '已删除 "{name}"',
     renameSuccess: '已重命名为 "{name}"',
     copySuccess: '已复制到 "{name}"',
@@ -92,8 +92,8 @@ const I18N = {
     toggleTheme: '切换主题',
     close: '关闭',
     shareConfig: '分享配置',
-    shareConfigCopied: '分享链接已复制到剪贴板',
-    configLoadedFromUrl: '已从链接加载配置',
+    shareConfigCopied: '分享链接已复制，请注意：链接含凭据信息，仅限可信任对象使用',
+    configLoadedFromUrl: '已从链接加载配置，建议检查凭据信息是否正确',
     preferences: '偏好设置',
     uploadSettings: '上传设置',
     r2Connection: 'R2 连接',
@@ -123,12 +123,12 @@ const I18N = {
     refresh: '刷新',
     logout: '安全退出',
     logoutConfirmTitle: '安全退出',
-    logoutConfirmMsg: '退出后将清除本地保存的所有凭据信息，确定要退出吗？',
+    logoutConfirmMsg: '退出后将清除浏览器中保存的所有凭据，存储桶内的文件不受影响。确定退出吗？',
   },
   en: {
     appTitle: 'R2 Web File Manager',
     connectTitle: 'Connect to R2',
-    connectDesc: 'Enter your Cloudflare R2 credentials. They are stored locally in your browser.',
+    connectDesc: 'Enter your Cloudflare R2 credentials. All data is stored locally in your browser and never sent to any server.',
     accountId: 'Account ID',
     accessKeyId: 'Access Key ID',
     secretAccessKey: 'Secret Access Key',
@@ -171,16 +171,16 @@ const I18N = {
     newFolderLabel: 'Folder name',
     authFailed: 'Authentication failed. Check credentials.',
     customDomain: 'Custom Domain',
-    customDomainHint: 'Optional. Used to generate public file URLs.',
+    customDomainHint: 'Optional. Enables one-click public URL copying for files.',
     copyLink: 'Copy Link',
     linkCopied: 'Link copied to clipboard',
-    noDomain: 'No custom domain configured. Add one in Settings.',
+    noDomain: 'No custom domain configured. Add one in Settings to enable link copying.',
     corsError:
       'CORS not configured. Go to Cloudflare Dashboard → R2 → Bucket Settings and add a CORS rule allowing GET/PUT/DELETE/HEAD from your origin.',
     networkError: 'Network error: {msg}',
     uploadSuccess: 'Successfully uploaded {count} file(s)',
     uploadPartialFail: '{success} uploaded, {fail} failed',
-    fileTooLarge: 'File "{name}" exceeds 5GB limit. Multipart upload not supported.',
+    fileTooLarge: 'File "{name}" exceeds 5GB limit. Use rclone or similar tools for large files.',
     deleteSuccess: 'Deleted "{name}"',
     renameSuccess: 'Renamed to "{name}"',
     copySuccess: 'Copied to "{name}"',
@@ -194,8 +194,8 @@ const I18N = {
     toggleTheme: 'Toggle Theme',
     close: 'Close',
     shareConfig: 'Share Config',
-    shareConfigCopied: 'Share link copied to clipboard',
-    configLoadedFromUrl: 'Config loaded from URL',
+    shareConfigCopied: 'Share link copied — it contains credentials, share only with trusted parties',
+    configLoadedFromUrl: 'Config loaded from URL — please verify the credentials',
     preferences: 'Preferences',
     uploadSettings: 'Upload',
     r2Connection: 'R2',
@@ -226,12 +226,12 @@ const I18N = {
     refresh: 'Refresh',
     logout: 'Logout',
     logoutConfirmTitle: 'Logout',
-    logoutConfirmMsg: 'This will clear all locally saved credentials. Are you sure?',
+    logoutConfirmMsg: 'This will clear all credentials saved in your browser. Files in the bucket are not affected. Continue?',
   },
   ja: {
     appTitle: 'R2 Web ファイルマネージャー',
     connectTitle: 'R2 に接続',
-    connectDesc: 'Cloudflare R2 の認証情報を入力してください。ブラウザのローカルに保存されます。',
+    connectDesc: 'Cloudflare R2 の認証情報を入力してください。すべてのデータはブラウザのローカルにのみ保存され、サーバーには送信されません。',
     accountId: 'アカウント ID（Account ID）',
     accessKeyId: 'アクセスキー ID（Access Key ID）',
     secretAccessKey: 'シークレットアクセスキー（Secret Access Key）',
@@ -274,16 +274,16 @@ const I18N = {
     newFolderLabel: 'フォルダ名',
     authFailed: '認証に失敗しました。認証情報を確認してください。',
     customDomain: 'カスタムドメイン（Custom Domain）',
-    customDomainHint: '任意。ファイルの公開URLを生成するために使用します。',
+    customDomainHint: '任意。設定するとファイルの公開URLをワンクリックでコピーできます。',
     copyLink: 'リンクをコピー',
     linkCopied: 'リンクをクリップボードにコピーしました',
-    noDomain: 'カスタムドメインが設定されていません。設定で追加してください。',
+    noDomain: 'カスタムドメインが設定されていません。設定で追加するとリンクコピーが有効になります。',
     corsError:
       'CORS が設定されていません。Cloudflare ダッシュボード → R2 → バケット設定で、現在のオリジンからの GET/PUT/DELETE/HEAD を許可する CORS ルールを追加してください。',
     networkError: 'ネットワークエラー: {msg}',
     uploadSuccess: '{count} 個のファイルをアップロードしました',
     uploadPartialFail: '{success} 個成功、{fail} 個失敗',
-    fileTooLarge: 'ファイル "{name}" は 5GB を超えています。マルチパートアップロードは未対応です。',
+    fileTooLarge: 'ファイル "{name}" は 5GB を超えています。rclone などのツールをご利用ください。',
     deleteSuccess: '"{name}" を削除しました',
     renameSuccess: '"{name}" に名前を変更しました',
     copySuccess: '"{name}" にコピーしました',
@@ -297,8 +297,8 @@ const I18N = {
     toggleTheme: 'テーマ切替',
     close: '閉じる',
     shareConfig: '設定を共有',
-    shareConfigCopied: '共有リンクをクリップボードにコピーしました',
-    configLoadedFromUrl: 'URLから設定を読み込みました',
+    shareConfigCopied: '共有リンクをコピーしました — 認証情報を含むため、信頼できる相手のみに共有してください',
+    configLoadedFromUrl: 'URLから設定を読み込みました — 認証情報をご確認ください',
     preferences: '設定',
     uploadSettings: 'アップロード',
     r2Connection: 'R2',
@@ -329,7 +329,7 @@ const I18N = {
     refresh: 'リフレッシュ',
     logout: 'ログアウト',
     logoutConfirmTitle: 'ログアウト',
-    logoutConfirmMsg: 'ローカルに保存されたすべての認証情報が削除されます。よろしいですか？',
+    logoutConfirmMsg: 'ブラウザに保存されたすべての認証情報が削除されます。バケット内のファイルには影響しません。続行しますか？',
   },
 }
 
@@ -723,10 +723,15 @@ class UIManager {
 
   /** @param {string} message @param {'info' | 'success' | 'error'} [type] */
   toast(message, type = 'info') {
+    const icons = {
+      success: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+      error: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+      info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
+    }
     const container = $('#toast-container')
     const el = document.createElement('div')
     el.className = `toast ${type}`
-    el.textContent = message
+    el.innerHTML = `<span class="toast-icon">${icons[type]}</span><span>${message}</span>`
     container.appendChild(el)
     const duration = message.length > 80 ? TOAST_DURATION * 2 : TOAST_DURATION
     setTimeout(() => {
