@@ -71,10 +71,10 @@ const I18N = {
     customDomain: '自定义域名（Custom Domain）',
     customDomainHint: '可选，配置后可一键复制文件的公开链接',
     copyLink: '复制链接',
-    copyUrl: '复制 URL',
-    copyMarkdown: '复制 Markdown',
-    copyHtml: '复制 HTML',
-    copyPresigned: '复制预签名 URL',
+    copyUrl: '复制 URL 直链',
+    copyMarkdown: '复制为 Markdown 格式',
+    copyHtml: '复制为 HTML 格式',
+    copyPresigned: '复制 R2 预签名 URL',
     linkCopied: '链接已复制好啦',
     corsError:
       'CORS 还没配置好。去 Cloudflare 仪表盘 → R2 → 存储桶设置添加 CORS 规则，允许当前域名的 GET/PUT/DELETE/HEAD 请求即可。',
@@ -107,6 +107,8 @@ const I18N = {
     sortName: '按名称',
     sortDate: '按日期',
     sortSize: '按大小',
+    sortAsc: '升序',
+    sortDesc: '降序',
     viewGrid: '网格',
     viewList: '列表',
     densityCompact: '紧凑',
@@ -176,10 +178,10 @@ const I18N = {
     customDomain: 'Custom Domain',
     customDomainHint: 'Optional. Enables one-click public URL copying.',
     copyLink: 'Copy Link',
-    copyUrl: 'Copy URL',
-    copyMarkdown: 'Copy Markdown',
-    copyHtml: 'Copy HTML',
-    copyPresigned: 'Copy Pre-signed URL',
+    copyUrl: 'Copy Direct URL',
+    copyMarkdown: 'Copy as Markdown',
+    copyHtml: 'Copy as HTML',
+    copyPresigned: 'Copy R2 Pre-signed URL',
     linkCopied: 'Link copied!',
     corsError:
       "CORS isn't set up yet. Head to Cloudflare Dashboard → R2 → Bucket Settings and add a CORS rule allowing GET/PUT/DELETE/HEAD from your origin.",
@@ -212,6 +214,8 @@ const I18N = {
     sortName: 'By Name',
     sortDate: 'By Date',
     sortSize: 'By Size',
+    sortAsc: 'Ascending',
+    sortDesc: 'Descending',
     viewGrid: 'Grid',
     viewList: 'List',
     densityCompact: 'Compact',
@@ -281,10 +285,10 @@ const I18N = {
     customDomain: 'カスタムドメイン（Custom Domain）',
     customDomainHint: '任意。設定するとワンクリックで公開URLをコピーできます。',
     copyLink: 'リンクをコピー',
-    copyUrl: 'URL をコピー',
-    copyMarkdown: 'Markdown をコピー',
-    copyHtml: 'HTML をコピー',
-    copyPresigned: '署名付き URL をコピー',
+    copyUrl: '直接 URL をコピー',
+    copyMarkdown: 'Markdown 形式でコピー',
+    copyHtml: 'HTML 形式でコピー',
+    copyPresigned: 'R2 署名付き URL をコピー',
     linkCopied: 'リンクをコピーしました！',
     corsError:
       'CORS がまだ設定されていません。Cloudflare ダッシュボード → R2 → バケット設定で CORS ルールを追加してください。',
@@ -317,6 +321,8 @@ const I18N = {
     sortName: '名前順',
     sortDate: '日付順',
     sortSize: 'サイズ順',
+    sortAsc: '昇順',
+    sortDesc: '降順',
     viewGrid: 'グリッド',
     viewList: 'リスト',
     densityCompact: 'コンパクト',
@@ -982,6 +988,7 @@ class FileExplorer {
   #continuationToken = ''
   /** @type {IntersectionObserver} */ #thumbnailObserver
   #sortBy = 'name'
+  #sortOrder = /** @type {'asc' | 'desc'} */ ('asc')
   /** @type {Map<string, CacheEntry>} */
   #cache = new Map()
   /** @type {FileItem[]} All loaded items for current prefix (for local re-sort) */
@@ -1015,9 +1022,23 @@ class FileExplorer {
     return this.#sortBy
   }
 
+  get currentSortOrder() {
+    return this.#sortOrder
+  }
+
   /** @param {string} sortBy */
   setSortBy(sortBy) {
     this.#sortBy = sortBy
+    this.#resortAndRender()
+  }
+
+  /** @param {'asc' | 'desc'} order */
+  setSortOrder(order) {
+    this.#sortOrder = order
+    this.#resortAndRender()
+  }
+
+  #resortAndRender() {
     if (this.#loadedItems.length === 0) return
     $('#file-grid').innerHTML = ''
     this.#renderItems(this.#sortItems(this.#loadedItems))
@@ -1114,11 +1135,14 @@ class FileExplorer {
     const comparators = {
       name: byName,
       date: (a, b) =>
-        new Date(b.lastModified ?? 0).getTime() - new Date(a.lastModified ?? 0).getTime(),
-      size: (a, b) => (b.size ?? 0) - (a.size ?? 0),
+        new Date(a.lastModified ?? 0).getTime() - new Date(b.lastModified ?? 0).getTime(),
+      size: (a, b) => (a.size ?? 0) - (b.size ?? 0),
     }
 
-    return [...folders.toSorted(byName), ...files.toSorted(comparators[this.#sortBy] ?? byName)]
+    const cmp = comparators[this.#sortBy] ?? byName
+    const directedCmp = this.#sortOrder === 'asc' ? cmp : (/** @type {FileItem} */ a, /** @type {FileItem} */ b) => cmp(b, a)
+    const directedByName = this.#sortOrder === 'asc' ? byName : (/** @type {FileItem} */ a, /** @type {FileItem} */ b) => byName(b, a)
+    return [...folders.toSorted(directedByName), ...files.toSorted(directedCmp)]
   }
 
   /** @param {FileItem[]} items */
@@ -1824,6 +1848,10 @@ class App {
       if (sizeOpt) sizeOpt.textContent = t('sortSize')
     }
 
+    // Sort order tooltips
+    $('#sort-asc-btn').dataset.tooltip = t('sortAsc')
+    $('#sort-desc-btn').dataset.tooltip = t('sortDesc')
+
     // View & density
     $('#view-grid-btn').dataset.tooltip = t('viewGrid')
     $('#view-list-btn').dataset.tooltip = t('viewList')
@@ -1939,6 +1967,13 @@ class App {
     const densitySelect = /** @type {HTMLSelectElement} */ ($('#density-select'))
     densitySelect.value = density
     localStorage.setItem(DENSITY_KEY, density)
+  }
+
+  /** @param {'asc' | 'desc'} order */
+  #setSortOrder(order) {
+    $('#sort-asc-btn').setAttribute('aria-pressed', String(order === 'asc'))
+    $('#sort-desc-btn').setAttribute('aria-pressed', String(order === 'desc'))
+    if (this.#explorer) this.#explorer.setSortOrder(order)
   }
 
   #showHero() {
@@ -2239,6 +2274,10 @@ class App {
       if (this.#explorer)
         this.#explorer.setSortBy(/** @type {HTMLSelectElement} */ (e.target).value)
     })
+
+    // Sort order toggle
+    $('#sort-asc-btn').addEventListener('click', () => this.#setSortOrder('asc'))
+    $('#sort-desc-btn').addEventListener('click', () => this.#setSortOrder('desc'))
 
     // View toggle
     $('#view-grid-btn').addEventListener('click', () => this.#setView('grid'))

@@ -556,6 +556,22 @@
     right: var(--sp-1);
     opacity: 0;
     transition: opacity var(--duration-fast);
+
+    & .icon-btn {
+      background: color-mix(in oklch, var(--bg-primary) 70%, transparent);
+      backdrop-filter: blur(8px) saturate(160%);
+      -webkit-backdrop-filter: blur(8px) saturate(160%);
+      border: 1px solid color-mix(in oklch, var(--border) 50%, transparent);
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      box-shadow: 0 1px 4px color-mix(in oklch, black 6%, transparent);
+
+      &:hover {
+        background: color-mix(in oklch, var(--bg-primary) 90%, transparent);
+        color: var(--text-primary);
+        border-color: var(--border);
+      }
+    }
   }
 
   /* Button Group (view toggle) */

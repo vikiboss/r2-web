@@ -488,6 +488,48 @@
             <option value="date">按日期</option>
             <option value="size">按大小</option>
           </select>
+          <div class="btn-group">
+            <button
+              type="button"
+              class="icon-btn sm"
+              id="sort-asc-btn"
+              aria-pressed="true"
+              data-tooltip="升序"
+            >
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="17 11 12 6 7 11" />
+                <line x1="12" y1="18" x2="12" y2="6" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              class="icon-btn sm"
+              id="sort-desc-btn"
+              aria-pressed="false"
+              data-tooltip="降序"
+            >
+              <svg
+                class="icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <polyline points="7 13 12 18 17 13" />
+                <line x1="12" y1="6" x2="12" y2="18" />
+              </svg>
+            </button>
+          </div>
           <button type="button" class="btn secondary sm" id="new-folder-btn">
             <svg
               class="icon"
