@@ -45,11 +45,17 @@
 - JSDoc 注释提供类型安全和开发提示
 - dayjs 处理时间，AWS4Fetch 处理 R2 API 调用
 - 代码开源，无任何后端服务，安全可靠
+- 支持图片自动压缩，可选配置压缩模式和质量
+- 支持本地压缩和云压缩
+  - 本地使用 browser-image-compression，基于 Canvas 在浏览器中直接处理
+  - 云压缩使用 Tinify 服务，需要配置 API Key，出于跨域问题做了中转
 
 ## 后续计划
 
-- 内置图片压缩，考虑用 Web Assembly
-- 首页、列表等大量细节优化，极度重视 UI/UX
+- 大量细节优化、文件预览优化、极度重视 UI/UX
+- 提供自部署代理服务，解决 Tinify API 跨域问题
+- 考虑用 [WebAssembly](https://developer.mozilla.org/zh-CN/docs/WebAssembly)、[WebCodecs](https://developer.mozilla.org/zh-CN/docs/Web/API/WebCodecs_API) 等现代化技术优化本地压缩功能，就像 [GoogleChromeLabs/squoosh](https://github.com/GoogleChromeLabs/squoosh) 项目做的那样
+
 
 ## 其他
 
