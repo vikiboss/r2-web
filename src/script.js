@@ -876,7 +876,7 @@ class UIManager {
     })
   }
 
-  /** Global tooltip — event-delegated, body-level element avoids overflow clipping */
+  /** Global tooltip — direct binding, body-level element avoids overflow clipping */
   initTooltip() {
     const tip = /** @type {HTMLElement} */ ($('#tooltip'))
     /** @type {number | null} */
@@ -887,19 +887,16 @@ class UIManager {
       if (!text) return
       tip.textContent = text
 
+      // Position off-screen, force layout to measure
+      tip.style.cssText = 'left:-9999px;top:-9999px;opacity:1'
+      const tipRect = tip.getBoundingClientRect()
+
       const rect = target.getBoundingClientRect()
       const GAP = 8
 
       // Default: below center
       let top = rect.bottom + GAP
       let left = rect.left + rect.width / 2
-
-      // Make visible off-screen first to measure
-      tip.style.left = '0px'
-      tip.style.top = '0px'
-      tip.classList.add('visible')
-      const tipRect = tip.getBoundingClientRect()
-      tip.classList.remove('visible')
 
       // Flip above if overflowing bottom
       if (top + tipRect.height > window.innerHeight) {
@@ -909,8 +906,9 @@ class UIManager {
       // Center horizontally, clamp to viewport
       left = Math.max(GAP, Math.min(left - tipRect.width / 2, window.innerWidth - tipRect.width - GAP))
 
-      tip.style.left = left + 'px'
-      tip.style.top = top + 'px'
+      tip.style.cssText = `left:${left}px;top:${top}px`
+      // Force reflow before adding visible class so transition fires
+      tip.offsetHeight // eslint-disable-line no-unused-expressions
       tip.classList.add('visible')
     }
 
@@ -919,22 +917,18 @@ class UIManager {
       tip.classList.remove('visible')
     }
 
-    document.addEventListener('pointerenter', (/** @type {PointerEvent} */ e) => {
-      const target = /** @type {HTMLElement} */ (e.target)?.closest?.('[data-tooltip]')
-      if (!target) return
-      hide()
-      showTimer = setTimeout(() => show(/** @type {HTMLElement} */ (target)), 400)
-    }, true)
+    // Bind directly to each [data-tooltip] element — mouseenter/mouseleave don't bubble
+    // but fire reliably on the target element regardless of child structure
+    for (const el of document.querySelectorAll('[data-tooltip]')) {
+      el.addEventListener('mouseenter', () => {
+        hide()
+        showTimer = setTimeout(() => show(/** @type {HTMLElement} */ (el)), 400)
+      })
+      el.addEventListener('mouseleave', hide)
+    }
 
-    document.addEventListener('pointerleave', (/** @type {PointerEvent} */ e) => {
-      const target = /** @type {HTMLElement} */ (e.target)?.closest?.('[data-tooltip]')
-      if (target) hide()
-    }, true)
-
-    // Hide on any click or scroll
-    document.addEventListener('pointerdown', hide, true)
+    document.addEventListener('pointerdown', hide)
     document.addEventListener('scroll', hide, true)
-    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') hide() }, true)
   }
 }
 
@@ -1796,6 +1790,7 @@ class App {
     $('#share-btn').dataset.tooltip = t('shareConfig')
     $('#settings-btn').dataset.tooltip = t('settings')
     $('#logout-btn').dataset.tooltip = t('logout')
+    $('#refresh-btn').dataset.tooltip = t('refresh')
     $('#preview-download').dataset.tooltip = t('download')
     $('#preview-close').dataset.tooltip = t('close')
     $('#hero-theme-toggle').dataset.tooltip = t('toggleTheme')
@@ -2001,6 +1996,14 @@ class App {
   }
 
   #bindAppEvents() {
+    // Refresh button
+    $('#refresh-btn').addEventListener('click', async () => {
+      const btn = /** @type {HTMLElement} */ ($('#refresh-btn'))
+      btn.classList.add('refreshing')
+      btn.addEventListener('animationend', () => btn.classList.remove('refreshing'), { once: true })
+      await this.#explorer.refresh()
+    })
+
     // Breadcrumb clicks
     $('#breadcrumb').addEventListener('click', e => {
       const btn = /** @type {HTMLElement | null} */ (
