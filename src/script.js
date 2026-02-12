@@ -143,6 +143,10 @@ const I18N = {
     logout: '安全退出',
     logoutConfirmTitle: '安全退出',
     logoutConfirmMsg: '退出后会清除浏览器中的凭据，存储桶里的文件不会受影响。确定退出吗？',
+    copying: '正在复制 "{name}" 到 "{destName}"...',
+    moving: '正在移动 "{name}" 到 "{destName}"...',
+    deleting: '正在删除 "{name}"...',
+    renaming: '正在重命名 "{name}" 为 "{destName}"...',
   },
   en: {
     appTitle: 'R2 Web',
@@ -230,7 +234,8 @@ const I18N = {
     compressLevelBalanced: 'Balanced',
     compressLevelExtreme: 'Extreme',
     compressLevelHint: 'Uses high-performance compression with WebAssembly/Canvas',
-    compressTinifyHint: 'Key is stored locally in your browser. Requests are proxied to avoid CORS issues with the Tinify API.',
+    compressTinifyHint:
+      'Key is stored locally in your browser. Requests are proxied to avoid CORS issues with the Tinify API.',
     theme: 'Theme',
     themeLight: 'Light',
     themeDark: 'Dark',
@@ -262,6 +267,10 @@ const I18N = {
     logoutConfirmTitle: 'Logout',
     logoutConfirmMsg:
       "This will clear your saved credentials. Files in the bucket won't be affected. Continue?",
+    copying: 'Copying "{name}" to "{destName}"...',
+    moving: 'Moving "{name}" to "{destName}"...',
+    deleting: 'Deleting "{name}"...',
+    renaming: 'Renaming "{name}" to "{destName}"...',
   },
   ja: {
     appTitle: 'R2 Web',
@@ -348,7 +357,8 @@ const I18N = {
     compressLevelBalanced: 'バランス',
     compressLevelExtreme: '極端',
     compressLevelHint: 'WebAssembly/Canvas を使用した高性能圧縮',
-    compressTinifyHint: 'Tinify API の CORS 問題を回避するため、キーはブラウザにローカル保存され、リクエストはプロキシ経由になります。',
+    compressTinifyHint:
+      'Tinify API の CORS 問題を回避するため、キーはブラウザにローカル保存され、リクエストはプロキシ経由になります。',
     theme: 'テーマ',
     themeLight: 'ライト',
     themeDark: 'ダーク',
@@ -380,6 +390,10 @@ const I18N = {
     logoutConfirmTitle: 'ログアウト',
     logoutConfirmMsg:
       '保存された認証情報が削除されます。バケット内のファイルには影響しません。続行しますか？',
+    copying: '"{name}" を "{destName}" にコピーしています...',
+    moving: '"{name}" を "{destName}" に移動しています...',
+    deleting: '"{name}" を削除しています...',
+    renaming: '"{name}" を "{destName}" に名前変更しています...',
   },
 }
 
@@ -1694,6 +1708,9 @@ class FileOperations {
     if (!newName || newName === oldName) return
 
     try {
+      this.#ui.toast(t('renaming', { name: oldName, destName: newName }), 'info')
+      this.#ui.showSkeleton()
+
       const prefix = key.substring(0, key.lastIndexOf(oldName))
       if (isFolder) {
         const dest = prefix + newName + '/'
@@ -1714,6 +1731,8 @@ class FileOperations {
       await this.#explorer.refresh()
     } catch (/** @type {any} */ err) {
       this.#ui.toast(t('networkError', { msg: err.message }), 'error')
+    } finally {
+      this.#ui.hideSkeleton()
     }
   }
 
@@ -1729,6 +1748,9 @@ class FileOperations {
     if (!dest) return
 
     try {
+      this.#ui.toast(t('copying', { name, destName: dest }), 'info')
+      this.#ui.showSkeleton()
+
       if (isFolder) {
         await this.#recursiveOperation(
           key,
@@ -1746,6 +1768,8 @@ class FileOperations {
       await this.#explorer.refresh()
     } catch (/** @type {any} */ err) {
       this.#ui.toast(t('networkError', { msg: err.message }), 'error')
+    } finally {
+      this.#ui.hideSkeleton()
     }
   }
 
@@ -1761,6 +1785,9 @@ class FileOperations {
     if (!dest) return
 
     try {
+      this.#ui.toast(t('moving', { name, destName: dest }), 'info')
+      this.#ui.showSkeleton()
+
       if (isFolder) {
         await this.#recursiveOperation(
           key,
@@ -1779,6 +1806,8 @@ class FileOperations {
       await this.#explorer.refresh()
     } catch (/** @type {any} */ err) {
       this.#ui.toast(t('networkError', { msg: err.message }), 'error')
+    } finally {
+      this.#ui.hideSkeleton()
     }
   }
 
@@ -1791,6 +1820,9 @@ class FileOperations {
     if (!ok) return
 
     try {
+      this.#ui.toast(t('deleting', { name }), 'info')
+      this.#ui.showSkeleton()
+
       if (isFolder) {
         await this.#recursiveOperation(
           key,
@@ -1810,6 +1842,8 @@ class FileOperations {
       await this.#explorer.refresh()
     } catch (/** @type {any} */ err) {
       this.#ui.toast(t('networkError', { msg: err.message }), 'error')
+    } finally {
+      this.#ui.hideSkeleton()
     }
   }
 
