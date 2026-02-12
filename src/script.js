@@ -124,6 +124,7 @@ const I18N = {
     sortDesc: '降序',
     viewGrid: '网格',
     viewList: '列表',
+    density: '密度',
     densityCompact: '紧凑',
     densityNormal: '标准',
     densityLoose: '宽松',
@@ -241,6 +242,7 @@ const I18N = {
     sortDesc: 'Descending',
     viewGrid: 'Grid',
     viewList: 'List',
+    density: 'Density',
     densityCompact: 'Compact',
     densityNormal: 'Standard',
     densityLoose: 'Loose',
@@ -358,6 +360,7 @@ const I18N = {
     sortDesc: '降順',
     viewGrid: 'グリッド',
     viewList: 'リスト',
+    density: '密度',
     densityCompact: 'コンパクト',
     densityNormal: '標準',
     densityLoose: 'ルーズ',
@@ -2025,6 +2028,8 @@ class App {
 
     $('#config-cancel').textContent = t('cancel')
     $('#config-submit').textContent = t('save')
+
+    $('#density-select').dataset.tooltip = t('density')
 
     // Sort order tooltips
     $('#sort-asc-btn').dataset.tooltip = t('sortAsc')
