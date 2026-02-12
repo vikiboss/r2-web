@@ -1930,6 +1930,7 @@ class FileOperations {
         allKeys.push(file.key)
       }
       for (const folder of result.folders) {
+        allKeys.push(folder.key)
         const subKeys = await this.#collectAllKeys(folder.key)
         allKeys.push(...subKeys)
       }
