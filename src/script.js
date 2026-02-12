@@ -1,5 +1,5 @@
 // ========================================================================
-// R2 Manager — Application Script (ES Module)
+// R2 Web Manager — Application Script (ES Module)
 // ========================================================================
 
 import { AwsClient } from 'aws4fetch';
@@ -24,7 +24,7 @@ const VIDEO_RE = /\.(mp4|webm|ogg|mov|avi|mkv|m4v)$/i;
 // --- i18n ---
 const I18N = {
   zh: {
-    appTitle: 'R2 管理器',
+    appTitle: 'R2 Web Manager',
     connectTitle: '连接到 R2',
     connectDesc: '输入你的 Cloudflare R2 凭据，它们仅保存在浏览器本地。',
     accountId: '账户 ID',
@@ -106,9 +106,20 @@ const I18N = {
     densityCompact: '紧凑',
     densityNormal: '正常',
     densityLoose: '宽松',
+    save: '保存',
+    heroDesc: '纯客户端的 Cloudflare R2 存储桶文件管理器。无后端、无框架——凭据仅保存在浏览器中。',
+    heroConnect: '连接到 R2',
+    heroF1: '简单优雅高效',
+    heroF2: '纯本地客户端',
+    heroF3: '目录文件管理',
+    heroF4: '常见类型预览',
+    heroF5: '拖拽粘贴上传',
+    heroF6: '上传自动压缩',
+    heroF7: '一键复制外链',
+    heroF8: '一键分享配置',
   },
   en: {
-    appTitle: 'R2 Manager',
+    appTitle: 'R2 Web Manager',
     connectTitle: 'Connect to R2',
     connectDesc: 'Enter your Cloudflare R2 credentials. They are stored locally in your browser.',
     accountId: 'Account ID',
@@ -190,9 +201,20 @@ const I18N = {
     densityCompact: 'Compact',
     densityNormal: 'Normal',
     densityLoose: 'Loose',
+    save: 'Save',
+    heroDesc: 'A pure client-side Cloudflare R2 bucket file manager. No backend, no framework — your credentials stay in your browser.',
+    heroConnect: 'Connect to R2',
+    heroF1: 'Simple & elegant',
+    heroF2: 'Pure local client',
+    heroF3: 'File management',
+    heroF4: 'Common type preview',
+    heroF5: 'Drag & paste upload',
+    heroF6: 'Auto compress upload',
+    heroF7: 'One-click copy link',
+    heroF8: 'One-click share config',
   },
   ja: {
-    appTitle: 'R2 マネージャー',
+    appTitle: 'R2 Web Manager',
     connectTitle: 'R2 に接続',
     connectDesc: 'Cloudflare R2 の認証情報を入力してください。ブラウザのローカルに保存されます。',
     accountId: 'アカウント ID',
@@ -274,6 +296,17 @@ const I18N = {
     densityCompact: 'コンパクト',
     densityNormal: '標準',
     densityLoose: 'ゆったり',
+    save: '保存',
+    heroDesc: 'ピュアクライアントサイドの Cloudflare R2 バケットファイルマネージャー。バックエンドなし、フレームワークなし — 認証情報はブラウザに保存されます。',
+    heroConnect: 'R2 に接続',
+    heroF1: 'シンプル＆エレガント',
+    heroF2: 'ローカルクライアント',
+    heroF3: 'ファイル管理',
+    heroF4: '一般プレビュー',
+    heroF5: 'ドラッグ＆ペースト',
+    heroF6: 'アップロード自動圧縮',
+    heroF7: 'ワンクリックリンクコピー',
+    heroF8: 'ワンクリック設定共有',
   },
 };
 
@@ -1382,16 +1415,45 @@ class App {
         setTimeout(() => this.#ui.toast(t('configLoadedFromUrl'), 'info'), 500);
       }
     } else {
-      this.#showConfigDialog();
+      this.#showHero();
     }
 
     this.#bindGlobalEvents();
+    this.#bindHeroEvents();
   }
 
   #applyI18nToHTML() {
     // Update static text in HTML
     document.title = t('appTitle');
     $('.topbar-title').textContent = t('appTitle');
+
+    // Hero section
+    const heroDesc = $('#hero-desc');
+    if (heroDesc) heroDesc.textContent = t('heroDesc');
+    const heroConnectText = $('#hero-connect-text');
+    if (heroConnectText) heroConnectText.textContent = t('heroConnect');
+    const heroF1 = $('#hero-f1');
+    if (heroF1) heroF1.textContent = t('heroF1');
+    const heroF2 = $('#hero-f2');
+    if (heroF2) heroF2.textContent = t('heroF2');
+    const heroF3 = $('#hero-f3');
+    if (heroF3) heroF3.textContent = t('heroF3');
+    const heroF4 = $('#hero-f4');
+    if (heroF4) heroF4.textContent = t('heroF4');
+    const heroF5 = $('#hero-f5');
+    if (heroF5) heroF5.textContent = t('heroF5');
+    const heroF6 = $('#hero-f6');
+    if (heroF6) heroF6.textContent = t('heroF6');
+    const heroF7 = $('#hero-f7');
+    if (heroF7) heroF7.textContent = t('heroF7');
+    const heroF8 = $('#hero-f8');
+    if (heroF8) heroF8.textContent = t('heroF8');
+    const heroLangSelect = $('#hero-lang-select');
+    if (heroLangSelect) heroLangSelect.value = currentLang;
+
+    // Topbar language select
+    const topbarLangSelect = $('#topbar-lang-select');
+    if (topbarLangSelect) topbarLangSelect.value = currentLang;
 
     // Config dialog — static elements by ID
     $('#config-title').textContent = t('appTitle');
@@ -1402,15 +1464,11 @@ class App {
     $('#lbl-bucket').textContent = t('bucketName');
     $('#lbl-custom-domain').textContent = t('customDomain');
     $('#custom-domain-hint').textContent = t('customDomainHint');
-    $('#config-section-prefs').textContent = t('preferences');
-    $('#lbl-theme').textContent = t('theme');
-    $('#opt-theme-light').textContent = t('themeLight');
-    $('#opt-theme-dark').textContent = t('themeDark');
     $('#config-section-upload').textContent = t('uploadSettings');
     $('#lbl-filename-tpl').textContent = t('filenameTpl');
     $('#filename-tpl-hint').textContent = t('filenameTplHint');
     $('#config-cancel').textContent = t('cancel');
-    $('#config-submit').textContent = t('connect');
+    $('#config-submit').textContent = t('save');
 
     // Sort select options in toolbar
     const sortSelect = $('#sort-select');
@@ -1488,6 +1546,7 @@ class App {
         this.#ui.setTheme(cfg.theme);
       }
 
+      this.#hideHero();
       $('#app').hidden = false;
       this.#restoreViewPrefs();
       if (!this.#appEventsBound) {
@@ -1499,7 +1558,8 @@ class App {
     } catch (err) {
       if (err.message === 'AUTH_FAILED') {
         this.#config.clear();
-        this.#showConfigDialog();
+        $('#app').hidden = true;
+        this.#showHero();
       }
     }
   }
@@ -1524,6 +1584,28 @@ class App {
     localStorage.setItem(DENSITY_KEY, density);
   }
 
+  #showHero() {
+    $('#hero').hidden = false;
+    $('#app').hidden = true;
+  }
+
+  #hideHero() {
+    $('#hero').hidden = true;
+  }
+
+  #bindHeroEvents() {
+    $('#hero-connect-btn').addEventListener('click', () => {
+      this.#showConfigDialog();
+    });
+
+    $('#hero-theme-toggle').addEventListener('click', () => this.#ui.toggleTheme());
+
+    $('#hero-lang-select').addEventListener('change', (e) => {
+      setLang(e.target.value);
+      this.#applyI18nToHTML();
+    });
+  }
+
   #showConfigDialog() {
     const dialog = $('#config-dialog');
     const form = $('#config-form');
@@ -1536,8 +1618,6 @@ class App {
     const bucketInput = $('#cfg-bucket');
     const tplInput = $('#cfg-filename-tpl');
     const domainInput = $('#cfg-custom-domain');
-    const langSelect = $('#cfg-lang');
-    const themeSelect = $('#cfg-theme');
 
     if (cfg.accountId) accountInput.value = cfg.accountId;
     if (cfg.accessKeyId) accessInput.value = cfg.accessKeyId;
@@ -1545,32 +1625,23 @@ class App {
     if (cfg.bucket) bucketInput.value = cfg.bucket;
     if (cfg.filenameTpl) tplInput.value = cfg.filenameTpl;
     if (cfg.customDomain) domainInput.value = cfg.customDomain;
-    if (langSelect) langSelect.value = currentLang;
-    if (themeSelect) themeSelect.value = document.documentElement.getAttribute('data-theme') || 'light';
-
-    // Prevent dismiss without valid config
-    dialog.addEventListener('cancel', (e) => {
-      if (!this.#config.isValid()) e.preventDefault();
-    });
 
     const onCancel = () => {
-      if (this.#config.isValid()) dialog.close();
+      dialog.close();
+      if (!this.#config.isValid()) {
+        this.#showHero();
+      }
     };
     $('#config-cancel').onclick = onCancel;
 
+    dialog.addEventListener('cancel', (e) => {
+      if (!this.#config.isValid()) {
+        this.#showHero();
+      }
+    });
+
     form.onsubmit = async (e) => {
       e.preventDefault();
-
-      // Handle language change
-      if (langSelect && langSelect.value !== currentLang) {
-        setLang(langSelect.value);
-      }
-
-      // Handle theme change
-      const newTheme = themeSelect ? themeSelect.value : null;
-      if (newTheme) {
-        this.#ui.setTheme(newTheme);
-      }
 
       this.#config.save({
         accountId: accountInput.value.trim(),
@@ -1579,11 +1650,9 @@ class App {
         bucket: bucketInput.value.trim(),
         filenameTpl: tplInput ? tplInput.value.trim() : '',
         customDomain: domainInput ? domainInput.value.trim().replace(/\/+$/, '') : '',
-        theme: newTheme || 'light',
       });
 
       dialog.close();
-      this.#applyI18nToHTML();
       await this.#connectAndLoad();
     };
 
@@ -1611,6 +1680,12 @@ class App {
         // Fallback: prompt with URL
         await this.#ui.prompt(t('shareConfig'), 'URL', url);
       }
+    });
+
+    // Topbar language select
+    $('#topbar-lang-select').addEventListener('change', (e) => {
+      setLang(e.target.value);
+      this.#applyI18nToHTML();
     });
 
     // Dismiss context menu

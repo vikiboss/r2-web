@@ -1,5 +1,5 @@
 /* ========================================================================
-   R2 Manager — Modern CSS
+   R2 Web Manager — Modern CSS
    Features: CSS nesting, light-dark(), color-mix(), @starting-style,
              Popover API, range media queries, text-wrap: balance
    ======================================================================== */
@@ -836,6 +836,100 @@
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-sm);
     }
+  }
+
+  /* Hero Section */
+  #hero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100dvh;
+    padding: var(--sp-8) var(--sp-4);
+    animation: fade-in var(--duration-slow) var(--ease-out);
+  }
+
+  .hero-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 480px;
+  }
+
+  .hero-badge {
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-xl);
+    background: var(--accent-subtle);
+    margin-bottom: var(--sp-6);
+  }
+
+  .hero-badge-icon {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
+  }
+
+  .hero-title {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    margin-bottom: var(--sp-3);
+  }
+
+  .hero-desc {
+    font-size: var(--text-md);
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: var(--sp-8);
+    text-wrap: balance;
+  }
+
+  .hero-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-10);
+
+    & .btn {
+      padding: var(--sp-3) var(--sp-5);
+      font-size: var(--text-md);
+    }
+  }
+
+  .hero-features {
+    display: grid;
+    grid-template-columns: repeat(4, max-content);
+    gap: var(--sp-5) var(--sp-12);
+    justify-content: center;
+
+    @media (width <= 640px) {
+      grid-template-columns: repeat(2, max-content);
+    }
+  }
+
+  .hero-feature {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-size: var(--text-sm);
+    color: var(--text-tertiary);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+
+    & .icon { color: var(--accent); flex-shrink: 0; }
+  }
+
+  .hero-footer {
+    position: fixed;
+    bottom: var(--sp-4);
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
   }
 
   /* Config Dialog Sections */

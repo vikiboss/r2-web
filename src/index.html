@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="color-scheme" content="light dark">
-  <title>R2 Manager</title>
+  <title>R2 Web Manager</title>
   <link rel="icon" href="favicon.ico" sizes="any">
   <link rel="preconnect" href="https://esm.sh">
   <link rel="preconnect" href="https://r2.cloudflarestorage.com">
@@ -24,7 +24,7 @@
   <!-- Config Dialog -->
   <dialog id="config-dialog">
     <form id="config-form" method="dialog">
-      <h2 id="config-title">R2 Manager</h2>
+      <h2 id="config-title">R2 Web Manager</h2>
 
       <!-- R2 Connection -->
       <div class="config-section">
@@ -53,28 +53,6 @@
         </div>
       </div>
 
-      <!-- Preferences -->
-      <div class="config-section">
-        <h3 id="config-section-prefs">Preferences</h3>
-        <div class="field-row">
-          <div class="field">
-            <label for="cfg-lang">Language</label>
-            <select id="cfg-lang" name="lang">
-              <option value="zh">中文</option>
-              <option value="en">English</option>
-              <option value="ja">日本語</option>
-            </select>
-          </div>
-          <div class="field">
-            <label for="cfg-theme" id="lbl-theme">Theme</label>
-            <select id="cfg-theme" name="theme">
-              <option value="light" id="opt-theme-light">Light</option>
-              <option value="dark" id="opt-theme-dark">Dark</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
       <!-- Upload Settings -->
       <div class="config-section">
         <h3 id="config-section-upload">Upload</h3>
@@ -95,15 +73,86 @@
     </form>
   </dialog>
 
+  <!-- Hero (shown when not connected) -->
+  <section id="hero" hidden>
+    <div class="hero-inner">
+      <div class="hero-badge">
+        <img src="favicon.ico" alt="" class="hero-badge-icon">
+      </div>
+      <h1 class="hero-title">R2 Web Manager</h1>
+      <p class="hero-desc" id="hero-desc">A pure client-side Cloudflare R2 bucket file manager. No backend, no framework — your credentials stay in your browser.</p>
+      <div class="hero-actions">
+        <button type="button" class="btn primary" id="hero-connect-btn">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+          <span id="hero-connect-text">Connect to R2</span>
+        </button>
+        <a href="https://github.com/vikiboss/r2-web" target="_blank" rel="noopener" class="btn secondary" id="hero-github-btn">
+          <svg class="icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6.02 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.21.69.82.57A12 12 0 0 0 12 .3"/></svg>
+          <span>GitHub</span>
+        </a>
+      </div>
+      <div class="hero-features">
+        <div class="hero-feature">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          <span id="hero-f1">Simple & elegant</span>
+        </div>
+        <div class="hero-feature">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          <span id="hero-f2">Pure local client</span>
+        </div>
+        <div class="hero-feature">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <span id="hero-f3">File management</span>
+        </div>
+        <div class="hero-feature">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          <span id="hero-f4">Common type preview</span>
+        </div>
+        <div class="hero-feature">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span id="hero-f5">Drag & paste upload</span>
+        </div>
+        <div class="hero-feature">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="14" y1="10" x2="21" y2="3"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+          <span id="hero-f6">Auto compress upload</span>
+        </div>
+        <div class="hero-feature">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          <span id="hero-f7">One-click copy link</span>
+        </div>
+        <div class="hero-feature">
+          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          <span id="hero-f8">One-click share config</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-footer">
+      <button type="button" class="icon-btn" id="hero-theme-toggle" title="Toggle theme">
+        <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+      <select id="hero-lang-select" class="toolbar-select">
+        <option value="zh">中文</option>
+        <option value="en">English</option>
+        <option value="ja">日本語</option>
+      </select>
+    </div>
+  </section>
+
   <!-- App Shell -->
   <div id="app" hidden>
     <!-- Topbar -->
     <header class="topbar">
       <div class="flex items-center" style="gap:8px">
         <img src="favicon.ico" alt="" class="topbar-logo">
-        <h1 class="topbar-title">R2 Manager</h1>
+        <h1 class="topbar-title">R2 Web Manager</h1>
       </div>
       <div class="flex items-center" style="gap:4px">
+        <select id="topbar-lang-select" class="toolbar-select">
+          <option value="zh">中文</option>
+          <option value="en">EN</option>
+          <option value="ja">日本語</option>
+        </select>
         <button type="button" class="icon-btn" id="theme-toggle" title="Toggle theme">
           <svg class="icon icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
           <svg class="icon icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
