@@ -31,11 +31,6 @@
   background: var(--bg-tertiary);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  box-shadow: 0 4px 12px
-    light-dark(
-      color-mix(in oklch, black 8%, transparent),
-      color-mix(in oklch, black 30%, transparent)
-    );
   opacity: 0;
   transition: opacity var(--duration-normal) var(--ease-out);
 }

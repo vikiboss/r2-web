@@ -40,7 +40,7 @@
   }
   ::-webkit-scrollbar-thumb {
     background: var(--border);
-    border-radius: 3px;
+    border-radius: var(--radius-sm);
 
     &:hover {
       background: var(--text-tertiary);

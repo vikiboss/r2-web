@@ -29,6 +29,9 @@ const TEXT_RE =
   /\.(txt|md|json|xml|csv|html|css|js|ts|jsx|tsx|yaml|yml|toml|ini|cfg|conf|log|sh|bash|py|rb|go|rs|java|c|cpp|h|hpp|sql|env|gitignore|dockerfile)$/i
 const AUDIO_RE = /\.(mp3|wav|ogg|flac|aac|m4a|wma)$/i
 const VIDEO_RE = /\.(mp4|webm|ogg|mov|avi|mkv|m4v)$/i
+const DOCUMENT_RE = /\.(pdf|doc|docx|xls|xlsx|ppt|pptx|odt|ods|odp|rtf)$/i
+const ARCHIVE_RE = /\.(zip|rar|7z|tar|gz|bz2|xz|tgz)$/i
+const CODE_RE = /\.(js|ts|jsx|tsx|py|rb|go|rs|java|c|cpp|h|hpp|sh|bash)$/i
 
 // --- i18n ---
 const I18N = {
@@ -515,6 +518,41 @@ function getFileName(key) {
   return parts[parts.length - 1]
 }
 
+/** @param {string} key @returns {'image'|'video'|'audio'|'text'|'document'|'archive'|'code'|'file'} */
+function getFileType(key) {
+  if (IMAGE_RE.test(key)) return 'image'
+  if (VIDEO_RE.test(key)) return 'video'
+  if (AUDIO_RE.test(key)) return 'audio'
+  if (DOCUMENT_RE.test(key)) return 'document'
+  if (ARCHIVE_RE.test(key)) return 'archive'
+  if (CODE_RE.test(key)) return 'code'
+  if (TEXT_RE.test(key)) return 'text'
+  return 'file'
+}
+
+/** @param {'image'|'video'|'audio'|'text'|'document'|'archive'|'code'|'file'} type @returns {string} */
+function getFileIconSvg(type) {
+  const svgBase =
+    'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"'
+  switch (type) {
+    case 'video':
+      return `<svg ${svgBase}><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></svg>`
+    case 'audio':
+      return `<svg ${svgBase}><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`
+    case 'document':
+      return `<svg ${svgBase}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>`
+    case 'archive':
+      return `<svg ${svgBase}><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>`
+    case 'code':
+      return `<svg ${svgBase}><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`
+    case 'text':
+      return `<svg ${svgBase}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>`
+    case 'image':
+    default:
+      return `<svg ${svgBase}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`
+  }
+}
+
 /** @param {string} name @returns {string} */
 function getExtension(name) {
   const i = name.lastIndexOf('.')
@@ -934,10 +972,20 @@ class UIManager {
     }
   }
 
-  hideContextMenu() {
+  /** @param {boolean} [instant=false] Skip animation for instant close */
+  hideContextMenu(instant = false) {
     const menu = $('#context-menu')
     try {
+      if (instant) {
+        menu.classList.add('instant')
+        // Force reflow to ensure instant class is applied before hiding
+        menu.offsetHeight
+      }
       menu.hidePopover()
+      if (instant) {
+        // Remove instant class after popover is hidden
+        setTimeout(() => menu.classList.remove('instant'), 0)
+      }
     } catch {
       /* already hidden */
     }
@@ -1423,8 +1471,9 @@ class FileExplorer {
     } else if (isImage) {
       iconHtml = `<img class="file-card-thumb" alt="" loading="lazy">`
     } else {
-      iconHtml = `<div class="file-card-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      const fileType = getFileType(item.key)
+      iconHtml = `<div class="file-card-icon ${fileType}">
+        ${getFileIconSvg(fileType)}
       </div>`
     }
 
@@ -2618,7 +2667,7 @@ class App {
     document.addEventListener('click', e => {
       const target = /** @type {HTMLElement} */ (e.target)
       if (!target.closest('.context-menu') && !target.closest('.file-card-menu')) {
-        this.#ui.hideContextMenu()
+        this.#ui.hideContextMenu(true) // instant close when clicking outside
       }
     })
 
