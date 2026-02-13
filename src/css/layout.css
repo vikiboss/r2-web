@@ -1,0 +1,101 @@
+/* --- Layout --- */
+@layer layout {
+  #app {
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    min-height: 100dvh;
+  }
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--sp-2) var(--sp-4);
+    border-bottom: 1px solid var(--border);
+    background: color-mix(in oklch, var(--bg-primary) 80%, transparent);
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+
+    & h1 {
+      font-size: var(--text-md);
+      font-weight: 600;
+    }
+  }
+
+  .topbar-logo {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+  }
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--sp-2) var(--sp-4);
+    border-bottom: 1px solid var(--border-subtle);
+    background: var(--bg-primary);
+    gap: var(--sp-2);
+    flex-wrap: wrap;
+
+    @media (width <= 640px) {
+      flex-direction: column;
+      align-items: stretch;
+
+      & > .flex:last-child {
+        justify-content: flex-end;
+      }
+    }
+  }
+
+  .file-browser {
+    display: flex;
+    flex-direction: column;
+    padding: var(--sp-4);
+    overflow-y: auto;
+
+    /* Density tokens */
+    --fb-grid-min: 160px;
+    --fb-gap: var(--sp-3);
+    --fb-pad: var(--sp-3);
+    --fb-icon: 40px;
+    --fb-name: var(--text-sm);
+
+    &[data-density='compact'] {
+      --fb-grid-min: 120px;
+      --fb-gap: var(--sp-2);
+      --fb-pad: var(--sp-2);
+      --fb-icon: 32px;
+      --fb-name: var(--text-xs);
+    }
+
+    &[data-density='loose'] {
+      --fb-grid-min: 200px;
+      --fb-gap: var(--sp-4);
+      --fb-pad: var(--sp-4);
+      --fb-icon: 48px;
+      --fb-name: var(--text-base);
+    }
+  }
+
+  .file-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--fb-grid-min), 1fr));
+    gap: var(--fb-gap);
+
+    [data-view='list'] > & {
+      grid-template-columns: 1fr;
+    }
+
+    @media (320px <= width <= 640px) {
+      grid-template-columns: 2fr;
+    }
+
+    @media (width <= 320px) {
+      grid-template-columns: 1fr;
+    }
+  }
+}

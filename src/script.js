@@ -9,6 +9,7 @@ import { optimise as optimisePng } from '@jsquash/oxipng'
 import { encode as encodeWebp } from '@jsquash/webp'
 import { encode as encodeAvif } from '@jsquash/avif'
 import { filesize } from 'filesize'
+import QRCode from 'qrcode'
 
 // --- Constants ---
 const STORAGE_KEY = 'r2-manager-config'
@@ -102,8 +103,18 @@ const I18N = {
     toggleTheme: '切换主题',
     close: '关闭',
     shareConfig: '分享配置',
-    shareConfigCopied: '分享链接已复制，含凭据请谨慎分享',
+    shareConfigCopied: '分享链接已复制',
     configLoadedFromUrl: '已从链接加载配置，开始使用吧',
+    shareDialogTitle: '分享配置',
+    shareDialogSubtitle: '选择以下任一方式进行多设备迁移',
+    shareDividerText: '或',
+    shareLinkTitle: '配置链接',
+    shareLinkDesc: '复制链接并在其他设备浏览器中打开',
+    shareQrTitle: '扫描二维码',
+    shareQrDesc: '使用移动设备相机扫描',
+    shareQrHint: '扫码后在浏览器中打开链接',
+    copyShareUrl: '复制链接',
+    shareWarning: '链接包含账户凭据，请谨慎分享',
     preferences: '偏好设置',
     uploadSettings: '上传设置',
     r2Connection: 'R2 储存桶设置',
@@ -236,8 +247,18 @@ const I18N = {
     toggleTheme: 'Toggle Theme',
     close: 'Close',
     shareConfig: 'Share Config',
-    shareConfigCopied: 'Share link copied (contains credentials)',
+    shareConfigCopied: 'Share link copied',
     configLoadedFromUrl: 'Config loaded, ready to go!',
+    shareDialogTitle: 'Share Configuration',
+    shareDialogSubtitle: 'Choose one of the following methods for cross-device migration',
+    shareDividerText: 'Or',
+    shareLinkTitle: 'Configuration Link',
+    shareLinkDesc: 'Copy the link and open it in a browser on another device',
+    shareQrTitle: 'Scan QR Code',
+    shareQrDesc: 'Scan with mobile device camera',
+    shareQrHint: 'Open the link in a browser after scanning',
+    copyShareUrl: 'Copy Link',
+    shareWarning: 'Link contains account credentials, share with caution',
     preferences: 'Preferences',
     uploadSettings: 'Upload',
     r2Connection: 'R2 Bucket Settings',
@@ -294,8 +315,7 @@ const I18N = {
     tooltipSecretAccessKey: 'R2 API Secret Key, stored locally in browser only',
     tooltipBucket: 'R2 Bucket Name',
     tooltipCustomDomain: 'Custom Domain (optional), enables one-click public URL copying',
-    tooltipFilenameTpl:
-      'Placeholders: [name] [ext] [hash:8] [date:YYYYMMDD] [timestamp] [uuid]',
+    tooltipFilenameTpl: 'Placeholders: [name] [ext] [hash:8] [date:YYYYMMDD] [timestamp] [uuid]',
     tooltipCompressMode:
       'Supports JPEG/PNG/WebP/AVIF. Local: WebAssembly encoders; Tinify: Cloud service, requires API Key',
     tooltipCompressLevel: 'Balanced: 90% quality; Extreme: 75% quality',
@@ -372,8 +392,18 @@ const I18N = {
     toggleTheme: 'テーマ切替',
     close: '閉じる',
     shareConfig: '設定を共有',
-    shareConfigCopied: '共有リンクをコピー（認証情報を含む）',
+    shareConfigCopied: '共有リンクをコピーしました',
     configLoadedFromUrl: '設定を読み込みました、始めましょう！',
+    shareDialogTitle: '設定を共有',
+    shareDialogSubtitle: '以下のいずれかの方法でデバイス間で移行できます',
+    shareDividerText: 'または',
+    shareLinkTitle: '設定リンク',
+    shareLinkDesc: 'リンクをコピーして他のデバイスのブラウザで開く',
+    shareQrTitle: 'QRコードをスキャン',
+    shareQrDesc: 'モバイルデバイスのカメラでスキャン',
+    shareQrHint: 'スキャン後、ブラウザでリンクを開く',
+    copyShareUrl: 'リンクをコピー',
+    shareWarning: 'リンクにはアカウント認証情報が含まれています。注意してください',
     preferences: '設定',
     uploadSettings: 'アップロード',
     r2Connection: 'R2 バケット設定',
@@ -430,8 +460,7 @@ const I18N = {
     tooltipSecretAccessKey: 'R2 API シークレットキー、ブラウザにのみローカル保存',
     tooltipBucket: 'R2 バケット名',
     tooltipCustomDomain: 'カスタムドメイン（任意）、公開 URL のワンクリックコピーを有効化',
-    tooltipFilenameTpl:
-      'プレースホルダ: [name] [ext] [hash:8] [date:YYYYMMDD] [timestamp] [uuid]',
+    tooltipFilenameTpl: 'プレースホルダ: [name] [ext] [hash:8] [date:YYYYMMDD] [timestamp] [uuid]',
     tooltipCompressMode:
       'JPEG/PNG/WebP/AVIF 対応。ローカル: WebAssembly エンコーダー; Tinify: クラウドサービス、API Key が必要',
     tooltipCompressLevel: 'バランス: 90% 品質; 極限: 75% 品質',
@@ -997,6 +1026,68 @@ class UIManager {
     })
   }
 
+  /** @param {string} shareUrl */
+  async showShareDialog(shareUrl) {
+    const dialog = /** @type {HTMLDialogElement} */ ($('#share-dialog'))
+    const urlInput = /** @type {HTMLInputElement} */ ($('#share-url-input'))
+    const qrCanvas = /** @type {HTMLCanvasElement} */ ($('#share-qr-canvas'))
+
+    // Set URL input value
+    urlInput.value = shareUrl
+
+    // Detect current theme for QR code colors
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark'
+
+    // Generate QR code with theme-aware colors
+    try {
+      await QRCode.toCanvas(qrCanvas, shareUrl, {
+        width: 168,
+        margin: 0,
+        color: {
+          dark: isDark ? '#FFFFFF' : '#000000',
+          light: isDark ? '#0a0a0a' : '#ffffff',
+        },
+        errorCorrectionLevel: 'M',
+      })
+    } catch (err) {
+      console.error('Failed to generate QR code:', err)
+    }
+
+    // Copy button handler
+    const onCopy = async () => {
+      try {
+        await navigator.clipboard.writeText(shareUrl)
+        this.toast(t('shareConfigCopied'), 'success')
+      } catch {
+        // If clipboard API fails, select the text
+        urlInput.select()
+      }
+    }
+
+    // Close button handler
+    const onClose = () => dialog.close()
+
+    // Backdrop click handler
+    /** @param {Event} e */
+    const onBackdropClick = e => {
+      if (e.target === dialog) dialog.close()
+    }
+
+    // Cleanup on dialog close
+    const onDialogClose = () => {
+      $('#copy-share-url-btn').removeEventListener('click', onCopy)
+      $('#share-dialog-close').removeEventListener('click', onClose)
+      dialog.removeEventListener('click', onBackdropClick)
+    }
+
+    $('#copy-share-url-btn').addEventListener('click', onCopy)
+    $('#share-dialog-close').addEventListener('click', onClose)
+    dialog.addEventListener('click', onBackdropClick)
+    dialog.addEventListener('close', onDialogClose, { once: true })
+
+    dialog.showModal()
+  }
+
   /** Global tooltip — direct binding, body-level element avoids overflow clipping */
   initTooltip() {
     // Skip if already initialized to avoid duplicate event listeners
@@ -1081,7 +1172,7 @@ class UIManager {
           currentTarget = target
           // Shorter delay when switching between tooltips for better UX
           const delay = tip.classList.contains('visible') ? 0 : 100
-          showTimer = setTimeout(() => show(target), delay)
+          showTimer = /** @type {any} */ (setTimeout(() => show(target), delay))
         }
       } else if (currentTarget) {
         // Mouse moved to non-tooltip element - hide current tooltip
@@ -1774,6 +1865,7 @@ class FilePreview {
     filename.textContent = getFileName(key)
     body.innerHTML = '<div style="color:var(--text-tertiary)">Loading...</div>'
     footer.innerHTML = ''
+    footer.classList.remove('bordered')
     dialog.showModal()
 
     try {
@@ -1783,6 +1875,7 @@ class FilePreview {
         lastModified: item.lastModified ? new Date(item.lastModified) : undefined,
       }
 
+      footer.classList.add('bordered')
       footer.innerHTML = `
         <span>${t('size')}: ${filesize(meta.contentLength)}</span>
         <span>${t('contentType')}: ${meta.contentType || 'unknown'}</span>
@@ -2205,6 +2298,7 @@ class App {
 
     $('#config-cancel').textContent = t('cancel')
     $('#config-submit').textContent = t('save')
+    $('#config-dialog-close').dataset.tooltip = t('close')
 
     // Config dialog help icon tooltips
     $('#help-account-id').dataset.tooltip = t('tooltipAccountId')
@@ -2288,6 +2382,19 @@ class App {
     // Confirm dialog
     $('#confirm-cancel').textContent = t('cancel')
     $('#confirm-ok').textContent = t('confirm')
+
+    // Share dialog
+    $('#share-dialog-title').textContent = t('shareDialogTitle')
+    $('#share-dialog-subtitle').textContent = t('shareDialogSubtitle')
+    $('#share-divider-text').textContent = t('shareDividerText')
+    $('#share-link-title').textContent = t('shareLinkTitle')
+    $('#share-link-desc').textContent = t('shareLinkDesc')
+    $('#share-qr-title').textContent = t('shareQrTitle')
+    $('#share-qr-desc').textContent = t('shareQrDesc')
+    $('#share-qr-hint').textContent = t('shareQrHint')
+    $('#copy-share-url-text').textContent = t('copyShareUrl')
+    $('#share-warning').textContent = t('shareWarning')
+    $('#share-dialog-close').dataset.tooltip = t('close')
 
     // Rebind tooltips after i18n update (in case tooltip text was translated)
     this.#ui.initTooltip()
@@ -2435,6 +2542,7 @@ class App {
     }
 
     $('#config-cancel').onclick = () => dialog.close()
+    $('#config-dialog-close').onclick = () => dialog.close()
 
     const onBackdropClick = (/** @type {Event} */ e) => {
       if (e.target === dialog) dialog.close()
@@ -2497,13 +2605,7 @@ class App {
         return
       }
       const url = this.#config.getShareUrl()
-      try {
-        await navigator.clipboard.writeText(url)
-        this.#ui.toast(t('shareConfigCopied'), 'success')
-      } catch {
-        // Fallback: prompt with URL
-        await this.#ui.prompt(t('shareConfig'), 'URL', url)
-      }
+      await this.#ui.showShareDialog(url)
     })
 
     // Topbar language select

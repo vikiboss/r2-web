@@ -1,0 +1,85 @@
+/* --- Design Tokens --- */
+@layer tokens {
+  :root {
+    color-scheme: light dark;
+
+    /* Spacing */
+    --sp-1: 4px;
+    --sp-2: 8px;
+    --sp-3: 12px;
+    --sp-4: 16px;
+    --sp-5: 20px;
+    --sp-6: 24px;
+    --sp-8: 32px;
+    --sp-10: 40px;
+    --sp-12: 48px;
+
+    /* Typography */
+    --font-sans:
+      -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    --text-xs: 11px;
+    --text-sm: 12px;
+    --text-base: 13px;
+    --text-md: 14px;
+    --text-lg: 16px;
+    --text-xl: 18px;
+
+    /* Radii */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 8px;
+    --radius-xl: 12px;
+    --radius-full: 9999px;
+
+    /* Accent */
+    --accent: #f6821f;
+    --accent-hover: color-mix(in oklch, var(--accent) 82%, black);
+    --accent-subtle: color-mix(in oklch, var(--accent) 12%, transparent);
+
+    /* Transitions */
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --duration-fast: 120ms;
+    --duration-normal: 200ms;
+    --duration-slow: 300ms;
+
+    /* Z-index */
+    --z-dropzone: 100;
+    --z-upload-panel: 90;
+    --z-context-menu: 200;
+    --z-dialog: 300;
+    --z-toast: 400;
+    --z-tooltip: 2147483647;
+
+    /* Theme colors — single declaration via light-dark() */
+    --bg-primary: light-dark(#ffffff, #1a1a1a);
+    --bg-secondary: light-dark(#f5f5f5, #222222);
+    --bg-tertiary: light-dark(#ebebeb, #2a2a2a);
+    --bg-hover: light-dark(
+      color-mix(in oklch, black 4%, transparent),
+      color-mix(in oklch, white 5%, transparent)
+    );
+    --bg-active: light-dark(
+      color-mix(in oklch, black 7%, transparent),
+      color-mix(in oklch, white 8%, transparent)
+    );
+    --border: light-dark(#e0e0e0, #333333);
+    --border-subtle: light-dark(#eeeeee, #2a2a2a);
+    --text-primary: light-dark(#1a1a1a, #e8e8e8);
+    --text-secondary: light-dark(#666666, #999999);
+    --text-tertiary: light-dark(#999999, #666666);
+    --text-danger: light-dark(#d32f2f, #ef5350);
+    --backdrop: light-dark(
+      color-mix(in oklch, black 30%, transparent),
+      color-mix(in oklch, black 50%, transparent)
+    );
+  }
+
+  /* Explicit theme override */
+  [data-theme='light'] {
+    color-scheme: light;
+  }
+  [data-theme='dark'] {
+    color-scheme: dark;
+  }
+}
