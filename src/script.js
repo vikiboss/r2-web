@@ -39,7 +39,7 @@ const I18N = {
     accessKeyId: '访问密钥 ID（Access Key ID）',
     secretAccessKey: '秘密访问密钥（Secret Access Key）',
     bucketName: '存储桶名称（Bucket Name）',
-    filenameTpl: '文件名模板（Filename Template）',
+    filenameTpl: '文件名模板',
     filenameTplHint:
       '占位符: [name] 原始名, [ext] 扩展名, [hash:N] 哈希, [date:FORMAT] 日期, [timestamp] 时间戳, [uuid], 斜杠代表目录',
     cancel: '取消',
@@ -286,7 +286,7 @@ const I18N = {
     accessKeyId: 'アクセスキー ID（Access Key ID）',
     secretAccessKey: 'シークレットアクセスキー（Secret Access Key）',
     bucketName: 'バケット名（Bucket Name）',
-    filenameTpl: 'ファイル名テンプレート（Filename Template）',
+    filenameTpl: 'ファイル名テンプレート',
     filenameTplHint:
       'プレースホルダ: [name] 元名, [ext] 拡張子, [hash:N] ハッシュ, [date:FORMAT] 日付, [timestamp] タイムスタンプ, [uuid], / ディレクトリ',
     cancel: 'キャンセル',
