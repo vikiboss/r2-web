@@ -40,22 +40,21 @@
 ## 技术细节
 
 - HTML5/CSS3/JavaScript ES6+
-- 原生的 Fetch API、CSS 嵌套、dialog 等元素
+- 原生的 Fetch API、CSS 嵌套、`dialog` 等元素
 - Import Map + esm.sh，模块化组织代码
 - JSDoc 注释提供类型安全和开发提示
-- dayjs 处理时间，AWS4Fetch 处理 R2 API 调用
+- `dayjs` 处理时间，AWS4Fetch 处理 R2 API 调用
+- `filesize` 格式化文件大小显示
 - 代码开源，无任何后端服务，安全可靠
 - 支持图片自动压缩，可选配置压缩模式和质量
-- 支持本地压缩和云压缩
-  - 本地使用 browser-image-compression，基于 Canvas 在浏览器中直接处理
-  - 云压缩使用 Tinify 服务，需要配置 API Key，出于跨域问题做了中转
+- 支持 **本地压缩** 和 **云压缩**
+  - 本地：使用 [jSquash](https://github.com/jamsinclair/jSquash)，MozJPEG、libwebp、libavif 进行有损压缩，OxiPNG 进行 PNG 优化
+  - 云端：使用 [Tinify](https://tinify.com/) 服务，需要配置 API Key，出于跨域问题做了代理中转
 
 ## 后续计划
 
 - 大量细节优化、文件预览优化、极度重视 UI/UX
 - 提供自部署代理服务，解决 Tinify API 跨域问题
-- 考虑用 [WebAssembly](https://developer.mozilla.org/zh-CN/docs/WebAssembly)、[WebCodecs](https://developer.mozilla.org/zh-CN/docs/Web/API/WebCodecs_API) 等现代化技术优化本地压缩功能，就像 [GoogleChromeLabs/squoosh](https://github.com/GoogleChromeLabs/squoosh) 项目做的那样
-
 
 ## 其他
 

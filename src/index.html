@@ -38,21 +38,51 @@
               <div class="field">
                 <div class="field-label">
                   <label for="cfg-account-id" id="lbl-account-id">账户 ID（Account ID）</label>
-                  <button type="button" class="help-icon" data-tooltip="Cloudflare 账户 ID，在 R2 控制台获取">?</button>
+                  <button
+                    type="button"
+                    class="help-icon"
+                    data-tooltip="Cloudflare 账户 ID，在 R2 控制台获取"
+                  >
+                    ?
+                  </button>
                 </div>
-                <input id="cfg-account-id" name="accountId" type="text" required autocomplete="off" />
+                <input
+                  id="cfg-account-id"
+                  name="accountId"
+                  type="text"
+                  required
+                  autocomplete="off"
+                />
               </div>
               <div class="field">
                 <div class="field-label">
-                  <label for="cfg-access-key" id="lbl-access-key">访问密钥 ID（Access Key ID）</label>
-                  <button type="button" class="help-icon" data-tooltip="R2 API 访问密钥 ID">?</button>
+                  <label for="cfg-access-key" id="lbl-access-key">
+                    访问密钥 ID（Access Key ID）
+                  </label>
+                  <button type="button" class="help-icon" data-tooltip="R2 API 访问密钥 ID">
+                    ?
+                  </button>
                 </div>
-                <input id="cfg-access-key" name="accessKeyId" type="text" required autocomplete="off" />
+                <input
+                  id="cfg-access-key"
+                  name="accessKeyId"
+                  type="text"
+                  required
+                  autocomplete="off"
+                />
               </div>
               <div class="field">
                 <div class="field-label">
-                  <label for="cfg-secret-key" id="lbl-secret-key">秘密访问密钥（Secret Access Key）</label>
-                  <button type="button" class="help-icon" data-tooltip="R2 API 密钥，仅存储在浏览器本地">?</button>
+                  <label for="cfg-secret-key" id="lbl-secret-key">
+                    秘密访问密钥（Secret Access Key）
+                  </label>
+                  <button
+                    type="button"
+                    class="help-icon"
+                    data-tooltip="R2 API 密钥，仅存储在浏览器本地"
+                  >
+                    ?
+                  </button>
                 </div>
                 <input
                   id="cfg-secret-key"
@@ -71,8 +101,16 @@
               </div>
               <div class="field">
                 <div class="field-label">
-                  <label for="cfg-custom-domain" id="lbl-custom-domain">自定义域名（Custom Domain）</label>
-                  <button type="button" class="help-icon" data-tooltip="自定义域名（可选），用于生成公开访问链接">?</button>
+                  <label for="cfg-custom-domain" id="lbl-custom-domain">
+                    自定义域名（Custom Domain）
+                  </label>
+                  <button
+                    type="button"
+                    class="help-icon"
+                    data-tooltip="自定义域名（可选），用于生成公开访问链接"
+                  >
+                    ?
+                  </button>
                 </div>
                 <input
                   id="cfg-custom-domain"
@@ -91,8 +129,16 @@
               <h3 id="config-section-upload">上传设置</h3>
               <div class="field">
                 <div class="field-label">
-                  <label for="cfg-filename-tpl" id="lbl-filename-tpl">文件名模板（Filename Template）</label>
-                  <button type="button" class="help-icon" data-tooltip="支持占位符: [name] [ext] [hash:8] [date:YYYYMMDD] [timestamp] [uuid]">?</button>
+                  <label for="cfg-filename-tpl" id="lbl-filename-tpl">
+                    文件名模板（Filename Template）
+                  </label>
+                  <button
+                    type="button"
+                    class="help-icon"
+                    data-tooltip="支持占位符: [name] [ext] [hash:8] [date:YYYYMMDD] [timestamp] [uuid]"
+                  >
+                    ?
+                  </button>
                 </div>
                 <input
                   id="cfg-filename-tpl"
@@ -110,7 +156,13 @@
               <div class="field">
                 <div class="field-label">
                   <label for="cfg-compress-mode" id="lbl-compress-mode">模式</label>
-                  <button type="button" class="help-icon" data-tooltip="本地压缩：AVIF/WebP/JPEG/PNG，使用 WebAssembly 编码器；Tinify：云服务，需 API Key">?</button>
+                  <button
+                    type="button"
+                    class="help-icon"
+                    data-tooltip="本地压缩：AVIF/WebP/JPEG/PNG，使用 WebAssembly 编码器；Tinify：云服务，需 API Key"
+                  >
+                    ?
+                  </button>
                 </div>
                 <select id="cfg-compress-mode" name="compressMode">
                   <option value="none">暂不开启</option>
@@ -123,7 +175,13 @@
                 <div class="field">
                   <div class="field-label">
                     <label for="cfg-compress-level" id="lbl-compress-level">压缩程度</label>
-                    <button type="button" class="help-icon" data-tooltip="平衡模式 90% 质量，极致压缩 75% 质量">?</button>
+                    <button
+                      type="button"
+                      class="help-icon"
+                      data-tooltip="平衡模式 90% 质量，极致压缩 75% 质量"
+                    >
+                      ?
+                    </button>
                   </div>
                   <select id="cfg-compress-level" name="compressLevel">
                     <option value="balanced" selected>平衡模式</option>
@@ -136,7 +194,13 @@
                 <div class="field">
                   <div class="field-label">
                     <label for="cfg-tinify-key" id="lbl-tinify-key">Tinify API Key</label>
-                    <button type="button" class="help-icon" data-tooltip="Tinify API Key，本地存储，经代理转发以避免跨域">?</button>
+                    <button
+                      type="button"
+                      class="help-icon"
+                      data-tooltip="Tinify API Key，本地存储，经代理转发以避免跨域"
+                    >
+                      ?
+                    </button>
                   </div>
                   <input
                     id="cfg-tinify-key"

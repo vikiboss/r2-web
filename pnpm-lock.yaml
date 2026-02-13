@@ -17,18 +17,12 @@ importers:
       '@jsquash/oxipng':
         specifier: ^2.3.0
         version: 2.3.0
-      '@jsquash/png':
-        specifier: ^3.1.1
-        version: 3.1.1
       '@jsquash/webp':
         specifier: ^1.5.0
         version: 1.5.0
       aws4fetch:
         specifier: ^1.0.20
         version: 1.0.20
-      browser-image-compression:
-        specifier: ^2.0.2
-        version: 2.0.2
       dayjs:
         specifier: ^1.11.19
         version: 1.11.19
@@ -50,17 +44,11 @@ packages:
   '@jsquash/oxipng@2.3.0':
     resolution: {integrity: sha512-aQ8wiEp6ztlTMXc+RMt/CG8crU3mEHDU+h+JYkIi6ctMhlh8+Ltj5XwQFfBuyzKYrp8NxaFW80Dp824bqjr+zA==}
 
-  '@jsquash/png@3.1.1':
-    resolution: {integrity: sha512-C10pc+0H6j0h8fENOfnGOvkXCmvpSQTDGlfGd0sHphZhPSGTyLjIrHba0FaZZdsKqA/wlmhYicUHb92vfZphaw==}
-
   '@jsquash/webp@1.5.0':
     resolution: {integrity: sha512-KggLoj2MnRSfIqTeKe1EmbljTX2vuV7mh79k89PCL1pyqiDULcPM1L47twxXt0hkb68F70bXiL31MxsuoZtKFw==}
 
   aws4fetch@1.0.20:
     resolution: {integrity: sha512-/djoAN709iY65ETD6LKCtyyEI04XIBP5xVvfmNxsEP0uJB5tyaGBztSryRr4HqMStr9R06PisQE7m9zDTXKu6g==}
-
-  browser-image-compression@2.0.2:
-    resolution: {integrity: sha512-pBLlQyUf6yB8SmmngrcOw3EoS4RpQ1BcylI3T9Yqn7+4nrQTXJD4sJDe5ODnJdrvNMaio5OicFo75rDyJD2Ucw==}
 
   dayjs@1.11.19:
     resolution: {integrity: sha512-t5EcLVS6QPBNqM2z8fakk/NKel+Xzshgt8FFKAn+qwlD1pzZWxh0nVCrvFK7ZDb6XucZeF9z8C7CBWTRIVApAw==}
@@ -73,9 +61,6 @@ packages:
     resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
     engines: {node: '>=14.17'}
     hasBin: true
-
-  uzip@0.20201231.0:
-    resolution: {integrity: sha512-OZeJfZP+R0z9D6TmBgLq2LHzSSptGMGDGigGiEe0pr8UBe/7fdflgHlHBNDASTXB5jnFuxHpNaJywSg8YFeGng==}
 
   wasm-feature-detect@1.8.0:
     resolution: {integrity: sha512-zksaLKM2fVlnB5jQQDqKXXwYHLQUVH9es+5TOOHwGOVJOCeRBCiPjwSg+3tN2AdTCzjgli4jijCH290kXb/zWQ==}
@@ -92,24 +77,16 @@ snapshots:
     dependencies:
       wasm-feature-detect: 1.8.0
 
-  '@jsquash/png@3.1.1': {}
-
   '@jsquash/webp@1.5.0':
     dependencies:
       wasm-feature-detect: 1.8.0
 
   aws4fetch@1.0.20: {}
 
-  browser-image-compression@2.0.2:
-    dependencies:
-      uzip: 0.20201231.0
-
   dayjs@1.11.19: {}
 
   filesize@11.0.13: {}
 
   typescript@5.9.3: {}
-
-  uzip@0.20201231.0: {}
 
   wasm-feature-detect@1.8.0: {}
