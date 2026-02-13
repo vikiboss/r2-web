@@ -5,7 +5,7 @@
 import { AwsClient } from 'aws4fetch'
 import dayjs from 'dayjs'
 import { encode as encodeJpeg } from '@jsquash/jpeg'
-import { encode as encodePng } from '@jsquash/png'
+import { optimise as optimisePng } from '@jsquash/oxipng'
 import { encode as encodeWebp } from '@jsquash/webp'
 import { encode as encodeAvif } from '@jsquash/avif'
 import { filesize } from 'filesize'
@@ -115,8 +115,8 @@ const I18N = {
     compressLevel: '压缩程度',
     compressLevelBalanced: '平衡模式',
     compressLevelExtreme: '极致压缩',
-    compressLevelHint: '平衡模式 90% 质量，极致压缩 75% 质量',
-    compressModeHint: '本地：AVIF/WebP/JPEG/PNG，WebAssembly 编码；Tinify：云服务',
+    compressLevelHint: '平衡：JPEG/WebP 90%、AVIF 60%；极致：JPEG/WebP 75%、AVIF 50%',
+    compressModeHint: '本地：MozJPEG、libwebp、libavif、OxiPNG 优化器；Tinify：云服务',
     compressTinifyHint: 'Key 存储在本地，因 Tinify API 跨域问题会经过代理中转。',
     theme: '主题',
     themeLight: '浅色',
@@ -238,8 +238,8 @@ const I18N = {
     compressLevel: 'Compression Level',
     compressLevelBalanced: 'Balanced',
     compressLevelExtreme: 'Extreme',
-    compressLevelHint: 'Balanced: 90% quality, Extreme: 75% quality',
-    compressModeHint: 'Local: AVIF/WebP/JPEG/PNG via WebAssembly; Tinify: Cloud API',
+    compressLevelHint: 'Balanced: JPEG/WebP 90%, AVIF 60%; Extreme: JPEG/WebP 75%, AVIF 50%',
+    compressModeHint: 'Local: MozJPEG, libwebp, libavif, OxiPNG optimizer; Tinify: Cloud API',
     compressTinifyHint:
       'Key is stored locally in your browser. Requests are proxied to avoid CORS issues with the Tinify API.',
     theme: 'Theme',
@@ -362,8 +362,8 @@ const I18N = {
     compressLevel: '圧縮レベル',
     compressLevelBalanced: 'バランス',
     compressLevelExtreme: '極端',
-    compressLevelHint: 'バランス: 90% 品質、極限: 75% 品質',
-    compressModeHint: 'ローカル: AVIF/WebP/JPEG/PNG、WebAssembly; Tinify: クラウド',
+    compressLevelHint: 'バランス: JPEG/WebP 90%、AVIF 60%; 極限: JPEG/WebP 75%、AVIF 50%',
+    compressModeHint: 'ローカル: MozJPEG、libwebp、libavif、OxiPNG; Tinify: クラウド',
     compressTinifyHint:
       'Tinify API の CORS 問題を回避するため、キーはブラウザにローカル保存され、リクエストはプロキシ経由になります。',
     theme: 'テーマ',
@@ -1062,7 +1062,7 @@ class UIManager {
       )
 
       // Only hide if we're leaving the current target element entirely
-      if (target === currentTarget) {
+      if (target === currentTarget && target) {
         const relatedTarget = e.relatedTarget
 
         // Check if we're moving to another tooltip element
@@ -1384,74 +1384,113 @@ class FileExplorer {
 async function compressFile(file, config, onStatus) {
   // Only compress supported image formats (JPEG/PNG/WebP/AVIF)
   const allowCompress = COMPRESSIBLE_IMAGE_RE.test(file.name)
+  console.log('[Compress] File:', file.name, 'Allow:', allowCompress, 'Mode:', config.compressMode)
+
   if (!allowCompress || !config.compressMode || config.compressMode === 'none') {
+    console.log('[Compress] Skipped - conditions not met')
     return file
   }
 
   try {
     const originalSize = file.size
+    console.log('[Compress] Starting compression, original size:', filesize(originalSize))
 
     // --- Local Mode (jSquash) ---
     if (config.compressMode === 'local') {
       onStatus && onStatus('压缩中...')
+      console.log('[Compress] Local mode started')
 
-      // Determine quality based on compression level
+      // Determine quality/level based on compression level setting
       const level = config.compressLevel || 'balanced'
-      const quality = level === 'extreme' ? 75 : 90
 
-      // Load image into canvas to get ImageData
-      const img = new Image()
-      const canvas = document.createElement('canvas')
-      const ctx = canvas.getContext('2d')
+      // Quality settings per format (based on library defaults and best practices)
+      const jpegQuality = level === 'extreme' ? 75 : 90   // JPEG/WebP: 75-90
+      const avifQuality = level === 'extreme' ? 50 : 60   // AVIF: 50-60 (默认 50)
 
-      await new Promise((resolve, reject) => {
-        img.onload = resolve
-        img.onerror = reject
-        img.src = URL.createObjectURL(file)
-      })
+      const ext = file.name.toLowerCase().match(/\.(jpe?g|png|webp|avif)$/i)?.[1]
+      console.log('[Compress] Extension:', ext, 'Level:', level)
 
-      canvas.width = img.width
-      canvas.height = img.height
-      ctx.drawImage(img, 0, 0)
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
-      URL.revokeObjectURL(img.src)
+      console.log('[Compress] Starting encode...')
+      const encodeStart = performance.now()
 
-      // Determine output format and encode
       let compressedBuffer
       let outputType = file.type
-      const ext = file.name.toLowerCase().match(/\.(jpe?g|png|webp|avif)$/i)?.[1]
 
-      if (ext === 'jpg' || ext === 'jpeg') {
-        compressedBuffer = await encodeJpeg(imageData, { quality })
-        outputType = 'image/jpeg'
-      } else if (ext === 'png') {
-        // PNG is lossless but still benefits from OxiPNG optimization
-        compressedBuffer = await encodePng(imageData)
-        outputType = 'image/png'
-      } else if (ext === 'webp') {
-        compressedBuffer = await encodeWebp(imageData, { quality })
-        outputType = 'image/webp'
-      } else if (ext === 'avif') {
-        compressedBuffer = await encodeAvif(imageData, {
-          quality,
-          speed: level === 'extreme' ? 6 : 4, // Slower = better quality
+      // --- PNG: Use OxiPNG optimizer directly on file buffer ---
+      if (ext === 'png') {
+        // OxiPNG: Optimise PNG directly without re-encoding from canvas
+        // level: 1-6, higher = more compression (don't go above 4 per docs)
+        const oxipngLevel = level === 'extreme' ? 4 : 2
+        console.log('[Compress] Using OxiPNG, level:', oxipngLevel)
+        compressedBuffer = await optimisePng(await file.arrayBuffer(), {
+          level: oxipngLevel,
+          interlace: false,
+          optimiseAlpha: true,
         })
-        outputType = 'image/avif'
+        outputType = 'image/png'
       } else {
-        // Unsupported format
-        return file
+        // --- Other formats: Load into canvas and encode ---
+        const img = new Image()
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+
+        await new Promise((resolve, reject) => {
+          img.onload = resolve
+          img.onerror = reject
+          img.src = URL.createObjectURL(file)
+        })
+
+        canvas.width = img.width
+        canvas.height = img.height
+        ctx.drawImage(img, 0, 0)
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+        URL.revokeObjectURL(img.src)
+
+        if (ext === 'jpg' || ext === 'jpeg') {
+          console.log('[Compress] JPEG quality:', jpegQuality)
+          compressedBuffer = await encodeJpeg(imageData, { quality: jpegQuality })
+          outputType = 'image/jpeg'
+        } else if (ext === 'webp') {
+          console.log('[Compress] WebP quality:', jpegQuality)
+          compressedBuffer = await encodeWebp(imageData, { quality: jpegQuality })
+          outputType = 'image/webp'
+        } else if (ext === 'avif') {
+          // AVIF: quality 50-60, speed 越大越快 (6=快, 4=慢但质量好)
+          const avifSpeed = level === 'extreme' ? 4 : 6
+          console.log('[Compress] AVIF quality:', avifQuality, 'speed:', avifSpeed)
+          compressedBuffer = await encodeAvif(imageData, {
+            quality: avifQuality,
+            speed: avifSpeed,
+          })
+          outputType = 'image/avif'
+        } else {
+          // Unsupported format
+          console.log('[Compress] Unsupported format')
+          return file
+        }
       }
 
+      const encodeDuration = Math.round(performance.now() - encodeStart)
+      console.log('[Compress] Encode completed in', encodeDuration, 'ms, buffer size:', compressedBuffer?.byteLength)
+
       const compressedBlob = new Blob([compressedBuffer], { type: outputType })
+      console.log('[Compress] Compressed blob size:', compressedBlob.size)
 
       // Feedback
       const savings = Math.round((1 - compressedBlob.size / originalSize) * 100)
+      console.log('[Compress] Savings:', savings + '%')
+
       if (savings > 0) {
-        onStatus &&
-          onStatus(
-            `本地压缩: ${filesize(originalSize)} → ${filesize(compressedBlob.size)} (省 ${savings}%)`,
-          )
+        const msg = `本地压缩: ${filesize(originalSize)} → ${filesize(compressedBlob.size)} (省 ${savings}%)`
+        console.log('[Compress] Success:', msg)
+        onStatus && onStatus(msg)
         return new File([compressedBlob], file.name, { type: outputType })
+      } else {
+        // 压缩后文件更大，使用原文件
+        const msg = `本地压缩: 原图更优 (${filesize(originalSize)})`
+        console.log('[Compress] No savings, using original:', msg)
+        onStatus && onStatus(msg)
+        return file
       }
     }
 
@@ -1489,17 +1528,23 @@ async function compressFile(file, config, onStatus) {
       if (savings > 0) {
         onStatus &&
           onStatus(
-            `Tinify: ${filesize(originalSize)} -> ${filesize(compressedBlob.size)} (省 ${savings}%)`,
+            `Tinify: ${filesize(originalSize)} → ${filesize(compressedBlob.size)} (省 ${savings}%)`,
           )
+      } else {
+        onStatus && onStatus(`Tinify: 已优化 (${filesize(compressedBlob.size)})`)
       }
 
       return new File([compressedBlob], file.name, { type: file.type })
     }
   } catch (error) {
-    console.error('Compression failed:', error)
+    console.error('[Compress] Compression failed:', error)
+    if (error instanceof Error) {
+      console.error('[Compress] Error stack:', error.stack)
+    }
     onStatus && onStatus('压缩失败，使用原图')
   }
 
+  console.log('[Compress] Returning file (fallback or error)')
   return file
 }
 
