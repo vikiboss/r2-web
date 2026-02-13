@@ -2,58 +2,41 @@
 
 # R2 Web
 
-轻盈优雅的 Web 原生 Cloudflare R2 文件管理器，一切皆在浏览器中完成。
+📁 轻盈优雅的 Web 原生 Cloudflare R2 文件管理器，一切皆在浏览器中完成。在线访问 **[r2.viki.moe](https://r2.viki.moe)**，源码公开，可以随时 fork 私有部署。
+
+可以当作私有图床使用，支持拖拽/粘贴上传，自动压缩图片，生成 Markdown/HTML 链接。也可以当作临时文件管理工具，直接在浏览器里管理 R2 存储桶里的文件。
 
 ![836ba8a8.png](https://image.viki.moe/github/836ba8a8.png)
 
-## 在线访问
+## 为什么用这个？
 
-访问 [r2.viki.moe](https://r2.viki.moe) 立即开始使用，纯前端实现，源码公开，安全可靠。
+**传统方案的痛点：**
+- 官方控制台功能基础，登录、操作麻烦
+- 第三方客户端要下载安装，跨平台麻烦
+- 命令行工具上手门槛高，不适合临时操作
 
-## 核心功能
+**R2 Web 的解决方案：**
+- 打开浏览器就能用，跨平台零成本
+- 拖拽、粘贴上传 + 图片压缩，省流量省时间
+- PWA 支持，装到桌面像原生应用
+- 纯前端实现，数据不经过第三方服务器
 
-### 文件管理
+## 功能速览
 
-- 目录浏览，支持分页加载和懒加载缩略图
-- 按名称、日期、大小排序
-- 文件操作：重命名、移动、复制、删除，文件夹支持递归操作
-- 一键复制链接，支持 URL 直链、Markdown 格式、HTML 格式、预签名 URL
+| 功能类别 | 具体功能 |
+|---------|---------|
+| **文件管理** | 目录浏览、分页加载、懒加载缩略图<br>按名称/日期/大小排序<br>重命名、移动、复制、删除（支持递归） |
+| **文件上传** | 拖拽/粘贴/选择器上传<br>文件名模板（哈希、日期、UUID 等占位符）<br>上传前自动压缩图片（WebAssembly） |
+| **文件预览** | 图片预览（常见格式）<br>视频/音频内嵌播放器<br>文本文件预览（代码高亮） |
+| **链接复制** | URL 直链、Markdown、HTML、预签名 URL |
+| **个性化** | 中文/英语/日语<br>深色模式（跟随系统）<br>配置分享链接/二维码 |
+| **PWA** | 安装到桌面，原生体验 |
 
-### 文件上传
+## 快速开始
 
-- 多种上传方式，拖拽、粘贴、文件选择器都行
-- 文件名模板支持 `[name]`、`[ext]`、`[hash:N]`、`[date:FORMAT]`、`[timestamp]`、`[uuid]` 等占位符
-- 上传前自动压缩图片，支持本地压缩（WebAssembly）和云端压缩（Tinify API）
-- 实时显示上传进度
+### 1. 配置 R2 桶 CORS
 
-### 文件预览
-
-- 图片预览，支持 JPEG、PNG、WebP、AVIF、GIF、SVG 等格式
-- 视频和音频内嵌播放器
-- 文本文件预览，支持 TXT、Markdown、JSON、代码文件等
-
-### 图片压缩
-
-- 本地压缩使用 jSquash（WebAssembly），支持 JPEG（MozJPEG）、PNG（OxiPNG）、WebP、AVIF
-- 云端压缩使用 Tinify API，效果更好但需要 API Key
-- 可配置压缩模式和质量
-
-### 配置与偏好
-
-- 凭证和配置存储在浏览器 localStorage，数据不上传
-- 支持生成配置分享链接（Base64 编码）或二维码，快速迁移到其他设备
-- 多语言支持，简体中文、英语、日语
-- 深色模式，跟随系统或手动切换
-
-### PWA 支持
-
-- 支持安装到桌面，像原生应用一样使用
-
-## 前置要求
-
-需在 R2 储存桶开启公网访问，并配置 CORS 允许跨域。
-
-> 配置仅供参考，私有部署请修改为你的域名。
+在 Cloudflare 控制台配置 CORS 规则（路径：R2 → 存储桶 → 设置 → CORS 策略）：
 
 ```json
 [
@@ -66,83 +49,110 @@
 ]
 ```
 
-## 使用提示
+**私有部署？** 把 `AllowedOrigins` 改成你的域名。
+
+### 2. 填写凭证连接
+
+访问 [r2.viki.moe](https://r2.viki.moe)，填写：
+- 账户 ID（Account ID）
+- 访问密钥 ID（Access Key ID）
+- 秘密访问密钥（Secret Access Key）
+- 存储桶名称（Bucket Name）
+- 自定义域名（可选）
+
+凭证只存储在浏览器 localStorage，不会上传。
+
+### 3. 开始使用
+
+拖拽文件或者直接 Ctrl + V 即可上传，右键文件可进行重命名、复制链接等操作。
+
+如果当作图床使用，建议设置文件名模板，生成带哈希的唯一文件名、开启图片压缩，提升性能和安全性。
+
+## 实用技巧
+
+### 文件名模板示例
+- `[name]_[hash:6].[ext]` - 原文件名 + 6 位哈希（默认）
+- `images/[date:YYYY/MM/DD]/[uuid].[ext]` - 按日期分目录
+- `backup/[timestamp]-[name].[ext]` - 时间戳前缀备份
 
 ### 配置分享链接
+生成配置分享链接或二维码，快速在多设备同步配置。链接包含凭证，请勿公开分享。
 
-项目支持生成配置分享链接或二维码，包含访问密钥 ID、访问密钥、桶名称等敏感信息，请谨慎分享。链接通过 Base64 编码，可以快速在多设备间同步配置。
+### 缓存优化
 
-### 资源缓存优化
+项目内置支持请求缓存，对目录内容等常见频繁请求返回数据进行了缓存。
 
-建议在 Cloudflare 控制台配置资源缓存规则，提升图片等资源的加载速度。路径：域 > 域名 > 规则 > 页面规则。
+对于文件 CDN 缓存，建议在 Cloudflare 控制台配置缓存规则，提升图片加载速度。
 
 ![fca0bf44.png](https://image.viki.moe/github/fca0bf44.png)
 
-### 文件名模板示例
-- `[name]_[hash:6].[ext]` 原文件名 + 6 位哈希 + 扩展名（默认）
-- `images/[date:YYYY/MM/DD]/[uuid].[ext]` 按日期分目录，UUID 文件名
-- `backup/[timestamp]-[name].[ext]` 时间戳前缀备份文件
+## 技术实现
 
-## 技术栈
+纯前端应用，无构建步骤，代码写完即可部署。
 
-这是一个纯前端应用，没有构建步骤，没有 Node.js 服务器，代码写完即可部署。
+**核心技术：** HTML5/CSS3/ES6+，CSS Layers、原生 `<dialog>`、原生 Fetch、Import Maps、WebAssembly
 
-### 核心技术
+**依赖库：**
+- `aws4fetch` - AWS4 请求签名，处理 R2 S3 API
+- `dayjs` - 日期格式化
+- `@jsquash/*` - WebAssembly 图片压缩（MozJPEG、OxiPNG、libwebp、libavif）
+- `qrcode` - 二维码生成
 
-- HTML5/CSS3/JavaScript ES6+ 不考虑兼容性，现代浏览器优先
-- CSS Layers、CSS Nesting、`light-dark()` 函数、ViewTransition API
-- 原生 `<dialog>`、Popover API、IntersectionObserver、Fetch 等现代 Web API
-- Import Map + esm.sh 模块化加载依赖
-
-### 依赖库
-- `aws4fetch` AWS4 请求签名，处理 R2 S3 API 调用
-- `dayjs` 日期格式化，用于文件名模板
-- `filesize` 文件大小格式化显示
-- `qrcode` 配置分享二维码生成
-- `@jsquash/*` WebAssembly 图片压缩，MozJPEG、OxiPNG、libwebp、libavif
-
-### 开发工具
-- JSDoc 注释提供类型安全和 IDE 提示
-- `pnpm` 管理开发依赖，仅用于类型定义
-- 无需 Webpack、Vite 等构建工具，静态服务器直接运行
+**无需：** Node.js、Webpack、Vite、React、Vue
 
 ## 本地开发
 
 ```bash
-# 克隆仓库
 git clone https://github.com/vikiboss/r2-web.git
 cd r2-web
 
 # 安装依赖（仅用于类型提示）
 pnpm install
 
-# 启动本地服务器（任选其一）
+# 启动本地服务器
 npx serve src
 # 或
 python3 -m http.server 5500 --directory src
 ```
 
-浏览器访问 `http://localhost:5500` 即可。
+详细开发指南见 [CLAUDE.md](./CLAUDE.md)。
+
+## FAQ
+
+**Q: 凭证安全吗？**
+A: 凭证只存储在浏览器 localStorage，不会上传到任何服务器。建议使用只读权限的 API 令牌。
+
+**Q: 支持哪些浏览器？**
+A: 现代浏览器（Chrome/Edge/Firefox/Safari 最新版），不考虑 IE 兼容。
+
+**Q: 图片压缩在哪里进行？**
+A: 本地压缩使用 WebAssembly，完全在浏览器中完成，文件不会上传到第三方服务器。
+
+**Q: 可以私有部署吗？**
+A: 可以，fork 仓库后修改 CORS 配置中的 `AllowedOrigins`，部署到任意静态托管服务（Cloudflare Pages、Vercel、Netlify 等）。
+
+**Q: 配置分享链接包含什么信息？**
+A: 包含访问密钥 ID、秘密访问密钥、存储桶名称等敏感信息，请勿公开分享。
+
+**Q: 为什么上传失败？**
+A: 检查 CORS 配置是否正确、凭证是否有效、文件是否超过 300MB（大文件建议用 rclone）。
 
 ## 设计理念
 
 - 零构建，源码即产物，无需编译打包
-- 零框架，原生 Web 技术优先，不依赖 React/Vue 等框架
-- 零后端，所有逻辑在浏览器中完成，通过 S3 API 直连 R2
-- 极简美学，黑白灰配色 + R2 橙色强调，小圆角、扁平化、紧凑布局
-- 性能至上，懒加载、防抖节流
+- 零框架，原生 Web 技术优先，不依赖框架
+- 零后端，所有逻辑在浏览器中完成，直连 R2 API
+- 极简美学，黑白灰 + R2 橙色，小圆角、扁平化
+- 性能至上，懒加载、防抖节流、请求缓存
 - 细节优先，流畅动画、及时反馈、键盘导航
 
 ## 后续计划
 
-- 持续的细节优化和文件预览增强
-- 提供自部署代理服务，解决 Tinify API 跨域问题
-- 更多文件操作快捷键支持
-- 可能的文件编辑功能
+- 持续优化 UI/UX，增加更多快捷操作
 
 ## 开发故事
 
-项目使用 Claude 4.6 Opus 模型 Vibe Coding 完成，从需求到实现全程手工提示词驱动。如果你对开发过程或提示词工程感兴趣，可以参考 [plan.md](./plan.md)。
+项目使用 Claude 4.6 Opus 模型 Vibe Coding 完成，从需求到实现全程手工提示词驱动。初始提示词可以参考 [plan.md](./plan.md)。
 
 ## License
 
