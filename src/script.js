@@ -45,7 +45,7 @@ const I18N = {
     bucketName: '存储桶名称（Bucket Name）',
     filenameTpl: '文件名模板',
     filenameTplHint:
-      '占位符: [name] 原始名, [ext] 扩展名, [hash:N] 哈希, [date:FORMAT] 日期, [timestamp] 时间戳, [uuid], 斜杠代表目录',
+      '占位符: [name] 原始名, [ext] 扩展名, [hash:N] 哈希, [date:FORMAT] 日期, [timestamp] 时间戳, [uuid], 斜杠代表目录 (hash 默认 6 位)',
     cancel: '取消',
     connect: '连接',
     newFolder: '新目录',
@@ -55,6 +55,7 @@ const I18N = {
     uploadHint: '拖放、粘贴或点击即可上传',
     pasteHint: '粘贴文件到当前目录',
     uploading: '正在上传...',
+    uploadProgress: '上传进度',
     root: '根目录',
     emptyFolder: '这里空空的，上传点什么吧',
     uploadFiles: '上传文件',
@@ -130,6 +131,7 @@ const I18N = {
     compressLevelBalanced: '平衡模式',
     compressLevelExtreme: '极致压缩',
     compressLevelHint: '平衡：JPEG/WebP 90%、AVIF 60%；极致：JPEG/WebP 75%、AVIF 50%',
+    compressNotSupported: '格式不支持压缩，保持原文件',
     compressModeHint: '本地：MozJPEG、libwebp、libavif、OxiPNG 优化器；Tinify：云服务',
     compressTinifyHint: 'Key 存储在本地，因 Tinify API 跨域问题会经过代理中转。',
     theme: '主题',
@@ -172,7 +174,9 @@ const I18N = {
     tooltipSecretAccessKey: 'R2 API 密钥，仅存储在浏览器本地',
     tooltipBucket: 'R2 存储桶名称',
     tooltipCustomDomain: '自定义域名（可选），用于生成公开访问链接',
-    tooltipFilenameTpl: '支持占位符: [name] [ext] [hash:8] [date:YYYYMMDD] [timestamp] [uuid]',
+    tooltipFilenameTpl: '占位符: [name] [ext] [hash:N] [date:FORMAT] [timestamp] [uuid]',
+    filenameTplHintDetailed:
+      '例一：[name]_[hash].[ext]\n结果：photo_a1b2c3.jpg\n\n例二：[date:YYYY-MM-DD]_[name].[ext]\n结果：2024-03-15_photo.jpg\n\n例三：[date:YYYY/MM]/[name].[ext]\n结果：2024/03/photo.jpg（当前目录的子目录）',
     tooltipCompressMode:
       '支持 JPEG/PNG/WebP/AVIF。本地压缩：使用 WebAssembly 编码器；Tinify：云服务，需 API Key',
     tooltipCompressLevel: '平衡模式 90% 质量，极致压缩 75% 质量',
@@ -189,7 +193,7 @@ const I18N = {
     bucketName: 'Bucket Name',
     filenameTpl: 'Filename Template',
     filenameTplHint:
-      'Placeholders: [name] original, [ext] extension, [hash:N] hash, [date:FORMAT] date, [timestamp] ts, [uuid], / = directory',
+      'Placeholders: [name] original, [ext] extension, [hash:N] hash, [date:FORMAT] date, [timestamp] ts, [uuid], / = directory (hash default 6 chars)',
     cancel: 'Cancel',
     connect: 'Connect',
     newFolder: 'New Folder',
@@ -199,6 +203,7 @@ const I18N = {
     uploadHint: 'Drag, paste, or click to upload',
     pasteHint: 'Paste files to current directory',
     uploading: 'Uploading...',
+    uploadProgress: 'Upload Progress',
     root: 'Root',
     emptyFolder: 'Nothing here yet — upload something!',
     uploadFiles: 'Upload Files',
@@ -274,6 +279,7 @@ const I18N = {
     compressLevelBalanced: 'Balanced',
     compressLevelExtreme: 'Extreme',
     compressLevelHint: 'Balanced: JPEG/WebP 90%, AVIF 60%; Extreme: JPEG/WebP 75%, AVIF 50%',
+    compressNotSupported: 'Format not supported, using original',
     compressModeHint: 'Local: MozJPEG, libwebp, libavif, OxiPNG optimizer; Tinify: Cloud API',
     compressTinifyHint:
       'Key is stored locally in your browser. Requests are proxied to avoid CORS issues with the Tinify API.',
@@ -318,7 +324,9 @@ const I18N = {
     tooltipSecretAccessKey: 'R2 API Secret Key, stored locally in browser only',
     tooltipBucket: 'R2 Bucket Name',
     tooltipCustomDomain: 'Custom Domain (optional), enables one-click public URL copying',
-    tooltipFilenameTpl: 'Placeholders: [name] [ext] [hash:8] [date:YYYYMMDD] [timestamp] [uuid]',
+    tooltipFilenameTpl: 'Placeholders: [name] [ext] [hash:N] [date:FORMAT] [timestamp] [uuid]',
+    filenameTplHintDetailed:
+      'Example 1: [name]_[hash].[ext]\nResult: photo_a1b2c3.jpg\n\nExample 2: [date:YYYY-MM-DD]_[name].[ext]\nResult: 2024-03-15_photo.jpg\n\nExample 3: [date:YYYY/MM]/[name].[ext]\nResult: 2024/03/photo.jpg (subdirs in current path)',
     tooltipCompressMode:
       'Supports JPEG/PNG/WebP/AVIF. Local: WebAssembly encoders; Tinify: Cloud service, requires API Key',
     tooltipCompressLevel: 'Balanced: 90% quality; Extreme: 75% quality',
@@ -334,7 +342,7 @@ const I18N = {
     bucketName: 'バケット名（Bucket Name）',
     filenameTpl: 'ファイル名テンプレート',
     filenameTplHint:
-      'プレースホルダ: [name] 元名, [ext] 拡張子, [hash:N] ハッシュ, [date:FORMAT] 日付, [timestamp] タイムスタンプ, [uuid], / ディレクトリ',
+      'プレースホルダ: [name] 元名, [ext] 拡張子, [hash:N] ハッシュ, [date:FORMAT] 日付, [timestamp] タイムスタンプ, [uuid], / ディレクトリ (hash デフォルト 6 文字)',
     cancel: 'キャンセル',
     connect: '接続',
     newFolder: '新規フォルダ',
@@ -344,6 +352,7 @@ const I18N = {
     uploadHint: 'ドラッグ、貼り付け、クリックでアップロード',
     pasteHint: '現在のディレクトリにファイルを貼り付け',
     uploading: 'アップロード中...',
+    uploadProgress: 'アップロード進行状況',
     root: 'ルート',
     emptyFolder: 'まだ何もありません — アップロードしてみましょう',
     uploadFiles: 'ファイルをアップロード',
@@ -419,6 +428,7 @@ const I18N = {
     compressLevelBalanced: 'バランス',
     compressLevelExtreme: '極端',
     compressLevelHint: 'バランス: JPEG/WebP 90%、AVIF 60%; 極限: JPEG/WebP 75%、AVIF 50%',
+    compressNotSupported: 'フォーマット未対応、元ファイル使用',
     compressModeHint: 'ローカル: MozJPEG、libwebp、libavif、OxiPNG; Tinify: クラウド',
     compressTinifyHint:
       'Tinify API の CORS 問題を回避するため、キーはブラウザにローカル保存され、リクエストはプロキシ経由になります。',
@@ -463,7 +473,9 @@ const I18N = {
     tooltipSecretAccessKey: 'R2 API シークレットキー、ブラウザにのみローカル保存',
     tooltipBucket: 'R2 バケット名',
     tooltipCustomDomain: 'カスタムドメイン（任意）、公開 URL のワンクリックコピーを有効化',
-    tooltipFilenameTpl: 'プレースホルダ: [name] [ext] [hash:8] [date:YYYYMMDD] [timestamp] [uuid]',
+    tooltipFilenameTpl: 'プレースホルダ: [name] [ext] [hash:N] [date:FORMAT] [timestamp] [uuid]',
+    filenameTplHintDetailed:
+      '例1: [name]_[hash].[ext]\n結果: photo_a1b2c3.jpg\n\n例2: [date:YYYY-MM-DD]_[name].[ext]\n結果: 2024-03-15_photo.jpg\n\n例3: [date:YYYY/MM]/[name].[ext]\n結果: 2024/03/photo.jpg（現在のディレクトリ配下）',
     tooltipCompressMode:
       'JPEG/PNG/WebP/AVIF 対応。ローカル: WebAssembly エンコーダー; Tinify: クラウドサービス、API Key が必要',
     tooltipCompressLevel: 'バランス: 90% 品質; 極限: 75% 品質',
@@ -632,7 +644,7 @@ async function applyFilenameTemplate(template, file) {
   result = result.replace(/\[hash:(\d+)\]/g, (_, n) =>
     fileHash.slice(0, parseInt(/** @type {string} */ (n), 10)),
   )
-  result = result.replace(/\[hash\]/g, fileHash.slice(0, 8))
+  result = result.replace(/\[hash\]/g, fileHash.slice(0, 6))
   result = result.replace(/\[date:([^\]]+)\]/g, (_, format) =>
     dayjs().format(/** @type {string} */ (format)),
   )
@@ -916,7 +928,31 @@ class UIManager {
   }
 
   showSkeleton() {
-    $('#skeleton-grid').hidden = false
+    const skeletonGrid = $('#skeleton-grid')
+    const browser = $('#file-browser')
+    const view = browser.dataset.view
+    const density = browser.dataset.density
+    const isMobile = window.innerWidth <= 640
+
+    // 根据视图和密度决定合适的数量（不填满屏幕，显示 1-2 屏内容即可）
+    let count
+    if (view === 'list' || isMobile) {
+      // 列表/移动端：显示 5-8 行
+      count = density === 'compact' ? 8 : density === 'loose' ? 5 : 6
+    } else {
+      // 网格视图：显示 1.5-2 行
+      const gridMin = density === 'compact' ? 120 : density === 'loose' ? 200 : 160
+      const availableWidth = Math.max(window.innerWidth - 320, 600)
+      const cols = Math.floor(availableWidth / (gridMin + 16))
+      const rows = density === 'compact' ? 2 : 1.5
+      count = Math.ceil(cols * rows)
+    }
+
+    // 动态生成骨架卡片
+    skeletonGrid.innerHTML = Array(count)
+      .fill('<div class="skeleton-card"></div>')
+      .join('')
+    skeletonGrid.hidden = false
     $('#file-grid').hidden = true
     $('#empty-state').hidden = true
   }
@@ -1561,6 +1597,10 @@ async function compressFile(file, config, onStatus) {
   const allowCompress = COMPRESSIBLE_IMAGE_RE.test(file.name)
 
   if (!allowCompress || !config.compressMode || config.compressMode === 'none') {
+    // Show hint for non-compressible files when compression is enabled
+    if (config.compressMode && config.compressMode !== 'none' && !allowCompress) {
+      onStatus && onStatus(t('compressNotSupported'))
+    }
     return file
   }
 
@@ -1776,15 +1816,16 @@ class UploadManager {
 
     panel.hidden = false
     body.innerHTML = ''
-    title.textContent = t('uploading')
 
     const cfg = this.#config.get()
     const filenameTpl = cfg.filenameTpl || ''
 
-    // Process files sequentially for template resolution (hash computation)
+    // Process files sequentially: compress first, then compute hash for filename
     const uploads = []
+    title.textContent = `${t('uploadProgress')} 0/${files.length}`
+
     for (let i = 0; i < files.length; i++) {
-      const file = files[i]
+      let file = files[i]
 
       // Check size
       if (file.size > MAX_UPLOAD_SIZE) {
@@ -1795,29 +1836,53 @@ class UploadManager {
       const id = `upload-${i}-${Date.now()}`
       const displayName = file.name
 
-      // Apply filename template (async - computes file hash)
-      const processedName = await applyFilenameTemplate(filenameTpl, file)
-      const key = this.#explorer.currentPrefix + processedName
-      const contentType = file.type || getMimeType(file.name)
-
-      // Create progress UI
+      // Create progress UI first (needed for compression status updates)
       const item = document.createElement('div')
       item.className = 'upload-item'
       item.id = id
       item.innerHTML = `
-        <div class="upload-item-name" title="${displayName}">${displayName}</div>
+        <div class="upload-item-header">
+          <div class="upload-item-name" title="${displayName}">${displayName}</div>
+          <div class="upload-item-status" id="${id}-status"></div>
+        </div>
         <div class="upload-progress">
           <div class="upload-progress-bar" id="${id}-bar"></div>
         </div>
       `
       body.appendChild(item)
 
+      // Compress file first (if enabled) — hash should be based on compressed content
+      const updateStatus = /** @param {string} msg */ msg => {
+        const statusEl = $(`#${id}-status`)
+        if (statusEl) statusEl.textContent = msg
+      }
+      file = await compressFile(file, cfg, updateStatus)
+
+      // Apply filename template with hash computed from compressed file
+      const processedName = await applyFilenameTemplate(filenameTpl, file)
+      const key = this.#explorer.currentPrefix + processedName
+      const contentType = file.type || getMimeType(file.name)
+
       uploads.push({ id, key, file, contentType })
     }
 
-    // Upload concurrently
+    // Upload concurrently with progress tracking
+    let completed = 0
     const results = await Promise.allSettled(
-      uploads.map(u => this.#uploadSingleFile(u.id, u.key, u.file, u.contentType)),
+      uploads.map(u =>
+        this.#uploadSingleFile(u.id, u.key, u.file, u.contentType).then(
+          result => {
+            completed++
+            title.textContent = `${t('uploadProgress')} ${completed}/${uploads.length}`
+            return result
+          },
+          error => {
+            completed++
+            title.textContent = `${t('uploadProgress')} ${completed}/${uploads.length}`
+            throw error
+          },
+        ),
+      ),
     )
 
     const success = results.filter(r => r.status === 'fulfilled').length
@@ -1829,31 +1894,12 @@ class UploadManager {
       this.#ui.toast(t('uploadPartialFail', { success, fail }), 'error')
     }
 
-    title.textContent = `${success}/${uploads.length}`
     await this.#explorer.refresh()
   }
 
   /** @param {string} id @param {string} key @param {File} file @param {string} contentType */
   async #uploadSingleFile(id, key, file, contentType) {
-    // --- Compression Step ---
-    /**
-     * @param {string} msg
-     */
-    const updateStatus = msg => {
-      const nameEl = $(`#${id} .upload-item-name`)
-      if (nameEl) {
-        let original = nameEl.dataset.originalName
-        if (!original) {
-          original = nameEl.textContent || ''
-          nameEl.dataset.originalName = original
-        }
-        nameEl.textContent = `${original} (${msg})`
-      }
-    }
-    // Execute compression (if enabled)
-    file = await compressFile(file, this.#config.get(), updateStatus)
-    // ------------------------
-
+    // Compression already done in uploadFiles() before hash calculation
     const signed = await this.#r2.putObjectSigned(key, contentType)
     const bar = $(`#${id}-bar`)
 
@@ -1998,7 +2044,6 @@ class FileOperations {
 
     try {
       this.#ui.toast(t('renaming', { name: oldName, destName: newName }), 'info')
-      this.#ui.showSkeleton()
 
       const prefix = key.substring(0, key.lastIndexOf(oldName))
       if (isFolder) {
@@ -2020,8 +2065,6 @@ class FileOperations {
       await this.#explorer.refresh()
     } catch (/** @type {any} */ err) {
       this.#ui.toast(t('networkError', { msg: err.message }), 'error')
-    } finally {
-      this.#ui.hideSkeleton()
     }
   }
 
@@ -2038,7 +2081,6 @@ class FileOperations {
 
     try {
       this.#ui.toast(t('copying', { name, destName: dest }), 'info')
-      this.#ui.showSkeleton()
 
       if (isFolder) {
         await this.#recursiveOperation(
@@ -2057,8 +2099,6 @@ class FileOperations {
       await this.#explorer.refresh()
     } catch (/** @type {any} */ err) {
       this.#ui.toast(t('networkError', { msg: err.message }), 'error')
-    } finally {
-      this.#ui.hideSkeleton()
     }
   }
 
@@ -2075,7 +2115,6 @@ class FileOperations {
 
     try {
       this.#ui.toast(t('moving', { name, destName: dest }), 'info')
-      this.#ui.showSkeleton()
 
       if (isFolder) {
         await this.#recursiveOperation(
@@ -2095,8 +2134,6 @@ class FileOperations {
       await this.#explorer.refresh()
     } catch (/** @type {any} */ err) {
       this.#ui.toast(t('networkError', { msg: err.message }), 'error')
-    } finally {
-      this.#ui.hideSkeleton()
     }
   }
 
@@ -2110,7 +2147,6 @@ class FileOperations {
 
     try {
       this.#ui.toast(t('deleting', { name }), 'info')
-      this.#ui.showSkeleton()
 
       if (isFolder) {
         await this.#recursiveOperation(
@@ -2131,8 +2167,6 @@ class FileOperations {
       await this.#explorer.refresh()
     } catch (/** @type {any} */ err) {
       this.#ui.toast(t('networkError', { msg: err.message }), 'error')
-    } finally {
-      this.#ui.hideSkeleton()
     }
   }
 
@@ -2326,6 +2360,7 @@ class App {
     $('#lbl-custom-domain').textContent = t('customDomain')
     $('#config-section-upload').textContent = t('uploadSettings')
     $('#lbl-filename-tpl').textContent = t('filenameTpl')
+    $('#filename-tpl-hint').textContent = t('filenameTplHintDetailed')
 
     $('#config-section-compression').textContent = t('compressionSettings')
     $('#lbl-compress-mode').textContent = t('compressMode')

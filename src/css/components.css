@@ -880,10 +880,6 @@
     }
   }
 
-  /* List view skeleton */
-  [data-view='list'] .skeleton-card {
-    min-height: 40px;
-  }
 
   /* Toast */
   .toast-container {
@@ -1113,13 +1109,32 @@
     padding: var(--sp-2) 0;
   }
 
+  .upload-item-header {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: var(--sp-1);
+    min-height: 2.5em;
+  }
+
   .upload-item-name {
     font-size: var(--text-xs);
-    color: var(--text-secondary);
-    margin-bottom: var(--sp-1);
+    color: var(--text-primary);
+    font-weight: 500;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    line-height: 1.4;
+  }
+
+  .upload-item-status {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    line-height: 1.4;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-family: var(--font-mono);
   }
 
   .upload-progress {
@@ -1198,12 +1213,25 @@
     }
   }
 
-  /* Skeleton */
+  /* Skeleton — inherits file-browser layout variables */
   .skeleton-card {
     border-radius: var(--radius-lg);
     background: var(--bg-secondary);
-    min-height: 100px;
+    min-height: 120px;
     animation: skeleton-pulse 1.5s ease-in-out infinite;
+  }
+
+  /* List view — flat rows */
+  [data-view='list'] .skeleton-card {
+    min-height: calc(var(--fb-icon) + var(--fb-pad) * 2);
+    border-radius: var(--radius-sm);
+  }
+
+  /* Grid on mobile — also flat rows */
+  @media (width <= 640px) {
+    [data-view='grid'] .skeleton-card {
+      min-height: calc(var(--fb-icon) + var(--fb-pad) * 2);
+    }
   }
 
   /* Empty State */
@@ -1230,10 +1258,10 @@
     padding: var(--sp-6) 0 var(--sp-2);
   }
 
-  /* Paste hint — fixed bottom, subtle */
+  /* Paste hint — absolute positioning within file-browser container */
   .paste-hint {
-    position: fixed;
-    bottom: var(--sp-3);
+    position: absolute;
+    bottom: var(--sp-8);
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -1243,7 +1271,7 @@
     font-size: var(--text-xs);
     color: var(--text-tertiary);
     pointer-events: none;
-    z-index: 1;
+    z-index: 10;
 
     & kbd {
       display: inline-block;
@@ -1255,6 +1283,11 @@
       background: var(--bg-secondary);
       border: 1px solid var(--border-subtle);
       border-radius: var(--radius-sm);
+    }
+
+    /* Hide on mobile — no keyboard shortcuts available */
+    @media (width <= 640px) {
+      display: none;
     }
   }
 

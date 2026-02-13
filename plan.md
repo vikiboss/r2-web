@@ -24,8 +24,8 @@
   - `[hash:N]`, 其中 N 是一个数字，表示使用文件内容的前 N 位哈希值。
   - `[timestamp]`, 10 位的 Unix 时间戳。
   - `[uuid]`, 唯一的 UUID 值。
-  - `/` 任意位置的斜杠都表示目录层级，例如 `images/[date:YYYY/MM/DD]/[name]_[hash:8].[ext]`。
-  - 默认使用 `[name]_[hash:8].[ext]` 作为上传模版。
+  - `/` 任意位置的斜杠都表示目录层级，例如 `images/[date:YYYY/MM/DD]/[name]_[hash:6].[ext]`。
+  - 默认使用 `[name]_[hash:6].[ext]` 作为上传模版。
 
 ## UI 要求
 

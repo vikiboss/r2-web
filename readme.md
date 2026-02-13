@@ -46,8 +46,9 @@
 - `dayjs` 处理时间，AWS4Fetch 处理 R2 API 调用
 - `filesize` 格式化文件大小显示
 - 代码开源，无任何后端服务，安全可靠
-- 支持图片自动压缩，可选配置压缩模式和质量 （JPEG/PNG/WebP/AVIF）
-- 支持 **本地压缩** 和 **云压缩**
+- 支持图片自动压缩，可选配置压缩模式和质量
+- 图片压缩支持 JPEG/PNG/WebP/AVIF 格式
+- 支持 **本地压缩** 和 **云压缩**，有能力首选云压缩，效果更好
   - 本地：使用 [jSquash](https://github.com/jamsinclair/jSquash)，基于 Web Assembly 的 MozJPEG、libwebp、libavif 进行有损压缩，OxiPNG 进行 PNG 优化
   - 云端：使用 [Tinify](https://tinify.com/) 服务，需要配置 API Key，出于跨域问题做了代理中转
 

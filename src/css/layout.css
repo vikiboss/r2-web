@@ -52,6 +52,7 @@
   }
 
   .file-browser {
+    position: relative;
     display: flex;
     flex-direction: column;
     padding: var(--sp-4);
