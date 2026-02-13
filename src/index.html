@@ -34,17 +34,11 @@
           <!-- Left Column: R2 Connection -->
           <div class="config-column">
             <div class="config-section">
-              <h3 id="config-section-r2">R2 连接</h3>
+              <h3 id="config-section-r2">R2 储存桶设置</h3>
               <div class="field">
                 <div class="field-label">
                   <label for="cfg-account-id" id="lbl-account-id">账户 ID（Account ID）</label>
-                  <button
-                    type="button"
-                    class="help-icon"
-                    data-tooltip="Cloudflare 账户 ID，在 R2 控制台获取"
-                  >
-                    ?
-                  </button>
+                  <button type="button" class="help-icon" id="help-account-id">?</button>
                 </div>
                 <input
                   id="cfg-account-id"
@@ -59,9 +53,7 @@
                   <label for="cfg-access-key" id="lbl-access-key">
                     访问密钥 ID（Access Key ID）
                   </label>
-                  <button type="button" class="help-icon" data-tooltip="R2 API 访问密钥 ID">
-                    ?
-                  </button>
+                  <button type="button" class="help-icon" id="help-access-key">?</button>
                 </div>
                 <input
                   id="cfg-access-key"
@@ -76,13 +68,7 @@
                   <label for="cfg-secret-key" id="lbl-secret-key">
                     秘密访问密钥（Secret Access Key）
                   </label>
-                  <button
-                    type="button"
-                    class="help-icon"
-                    data-tooltip="R2 API 密钥，仅存储在浏览器本地"
-                  >
-                    ?
-                  </button>
+                  <button type="button" class="help-icon" id="help-secret-key">?</button>
                 </div>
                 <input
                   id="cfg-secret-key"
@@ -95,7 +81,7 @@
               <div class="field">
                 <div class="field-label">
                   <label for="cfg-bucket" id="lbl-bucket">存储桶名称（Bucket Name）</label>
-                  <button type="button" class="help-icon" data-tooltip="R2 存储桶名称">?</button>
+                  <button type="button" class="help-icon" id="help-bucket">?</button>
                 </div>
                 <input id="cfg-bucket" name="bucket" type="text" required autocomplete="off" />
               </div>
@@ -104,13 +90,7 @@
                   <label for="cfg-custom-domain" id="lbl-custom-domain">
                     自定义域名（Custom Domain）
                   </label>
-                  <button
-                    type="button"
-                    class="help-icon"
-                    data-tooltip="自定义域名（可选），用于生成公开访问链接"
-                  >
-                    ?
-                  </button>
+                  <button type="button" class="help-icon" id="help-custom-domain">?</button>
                 </div>
                 <input
                   id="cfg-custom-domain"
@@ -132,13 +112,7 @@
                   <label for="cfg-filename-tpl" id="lbl-filename-tpl">
                     文件名模板
                   </label>
-                  <button
-                    type="button"
-                    class="help-icon"
-                    data-tooltip="支持占位符: [name] [ext] [hash:8] [date:YYYYMMDD] [timestamp] [uuid]"
-                  >
-                    ?
-                  </button>
+                  <button type="button" class="help-icon" id="help-filename-tpl">?</button>
                 </div>
                 <input
                   id="cfg-filename-tpl"
@@ -156,13 +130,7 @@
               <div class="field">
                 <div class="field-label">
                   <label for="cfg-compress-mode" id="lbl-compress-mode">模式</label>
-                  <button
-                    type="button"
-                    class="help-icon"
-                    data-tooltip="支持 JPEG/PNG/WebP/AVIF。本地压缩：使用 WebAssembly 编码器；Tinify：云服务，需 API Key"
-                  >
-                    ?
-                  </button>
+                  <button type="button" class="help-icon" id="help-compress-mode">?</button>
                 </div>
                 <select id="cfg-compress-mode" name="compressMode">
                   <option value="none">暂不开启</option>
@@ -175,13 +143,7 @@
                 <div class="field">
                   <div class="field-label">
                     <label for="cfg-compress-level" id="lbl-compress-level">压缩程度</label>
-                    <button
-                      type="button"
-                      class="help-icon"
-                      data-tooltip="平衡模式 90% 质量，极致压缩 75% 质量"
-                    >
-                      ?
-                    </button>
+                    <button type="button" class="help-icon" id="help-compress-level">?</button>
                   </div>
                   <select id="cfg-compress-level" name="compressLevel">
                     <option value="balanced" selected>平衡模式</option>
@@ -194,13 +156,7 @@
                 <div class="field">
                   <div class="field-label">
                     <label for="cfg-tinify-key" id="lbl-tinify-key">Tinify API Key</label>
-                    <button
-                      type="button"
-                      class="help-icon"
-                      data-tooltip="Tinify API Key，本地存储，经代理转发以避免跨域"
-                    >
-                      ?
-                    </button>
+                    <button type="button" class="help-icon" id="help-tinify-key">?</button>
                   </div>
                   <input
                     id="cfg-tinify-key"

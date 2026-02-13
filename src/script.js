@@ -106,7 +106,7 @@ const I18N = {
     configLoadedFromUrl: '已从链接加载配置，开始使用吧',
     preferences: '偏好设置',
     uploadSettings: '上传设置',
-    r2Connection: 'R2 连接',
+    r2Connection: 'R2 储存桶设置',
     compressionSettings: '图片压缩',
     compressMode: '模式',
     compressModeNone: '暂不开启',
@@ -152,6 +152,17 @@ const I18N = {
     moving: '正在移动 "{name}" 到 "{destName}"...',
     deleting: '正在删除 "{name}"...',
     renaming: '正在重命名 "{name}" 为 "{destName}"...',
+    // Config dialog tooltips
+    tooltipAccountId: 'Cloudflare 账户 ID，在 R2 控制台获取',
+    tooltipAccessKeyId: 'R2 API 访问密钥 ID',
+    tooltipSecretAccessKey: 'R2 API 密钥，仅存储在浏览器本地',
+    tooltipBucket: 'R2 存储桶名称',
+    tooltipCustomDomain: '自定义域名（可选），用于生成公开访问链接',
+    tooltipFilenameTpl: '支持占位符: [name] [ext] [hash:8] [date:YYYYMMDD] [timestamp] [uuid]',
+    tooltipCompressMode:
+      '支持 JPEG/PNG/WebP/AVIF。本地压缩：使用 WebAssembly 编码器；Tinify：云服务，需 API Key',
+    tooltipCompressLevel: '平衡模式 90% 质量，极致压缩 75% 质量',
+    tooltipTinifyKey: 'Tinify API Key，本地存储，经代理转发以避免跨域',
   },
   en: {
     appTitle: 'R2 Web',
@@ -229,7 +240,7 @@ const I18N = {
     configLoadedFromUrl: 'Config loaded, ready to go!',
     preferences: 'Preferences',
     uploadSettings: 'Upload',
-    r2Connection: 'R2',
+    r2Connection: 'R2 Bucket Settings',
     compressionSettings: 'Image Compression',
     compressMode: 'Compression Mode',
     compressModeNone: 'None',
@@ -277,6 +288,18 @@ const I18N = {
     moving: 'Moving "{name}" to "{destName}"...',
     deleting: 'Deleting "{name}"...',
     renaming: 'Renaming "{name}" to "{destName}"...',
+    // Config dialog tooltips
+    tooltipAccountId: 'Cloudflare Account ID, found in R2 console',
+    tooltipAccessKeyId: 'R2 API Access Key ID',
+    tooltipSecretAccessKey: 'R2 API Secret Key, stored locally in browser only',
+    tooltipBucket: 'R2 Bucket Name',
+    tooltipCustomDomain: 'Custom Domain (optional), enables one-click public URL copying',
+    tooltipFilenameTpl:
+      'Placeholders: [name] [ext] [hash:8] [date:YYYYMMDD] [timestamp] [uuid]',
+    tooltipCompressMode:
+      'Supports JPEG/PNG/WebP/AVIF. Local: WebAssembly encoders; Tinify: Cloud service, requires API Key',
+    tooltipCompressLevel: 'Balanced: 90% quality; Extreme: 75% quality',
+    tooltipTinifyKey: 'Tinify API Key, stored locally, proxied to avoid CORS issues',
   },
   ja: {
     appTitle: 'R2 Web',
@@ -353,7 +376,7 @@ const I18N = {
     configLoadedFromUrl: '設定を読み込みました、始めましょう！',
     preferences: '設定',
     uploadSettings: 'アップロード',
-    r2Connection: 'R2',
+    r2Connection: 'R2 バケット設定',
     compressionSettings: '画像圧縮',
     compressMode: '圧縮モード',
     compressModeNone: 'なし',
@@ -401,6 +424,18 @@ const I18N = {
     moving: '"{name}" を "{destName}" に移動しています...',
     deleting: '"{name}" を削除しています...',
     renaming: '"{name}" を "{destName}" に名前変更しています...',
+    // Config dialog tooltips
+    tooltipAccountId: 'Cloudflare アカウント ID、R2 コンソールで取得',
+    tooltipAccessKeyId: 'R2 API アクセスキー ID',
+    tooltipSecretAccessKey: 'R2 API シークレットキー、ブラウザにのみローカル保存',
+    tooltipBucket: 'R2 バケット名',
+    tooltipCustomDomain: 'カスタムドメイン（任意）、公開 URL のワンクリックコピーを有効化',
+    tooltipFilenameTpl:
+      'プレースホルダ: [name] [ext] [hash:8] [date:YYYYMMDD] [timestamp] [uuid]',
+    tooltipCompressMode:
+      'JPEG/PNG/WebP/AVIF 対応。ローカル: WebAssembly エンコーダー; Tinify: クラウドサービス、API Key が必要',
+    tooltipCompressLevel: 'バランス: 90% 品質; 極限: 75% 品質',
+    tooltipTinifyKey: 'Tinify API Key、ローカル保存、CORS 問題を回避するためプロキシ経由',
   },
 }
 
@@ -2170,6 +2205,17 @@ class App {
 
     $('#config-cancel').textContent = t('cancel')
     $('#config-submit').textContent = t('save')
+
+    // Config dialog help icon tooltips
+    $('#help-account-id').dataset.tooltip = t('tooltipAccountId')
+    $('#help-access-key').dataset.tooltip = t('tooltipAccessKeyId')
+    $('#help-secret-key').dataset.tooltip = t('tooltipSecretAccessKey')
+    $('#help-bucket').dataset.tooltip = t('tooltipBucket')
+    $('#help-custom-domain').dataset.tooltip = t('tooltipCustomDomain')
+    $('#help-filename-tpl').dataset.tooltip = t('tooltipFilenameTpl')
+    $('#help-compress-mode').dataset.tooltip = t('tooltipCompressMode')
+    $('#help-compress-level').dataset.tooltip = t('tooltipCompressLevel')
+    $('#help-tinify-key').dataset.tooltip = t('tooltipTinifyKey')
 
     $('#density-select').dataset.tooltip = t('density')
 
