@@ -71,6 +71,7 @@
     --z-context-menu: 200;
     --z-dialog: 300;
     --z-toast: 400;
+    --z-tooltip: 2147483647;
 
     /* Theme colors — single declaration via light-dark() */
     --bg-primary: light-dark(#ffffff, #1a1a1a);
@@ -322,12 +323,6 @@
     gap: var(--sp-1);
     margin-bottom: var(--sp-3);
 
-    & label {
-      font-size: var(--text-sm);
-      font-weight: 500;
-      color: var(--text-secondary);
-    }
-
     & input,
     & select {
       padding: var(--sp-2) var(--sp-3);
@@ -343,6 +338,49 @@
       }
     }
   }
+
+  /* Field Label Container (label + help icon) */
+  .field-label {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-1);
+
+    & label {
+      font-size: var(--text-sm);
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+  }
+
+  /* Help icon for form field tooltips */
+  .help-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    min-height: 16px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: help;
+    flex-shrink: 0;
+    transition: all var(--duration-fast) var(--ease-out);
+
+    &:hover {
+      background: var(--accent);
+      color: white;
+      border-color: var(--accent);
+      transform: scale(1.1);
+    }
+  }
+
 
   /* Dialog — base state (layout persists during close transition) */
   dialog {
@@ -406,6 +444,19 @@
 
     & h2 { margin-bottom: var(--sp-2); }
     & p { margin-bottom: var(--sp-4); font-size: var(--text-sm); }
+  }
+
+  /* Config dialog — wider for two-column layout */
+  #config-dialog > form {
+    width: min(800px, calc(100vw - 32px));
+
+    @media (width <= 768px) {
+      width: min(500px, calc(100vw - 32px));
+    }
+
+    @media (width <= 480px) {
+      width: calc(100vw - 32px);
+    }
   }
 
   dialog[open] > form,
@@ -1079,13 +1130,35 @@
     gap: var(--sp-2);
   }
 
-  /* Config Dialog Sections */
-  .config-section {
+  /* Config Dialog Sections Grid — Two columns on desktop, one on mobile */
+  .config-sections-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--sp-6);
     margin-bottom: var(--sp-4);
-    padding-bottom: var(--sp-3);
+
+    @media (width <= 768px) {
+      grid-template-columns: 1fr;
+      gap: var(--sp-4);
+    }
+  }
+
+  /* Config Column Container */
+  .config-column {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-5);
+  }
+
+  .config-section {
+    padding-bottom: var(--sp-4);
     border-bottom: 1px solid var(--border-subtle);
 
-    &:last-of-type { border-bottom: none; padding-bottom: 0; }
+    /* Last section in each column has no border */
+    &:last-child {
+      border-bottom: none;
+      padding-bottom: 0;
+    }
 
     & h3 {
       font-size: var(--text-sm);
@@ -1146,30 +1219,6 @@
   .text-secondary { color: var(--text-secondary); }
   .flex { display: flex; }
   .items-center { align-items: center; }
-
-  /* Global tooltip — positioned via JS, lives at body level */
-  .tooltip {
-    position: fixed;
-    z-index: calc(var(--z-toast) + 10);
-    pointer-events: none;
-    padding: var(--sp-1) var(--sp-2);
-    font-size: var(--text-xs);
-    font-weight: 500;
-    line-height: 1.4;
-    white-space: nowrap;
-    color: var(--text-primary);
-    background: var(--bg-tertiary);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    box-shadow: 0 4px 12px light-dark(
-      color-mix(in oklch, black 8%, transparent),
-      color-mix(in oklch, black 30%, transparent)
-    );
-    opacity: 0;
-    transition: opacity var(--duration-normal) var(--ease-out);
-
-    &.visible { opacity: 1; }
-  }
 }
 
 /* --- Animations --- */
@@ -1237,4 +1286,33 @@
   ::view-transition-new(root) {
     animation-duration: var(--duration-normal);
   }
+}
+
+/* ========================================================================
+   Global Tooltip — Outside layers for maximum priority
+   ======================================================================== */
+
+.tooltip {
+  position: fixed !important;
+  z-index: var(--z-tooltip) !important;
+  pointer-events: none;
+  padding: var(--sp-1) var(--sp-2);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 12px light-dark(
+    color-mix(in oklch, black 8%, transparent),
+    color-mix(in oklch, black 30%, transparent)
+  );
+  opacity: 0;
+  transition: opacity var(--duration-normal) var(--ease-out);
+}
+
+.tooltip.visible {
+  opacity: 1 !important;
 }

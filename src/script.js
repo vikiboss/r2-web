@@ -4,7 +4,10 @@
 
 import { AwsClient } from 'aws4fetch'
 import dayjs from 'dayjs'
-import imageCompression from 'browser-image-compression'
+import { encode as encodeJpeg } from '@jsquash/jpeg'
+import { encode as encodePng } from '@jsquash/png'
+import { encode as encodeWebp } from '@jsquash/webp'
+import { encode as encodeAvif } from '@jsquash/avif'
 import { filesize } from 'filesize'
 
 // --- Constants ---
@@ -20,6 +23,7 @@ const MAX_UPLOAD_SIZE = 300 * 1024 * 1024 // 300 MB
 
 // File type patterns
 const IMAGE_RE = /\.(jpg|jpeg|png|gif|webp|svg|ico|bmp|avif)$/i
+const COMPRESSIBLE_IMAGE_RE = /\.(jpe?g|png|webp|avif)$/i
 const TEXT_RE =
   /\.(txt|md|json|xml|csv|html|css|js|ts|jsx|tsx|yaml|yml|toml|ini|cfg|conf|log|sh|bash|py|rb|go|rs|java|c|cpp|h|hpp|sql|env|gitignore|dockerfile)$/i
 const AUDIO_RE = /\.(mp3|wav|ogg|flac|aac|m4a|wma)$/i
@@ -111,7 +115,8 @@ const I18N = {
     compressLevel: '压缩程度',
     compressLevelBalanced: '平衡模式',
     compressLevelExtreme: '极致压缩',
-    compressLevelHint: '使用 WebAssembly/Canvas 高性能压缩',
+    compressLevelHint: '平衡模式 90% 质量，极致压缩 75% 质量',
+    compressModeHint: '本地：AVIF/WebP/JPEG/PNG，WebAssembly 编码；Tinify：云服务',
     compressTinifyHint: 'Key 存储在本地，因 Tinify API 跨域问题会经过代理中转。',
     theme: '主题',
     themeLight: '浅色',
@@ -233,7 +238,8 @@ const I18N = {
     compressLevel: 'Compression Level',
     compressLevelBalanced: 'Balanced',
     compressLevelExtreme: 'Extreme',
-    compressLevelHint: 'Uses high-performance compression with WebAssembly/Canvas',
+    compressLevelHint: 'Balanced: 90% quality, Extreme: 75% quality',
+    compressModeHint: 'Local: AVIF/WebP/JPEG/PNG via WebAssembly; Tinify: Cloud API',
     compressTinifyHint:
       'Key is stored locally in your browser. Requests are proxied to avoid CORS issues with the Tinify API.',
     theme: 'Theme',
@@ -356,7 +362,8 @@ const I18N = {
     compressLevel: '圧縮レベル',
     compressLevelBalanced: 'バランス',
     compressLevelExtreme: '極端',
-    compressLevelHint: 'WebAssembly/Canvas を使用した高性能圧縮',
+    compressLevelHint: 'バランス: 90% 品質、極限: 75% 品質',
+    compressModeHint: 'ローカル: AVIF/WebP/JPEG/PNG、WebAssembly; Tinify: クラウド',
     compressTinifyHint:
       'Tinify API の CORS 問題を回避するため、キーはブラウザにローカル保存され、リクエストはプロキシ経由になります。',
     theme: 'テーマ',
@@ -957,17 +964,31 @@ class UIManager {
 
   /** Global tooltip — direct binding, body-level element avoids overflow clipping */
   initTooltip() {
+    // Skip if already initialized to avoid duplicate event listeners
+    if (this.tooltipInitialized) return
+    this.tooltipInitialized = true
+
     const tip = /** @type {HTMLElement} */ ($('#tooltip'))
     /** @type {number | null} */
     let showTimer = null
+    /** @type {HTMLElement | null} */
+    let currentTarget = null
 
     const show = (/** @type {HTMLElement} */ target) => {
       const text = target.dataset.tooltip
       if (!text) return
       tip.textContent = text
 
+      // Check if target is inside a dialog - if so, move tooltip into dialog temporarily
+      const parentDialog = target.closest('dialog[open]')
+      if (parentDialog && tip.parentElement !== parentDialog) {
+        parentDialog.appendChild(tip)
+      } else if (!parentDialog && tip.parentElement !== document.body) {
+        document.body.appendChild(tip)
+      }
+
       // Position off-screen, force layout to measure
-      tip.style.cssText = 'left:-9999px;top:-9999px;opacity:1'
+      tip.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:1;z-index:2147483647'
       const tipRect = tip.getBoundingClientRect()
 
       const rect = target.getBoundingClientRect()
@@ -988,7 +1009,8 @@ class UIManager {
         Math.min(left - tipRect.width / 2, window.innerWidth - tipRect.width - GAP),
       )
 
-      tip.style.cssText = `left:${left}px;top:${top}px`
+      // Set position with maximum z-index to override any context including dialog top layer
+      tip.style.cssText = `position:fixed;left:${left}px;top:${top}px;z-index:2147483647;pointer-events:none`
       // Force reflow before adding visible class so transition fires
       tip.offsetHeight // eslint-disable-line no-unused-expressions
       tip.classList.add('visible')
@@ -999,18 +1021,62 @@ class UIManager {
         clearTimeout(showTimer)
         showTimer = null
       }
+      currentTarget = null
       tip.classList.remove('visible')
+
+      // Move tooltip back to body after hiding
+      if (tip.parentElement !== document.body) {
+        document.body.appendChild(tip)
+      }
     }
 
-    // Bind directly to each [data-tooltip] element — mouseenter/mouseleave don't bubble
-    // but fire reliably on the target element regardless of child structure
-    for (const el of document.querySelectorAll('[data-tooltip]')) {
-      el.addEventListener('mouseenter', () => {
+    // Use event delegation on document for dynamic elements
+    // Find closest element with data-tooltip to handle child elements (like SVG)
+    document.addEventListener('mouseover', (e) => {
+      // Support both HTMLElement and SVGElement (for icon buttons with SVG children)
+      const eventTarget = e.target
+      const target = /** @type {HTMLElement | null} */ (
+        eventTarget instanceof Element ? eventTarget.closest('[data-tooltip]') : null
+      )
+
+      if (target) {
+        if (target !== currentTarget) {
+          // Switching to a new tooltip target - show immediately
+          if (showTimer) clearTimeout(showTimer)
+          currentTarget = target
+          // Shorter delay when switching between tooltips for better UX
+          const delay = tip.classList.contains('visible') ? 0 : 100
+          showTimer = setTimeout(() => show(target), delay)
+        }
+      } else if (currentTarget) {
+        // Mouse moved to non-tooltip element - hide current tooltip
         hide()
-        showTimer = setTimeout(() => show(/** @type {HTMLElement} */ (el)), 100)
-      })
-      el.addEventListener('mouseleave', hide)
-    }
+      }
+    })
+
+    document.addEventListener('mouseout', (e) => {
+      // Support both HTMLElement and SVGElement
+      const eventTarget = e.target
+      const target = /** @type {HTMLElement | null} */ (
+        eventTarget instanceof Element ? eventTarget.closest('[data-tooltip]') : null
+      )
+
+      // Only hide if we're leaving the current target element entirely
+      if (target === currentTarget) {
+        const relatedTarget = e.relatedTarget
+
+        // Check if we're moving to another tooltip element
+        const movingToTooltip =
+          relatedTarget instanceof Element && relatedTarget.closest('[data-tooltip]')
+
+        // Check if still within the same tooltip element (moving between children)
+        const stillInside = relatedTarget instanceof Node && target.contains(relatedTarget)
+
+        if (!movingToTooltip && !stillInside) {
+          hide()
+        }
+      }
+    })
 
     document.addEventListener('pointerdown', hide)
     document.addEventListener('scroll', hide, true)
@@ -1316,8 +1382,8 @@ class FileExplorer {
  * @returns {Promise<File>}
  */
 async function compressFile(file, config, onStatus) {
-  // Only compress images (JPG/JPEG/PNG)
-  const allowCompress = /\.(jpg|jpeg|png)$/i.test(file.name)
+  // Only compress supported image formats (JPEG/PNG/WebP/AVIF)
+  const allowCompress = COMPRESSIBLE_IMAGE_RE.test(file.name)
   if (!allowCompress || !config.compressMode || config.compressMode === 'none') {
     return file
   }
@@ -1325,42 +1391,67 @@ async function compressFile(file, config, onStatus) {
   try {
     const originalSize = file.size
 
-    // --- Local Mode ---
+    // --- Local Mode (jSquash) ---
     if (config.compressMode === 'local') {
       onStatus && onStatus('压缩中...')
 
-      // Browser Image Compression Options
-      // Uses OffscreenCanvas / Web Workers if available (Modern Browser Features)
-      const options = {
-        maxSizeMB: 1,
-        maxWidthOrHeight: 1920,
-        useWebWorker: true,
-        fileType: file.type,
-        initialQuality: 0.8,
-      }
-
-      // Map levels
+      // Determine quality based on compression level
       const level = config.compressLevel || 'balanced'
-      if (level === 'extreme') {
-        options.maxSizeMB = 0.2 // Aggressive size limit
-        options.maxWidthOrHeight = 1280
-        options.initialQuality = 0.6
+      const quality = level === 'extreme' ? 75 : 90
+
+      // Load image into canvas to get ImageData
+      const img = new Image()
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+
+      await new Promise((resolve, reject) => {
+        img.onload = resolve
+        img.onerror = reject
+        img.src = URL.createObjectURL(file)
+      })
+
+      canvas.width = img.width
+      canvas.height = img.height
+      ctx.drawImage(img, 0, 0)
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+      URL.revokeObjectURL(img.src)
+
+      // Determine output format and encode
+      let compressedBuffer
+      let outputType = file.type
+      const ext = file.name.toLowerCase().match(/\.(jpe?g|png|webp|avif)$/i)?.[1]
+
+      if (ext === 'jpg' || ext === 'jpeg') {
+        compressedBuffer = await encodeJpeg(imageData, { quality })
+        outputType = 'image/jpeg'
+      } else if (ext === 'png') {
+        // PNG is lossless but still benefits from OxiPNG optimization
+        compressedBuffer = await encodePng(imageData)
+        outputType = 'image/png'
+      } else if (ext === 'webp') {
+        compressedBuffer = await encodeWebp(imageData, { quality })
+        outputType = 'image/webp'
+      } else if (ext === 'avif') {
+        compressedBuffer = await encodeAvif(imageData, {
+          quality,
+          speed: level === 'extreme' ? 6 : 4, // Slower = better quality
+        })
+        outputType = 'image/avif'
       } else {
-        // Balanced (Default)
-        options.maxSizeMB = 1
-        options.initialQuality = 0.8
+        // Unsupported format
+        return file
       }
 
-      const compressedBlob = await imageCompression(file, options)
+      const compressedBlob = new Blob([compressedBuffer], { type: outputType })
 
       // Feedback
       const savings = Math.round((1 - compressedBlob.size / originalSize) * 100)
       if (savings > 0) {
         onStatus &&
           onStatus(
-            `本地压缩: ${filesize(originalSize)} -> ${filesize(compressedBlob.size)} (省 ${savings}%)`,
+            `本地压缩: ${filesize(originalSize)} → ${filesize(compressedBlob.size)} (省 ${savings}%)`,
           )
-        return compressedBlob
+        return new File([compressedBlob], file.name, { type: outputType })
       }
     }
 
@@ -2035,10 +2126,8 @@ class App {
     $('#lbl-secret-key').textContent = t('secretAccessKey')
     $('#lbl-bucket').textContent = t('bucketName')
     $('#lbl-custom-domain').textContent = t('customDomain')
-    $('#custom-domain-hint').textContent = t('customDomainHint')
     $('#config-section-upload').textContent = t('uploadSettings')
     $('#lbl-filename-tpl').textContent = t('filenameTpl')
-    $('#filename-tpl-hint').textContent = t('filenameTplHint')
 
     $('#config-section-compression').textContent = t('compressionSettings')
     $('#lbl-compress-mode').textContent = t('compressMode')
@@ -2057,9 +2146,6 @@ class App {
       $('option[value="balanced"]', compressLevelSelect).textContent = t('compressLevelBalanced')
       $('option[value="extreme"]', compressLevelSelect).textContent = t('compressLevelExtreme')
     }
-
-    $('#compress-level-hint').textContent = t('compressLevelHint')
-    $('#compress-tinify-hint').textContent = t('compressTinifyHint')
 
     $('#config-cancel').textContent = t('cancel')
     $('#config-submit').textContent = t('save')
@@ -2135,6 +2221,9 @@ class App {
     // Confirm dialog
     $('#confirm-cancel').textContent = t('cancel')
     $('#confirm-ok').textContent = t('confirm')
+
+    // Rebind tooltips after i18n update (in case tooltip text was translated)
+    this.#ui.initTooltip()
   }
 
   async #connectAndLoad() {

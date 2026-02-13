@@ -13,9 +13,12 @@
       {
         "imports": {
           "aws4fetch": "https://esm.sh/aws4fetch@1.0.20",
-          "dayjs": "https://esm.sh/dayjs@1.11.13",
-          "browser-image-compression": "https://esm.sh/browser-image-compression@2.0.2",
-          "filesize": "https://esm.sh/filesize@10.1.0"
+          "dayjs": "https://esm.sh/dayjs@1.11.19",
+          "@jsquash/jpeg": "https://esm.sh/@jsquash/jpeg@1.6.0",
+          "@jsquash/png": "https://esm.sh/@jsquash/png@3.1.1",
+          "@jsquash/webp": "https://esm.sh/@jsquash/webp@1.5.0",
+          "@jsquash/avif": "https://esm.sh/@jsquash/avif@2.1.1",
+          "filesize": "https://esm.sh/filesize@11.0.13"
         }
       }
     </script>
@@ -27,112 +30,123 @@
       <form id="config-form" method="dialog">
         <h2 id="config-title">R2 Web</h2>
 
-        <!-- R2 Connection -->
-        <div class="config-section">
-          <h3 id="config-section-r2">R2 连接</h3>
-          <div class="field">
-            <label for="cfg-account-id" id="lbl-account-id">账户 ID（Account ID）</label>
-            <input id="cfg-account-id" name="accountId" type="text" required autocomplete="off" />
-          </div>
-          <div class="field">
-            <label for="cfg-access-key" id="lbl-access-key">访问密钥 ID（Access Key ID）</label>
-            <input id="cfg-access-key" name="accessKeyId" type="text" required autocomplete="off" />
-          </div>
-          <div class="field">
-            <label for="cfg-secret-key" id="lbl-secret-key">
-              秘密访问密钥（Secret Access Key）
-            </label>
-            <input
-              id="cfg-secret-key"
-              name="secretAccessKey"
-              type="password"
-              required
-              autocomplete="off"
-            />
-          </div>
-          <div class="field">
-            <label for="cfg-bucket" id="lbl-bucket">存储桶名称（Bucket Name）</label>
-            <input id="cfg-bucket" name="bucket" type="text" required autocomplete="off" />
-          </div>
-          <div class="field">
-            <label for="cfg-custom-domain" id="lbl-custom-domain">
-              自定义域名（Custom Domain）
-            </label>
-            <input
-              id="cfg-custom-domain"
-              name="customDomain"
-              type="text"
-              autocomplete="off"
-              placeholder="https://cdn.example.com"
-            />
-            <small class="text-secondary" id="custom-domain-hint">
-              可选，用于生成文件的公开访问链接
-            </small>
-          </div>
-        </div>
-
-        <!-- Upload Settings -->
-        <div class="config-section">
-          <h3 id="config-section-upload">上传设置</h3>
-          <div class="field">
-            <label for="cfg-filename-tpl" id="lbl-filename-tpl">
-              文件名模板（Filename Template）
-            </label>
-            <input
-              id="cfg-filename-tpl"
-              name="filenameTpl"
-              type="text"
-              autocomplete="off"
-              placeholder="[name]_[hash:8].[ext]"
-              value="[name]_[hash:8].[ext]"
-            />
-            <small class="text-secondary" id="filename-tpl-hint">
-              [name] [ext] [hash:N] [date:FORMAT] [timestamp] [uuid]
-            </small>
-          </div>
-        </div>
-
-        <!-- Image Compression -->
-        <div class="config-section">
-          <h3 id="config-section-compression">图片压缩</h3>
-          <div class="field">
-            <label for="cfg-compress-mode" id="lbl-compress-mode">模式</label>
-            <select id="cfg-compress-mode" name="compressMode">
-              <option value="none">暂不开启</option>
-              <option value="local" selected>本地压缩</option>
-              <option value="tinify">Tinify 服务</option>
-            </select>
-          </div>
-
-          <div id="compress-local-options">
-            <div class="field">
-              <label for="cfg-compress-level" id="lbl-compress-level">压缩程度</label>
-              <select id="cfg-compress-level" name="compressLevel">
-                <option value="balanced" selected>平衡模式</option>
-                <option value="extreme">极致压缩</option>
-              </select>
-              <small class="text-secondary" id="compress-level-hint">
-                使用 WebAssembly/Canvas 高性能压缩
-              </small>
+        <div class="config-sections-grid">
+          <!-- Left Column: R2 Connection -->
+          <div class="config-column">
+            <div class="config-section">
+              <h3 id="config-section-r2">R2 连接</h3>
+              <div class="field">
+                <div class="field-label">
+                  <label for="cfg-account-id" id="lbl-account-id">账户 ID（Account ID）</label>
+                  <button type="button" class="help-icon" data-tooltip="Cloudflare 账户 ID，在 R2 控制台获取">?</button>
+                </div>
+                <input id="cfg-account-id" name="accountId" type="text" required autocomplete="off" />
+              </div>
+              <div class="field">
+                <div class="field-label">
+                  <label for="cfg-access-key" id="lbl-access-key">访问密钥 ID（Access Key ID）</label>
+                  <button type="button" class="help-icon" data-tooltip="R2 API 访问密钥 ID">?</button>
+                </div>
+                <input id="cfg-access-key" name="accessKeyId" type="text" required autocomplete="off" />
+              </div>
+              <div class="field">
+                <div class="field-label">
+                  <label for="cfg-secret-key" id="lbl-secret-key">秘密访问密钥（Secret Access Key）</label>
+                  <button type="button" class="help-icon" data-tooltip="R2 API 密钥，仅存储在浏览器本地">?</button>
+                </div>
+                <input
+                  id="cfg-secret-key"
+                  name="secretAccessKey"
+                  type="password"
+                  required
+                  autocomplete="off"
+                />
+              </div>
+              <div class="field">
+                <div class="field-label">
+                  <label for="cfg-bucket" id="lbl-bucket">存储桶名称（Bucket Name）</label>
+                  <button type="button" class="help-icon" data-tooltip="R2 存储桶名称">?</button>
+                </div>
+                <input id="cfg-bucket" name="bucket" type="text" required autocomplete="off" />
+              </div>
+              <div class="field">
+                <div class="field-label">
+                  <label for="cfg-custom-domain" id="lbl-custom-domain">自定义域名（Custom Domain）</label>
+                  <button type="button" class="help-icon" data-tooltip="自定义域名（可选），用于生成公开访问链接">?</button>
+                </div>
+                <input
+                  id="cfg-custom-domain"
+                  name="customDomain"
+                  type="text"
+                  autocomplete="off"
+                  placeholder="https://cdn.example.com"
+                />
+              </div>
             </div>
           </div>
 
-          <div id="compress-tinify-options" hidden>
-            <div class="field">
-              <label for="cfg-tinify-key" id="lbl-tinify-key">Tinify API Key</label>
-              <input
-                id="cfg-tinify-key"
-                name="tinifyKey"
-                type="password"
-                autocomplete="off"
-                placeholder="来自 tinify.com 的 Key"
-              />
-              <small class="text-secondary">
-                <span class="warning-icon">⚠️</span>
-                <span id="compress-tinify-hint">
-                  Key 存储在浏览器本地，出于 Tinify API 跨域问题会经过代理中转。
-                </span>
-              </small>
+          <!-- Right Column: Upload & Compression -->
+          <div class="config-column">
+            <div class="config-section">
+              <h3 id="config-section-upload">上传设置</h3>
+              <div class="field">
+                <div class="field-label">
+                  <label for="cfg-filename-tpl" id="lbl-filename-tpl">文件名模板（Filename Template）</label>
+                  <button type="button" class="help-icon" data-tooltip="支持占位符: [name] [ext] [hash:8] [date:YYYYMMDD] [timestamp] [uuid]">?</button>
+                </div>
+                <input
+                  id="cfg-filename-tpl"
+                  name="filenameTpl"
+                  type="text"
+                  autocomplete="off"
+                  placeholder="[name]_[hash:8].[ext]"
+                  value="[name]_[hash:8].[ext]"
+                />
+              </div>
+            </div>
+
+            <div class="config-section">
+              <h3 id="config-section-compression">图片压缩</h3>
+              <div class="field">
+                <div class="field-label">
+                  <label for="cfg-compress-mode" id="lbl-compress-mode">模式</label>
+                  <button type="button" class="help-icon" data-tooltip="本地压缩：AVIF/WebP/JPEG/PNG，使用 WebAssembly 编码器；Tinify：云服务，需 API Key">?</button>
+                </div>
+                <select id="cfg-compress-mode" name="compressMode">
+                  <option value="none">暂不开启</option>
+                  <option value="local" selected>本地压缩</option>
+                  <option value="tinify">Tinify 服务</option>
+                </select>
+              </div>
+
+              <div id="compress-local-options">
+                <div class="field">
+                  <div class="field-label">
+                    <label for="cfg-compress-level" id="lbl-compress-level">压缩程度</label>
+                    <button type="button" class="help-icon" data-tooltip="平衡模式 90% 质量，极致压缩 75% 质量">?</button>
+                  </div>
+                  <select id="cfg-compress-level" name="compressLevel">
+                    <option value="balanced" selected>平衡模式</option>
+                    <option value="extreme">极致压缩</option>
+                  </select>
+                </div>
+              </div>
+
+              <div id="compress-tinify-options" hidden>
+                <div class="field">
+                  <div class="field-label">
+                    <label for="cfg-tinify-key" id="lbl-tinify-key">Tinify API Key</label>
+                    <button type="button" class="help-icon" data-tooltip="Tinify API Key，本地存储，经代理转发以避免跨域">?</button>
+                  </div>
+                  <input
+                    id="cfg-tinify-key"
+                    name="tinifyKey"
+                    type="password"
+                    autocomplete="off"
+                    placeholder="来自 tinify.com 的 Key"
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
