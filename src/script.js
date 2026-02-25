@@ -124,10 +124,7 @@ const I18N = {
     copyShareUrl: '复制链接',
     shareWarning: '链接包含账户凭据，请谨慎分享',
     preferences: '偏好设置',
-    uploadSettings: '上传设置',
-    r2Connection: 'R2 储存桶设置',
-    compressionSettings: '图片压缩',
-    compressMode: '模式',
+    compressMode: '压缩模式',
     compressModeNone: '暂不开启',
     compressModeLocal: '本地压缩',
     compressModeTinify: 'Tinify 服务',
@@ -193,9 +190,6 @@ const I18N = {
     configTabCompression: '压缩设置',
     configTabAbout: '关于',
     // Preferences section
-    configSectionTheme: '主题模式',
-    configSectionLanguage: '语言',
-    configSectionDensity: '布局紧凑度',
     lblTheme: '主题',
     lblLanguage: '界面语言',
     lblDensity: '紧凑度',
@@ -296,9 +290,6 @@ const I18N = {
     copyShareUrl: 'Copy Link',
     shareWarning: 'Link contains account credentials, share with caution',
     preferences: 'Preferences',
-    uploadSettings: 'Upload',
-    r2Connection: 'R2 Bucket Settings',
-    compressionSettings: 'Image Compression',
     compressMode: 'Compression Mode',
     compressModeNone: 'None',
     compressModeLocal: 'Local',
@@ -367,9 +358,6 @@ const I18N = {
     configTabCompression: 'Compression',
     configTabAbout: 'About',
     // Preferences section
-    configSectionTheme: 'Theme Mode',
-    configSectionLanguage: 'Language',
-    configSectionDensity: 'Layout Density',
     lblTheme: 'Theme',
     lblLanguage: 'Interface Language',
     lblDensity: 'Density',
@@ -469,9 +457,6 @@ const I18N = {
     copyShareUrl: 'リンクをコピー',
     shareWarning: 'リンクにはアカウント認証情報が含まれています。注意してください',
     preferences: '設定',
-    uploadSettings: 'アップロード',
-    r2Connection: 'R2 バケット設定',
-    compressionSettings: '画像圧縮',
     compressMode: '圧縮モード',
     compressModeNone: 'なし',
     compressModeLocal: 'ローカル',
@@ -540,9 +525,6 @@ const I18N = {
     configTabCompression: '圧縮',
     configTabAbout: 'について',
     // Preferences section
-    configSectionTheme: 'テーマモード',
-    configSectionLanguage: '言語',
-    configSectionDensity: 'レイアウト密度',
     lblTheme: 'テーマ',
     lblLanguage: 'インターフェース言語',
     lblDensity: '密度',
@@ -2557,7 +2539,6 @@ class App {
     $('#tab-about').textContent = t('configTabAbout')
 
     // Config dialog — Preferences section
-    $('#config-section-theme').textContent = t('configSectionTheme')
     $('#lbl-theme').textContent = t('lblTheme')
     const themeSelect = $('#cfg-theme')
     if (themeSelect) {
@@ -2566,10 +2547,8 @@ class App {
       $('option[value="auto"]', themeSelect).textContent = t('themeAuto')
     }
 
-    $('#config-section-language').textContent = t('configSectionLanguage')
     $('#lbl-language').textContent = t('lblLanguage')
 
-    $('#config-section-density').textContent = t('configSectionDensity')
     $('#lbl-density').textContent = t('lblDensity')
     const densitySelect = $('#cfg-density')
     if (densitySelect) {
@@ -2580,7 +2559,6 @@ class App {
 
     // Config dialog — R2 section
     $('#config-title').textContent = t('appTitle')
-    $('#config-section-r2').textContent = t('r2Connection')
     $('#lbl-account-id').textContent = t('accountId')
     $('#lbl-access-key').textContent = t('accessKeyId')
     $('#lbl-secret-key').textContent = t('secretAccessKey')
@@ -2588,12 +2566,10 @@ class App {
     $('#lbl-custom-domain').textContent = t('customDomain')
 
     // Config dialog — Upload section
-    $('#config-section-upload').textContent = t('uploadSettings')
     $('#lbl-filename-tpl').textContent = t('filenameTpl')
     $('#filename-tpl-hint').textContent = t('filenameTplHintDetailed')
 
     // Config dialog — Compression section
-    $('#config-section-compression').textContent = t('compressionSettings')
     $('#lbl-compress-mode').textContent = t('compressMode')
 
     const compressModeSelect = $('#cfg-compress-mode')
