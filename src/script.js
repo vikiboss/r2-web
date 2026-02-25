@@ -80,7 +80,7 @@ const I18N = {
     moveLabel: '目标路径',
     newFolderTitle: '新建目录',
     newFolderLabel: '目录名称',
-    authFailed: '连接失败了，检查一下凭据吧',
+    authFailed: '认证失败，请检查 Access Key 和 Secret Key 是否正确',
     customDomain: '自定义域名（Custom Domain）',
     customDomainHint: '可选，配置后可一键复制文件的公开链接',
     copyLink: '复制链接',
@@ -91,7 +91,10 @@ const I18N = {
     linkCopied: '链接已复制好啦',
     corsError:
       'CORS 还没配置好。去 Cloudflare 仪表盘 → R2 → 存储桶设置添加 CORS 规则，允许当前域名的 GET/PUT/DELETE/HEAD 请求即可。',
-    networkError: '网络好像有点问题: {msg}',
+    networkError: '网络连接失败: {msg}',
+    http401Error: '认证失败 (401)，Access Key 或 Secret Key 可能已失效或被删除',
+    http403Error: '访问被拒绝 (403)，请检查 API 密钥权限',
+    http404Error: '存储桶不存在 (404)，请检查 Bucket Name 是否正确',
     uploadSuccess: '{count} 个文件上传成功',
     uploadPartialFail: '{success} 个成功，{fail} 个没能上传',
     fileTooLarge: '文件 "{name}" 太大了（超过 5GB），试试 rclone 等工具吧',
@@ -260,7 +263,10 @@ const I18N = {
     linkCopied: 'Link copied!',
     corsError:
       "CORS isn't set up yet. Head to Cloudflare Dashboard → R2 → Bucket Settings and add a CORS rule allowing GET/PUT/DELETE/HEAD from your origin.",
-    networkError: 'Network hiccup: {msg}',
+    networkError: 'Network connection failed: {msg}',
+    http401Error: 'Authentication failed (401), Access Key or Secret Key may be invalid or deleted',
+    http403Error: 'Access denied (403), please check API key permissions',
+    http404Error: 'Bucket not found (404), please verify the Bucket Name',
     uploadSuccess: '{count} file(s) uploaded!',
     uploadPartialFail: "{success} uploaded, {fail} didn't make it",
     fileTooLarge: '"{name}" is too large (over 5GB) — try rclone for big uploads',
@@ -430,7 +436,10 @@ const I18N = {
     linkCopied: 'リンクをコピーしました！',
     corsError:
       'CORS がまだ設定されていません。Cloudflare ダッシュボード → R2 → バケット設定で CORS ルールを追加してください。',
-    networkError: 'ネットワークに問題があるようです: {msg}',
+    networkError: 'ネットワーク接続に失敗しました: {msg}',
+    http401Error: '認証に失敗しました (401)、Access Key または Secret Key が無効または削除された可能性があります',
+    http403Error: 'アクセスが拒否されました (403)、API キーの権限を確認してください',
+    http404Error: 'バケットが見つかりません (404)、Bucket Name を確認してください',
     uploadSuccess: '{count} 個のファイルをアップロードしました！',
     uploadPartialFail: '{success} 個成功、{fail} 個は失敗しました',
     fileTooLarge: '"{name}" は大きすぎます（5GB超）— rclone などをお試しください',
@@ -604,6 +613,26 @@ function getFileType(key) {
   if (CODE_RE.test(key)) return 'code'
   if (TEXT_RE.test(key)) return 'text'
   return 'file'
+}
+
+/** @typedef {'http401Error' | 'http403Error' | 'http404Error' | 'corsError' | 'networkError'} ErrorMessageKey */
+
+/**
+ * Get user-friendly error message based on error type
+ * @param {Error} err - Error object
+ * @returns {ErrorMessageKey} - i18n key for the error message
+ */
+function getErrorMessage(err) {
+  const msg = err.message
+  if (msg === 'HTTP_401') return 'http401Error'
+  if (msg === 'HTTP_403') return 'http403Error'
+  if (msg === 'HTTP_404') return 'http404Error'
+  if (err instanceof TypeError && msg.includes('Failed to fetch')) {
+    // TypeError with "Failed to fetch" is likely CORS or network issue
+    return 'corsError'
+  }
+  // For all other errors, return networkError (caller should pass original error message)
+  return 'networkError'
 }
 
 /** @param {'image'|'video'|'audio'|'text'|'document'|'archive'|'code'|'file'} type @returns {string} */
@@ -819,7 +848,13 @@ class R2Client {
     if (continuationToken) url.searchParams.set('continuation-token', continuationToken)
 
     const res = await /** @type {AwsClient} */ (this.#client).fetch(url.toString())
-    if (!res.ok) throw new Error(res.status === 403 ? 'AUTH_FAILED' : `HTTP ${res.status}`)
+    if (!res.ok) {
+      // Throw specific error codes for better error handling
+      if (res.status === 401) throw new Error('HTTP_401')
+      if (res.status === 403) throw new Error('HTTP_403')
+      if (res.status === 404) throw new Error('HTTP_404')
+      throw new Error(`HTTP ${res.status}`)
+    }
 
     const text = await res.text()
     const doc = new DOMParser().parseFromString(text, 'application/xml')
@@ -860,7 +895,12 @@ class R2Client {
   async getObject(key) {
     const url = `${/** @type {ConfigManager} */ (this.#config).getBucketUrl()}/${encodeS3Key(key)}`
     const res = await /** @type {AwsClient} */ (this.#client).fetch(url)
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    if (!res.ok) {
+      if (res.status === 401) throw new Error('HTTP_401')
+      if (res.status === 403) throw new Error('HTTP_403')
+      if (res.status === 404) throw new Error('HTTP_404')
+      throw new Error(`HTTP ${res.status}`)
+    }
     return res
   }
 
@@ -900,7 +940,12 @@ class R2Client {
   async deleteObject(key) {
     const url = `${/** @type {ConfigManager} */ (this.#config).getBucketUrl()}/${encodeS3Key(key)}`
     const res = await /** @type {AwsClient} */ (this.#client).fetch(url, { method: 'DELETE' })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    if (!res.ok) {
+      if (res.status === 401) throw new Error('HTTP_401')
+      if (res.status === 403) throw new Error('HTTP_403')
+      if (res.status === 404) throw new Error('HTTP_404')
+      throw new Error(`HTTP ${res.status}`)
+    }
   }
 
   /** @param {string} src @param {string} dest */
@@ -913,7 +958,12 @@ class R2Client {
         'x-amz-copy-source': `/${cfg.bucket}/${encodeS3Key(src)}`,
       },
     })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    if (!res.ok) {
+      if (res.status === 401) throw new Error('HTTP_401')
+      if (res.status === 403) throw new Error('HTTP_403')
+      if (res.status === 404) throw new Error('HTTP_404')
+      throw new Error(`HTTP ${res.status}`)
+    }
   }
 
   /** @param {string} prefix */
@@ -925,7 +975,12 @@ class R2Client {
       headers: { 'Content-Length': '0' },
       body: '',
     })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    if (!res.ok) {
+      if (res.status === 401) throw new Error('HTTP_401')
+      if (res.status === 403) throw new Error('HTTP_403')
+      if (res.status === 404) throw new Error('HTTP_404')
+      throw new Error(`HTTP ${res.status}`)
+    }
   }
 }
 
@@ -1535,13 +1590,17 @@ class FileExplorer {
       /** @type {HTMLElement} */ $('#load-more').hidden = !result.isTruncated
     } catch (/** @type {any} */ err) {
       if (isInitial) this.#ui.hideSkeleton()
-      if (err.message === 'AUTH_FAILED') {
-        this.#ui.toast(t('authFailed'), 'error')
-        throw err
-      } else if (err instanceof TypeError) {
-        this.#ui.toast(t('corsError'), 'error')
-      } else {
+
+      const errorKey = getErrorMessage(err)
+      if (errorKey === 'networkError') {
         this.#ui.toast(t('networkError', { msg: err.message }), 'error')
+      } else {
+        this.#ui.toast(t(/** @type {I18nKey} */ (errorKey)), 'error')
+      }
+
+      // Re-throw auth-related errors to trigger logout
+      if (err.message === 'HTTP_401' || err.message === 'HTTP_403') {
+        throw err
       }
     }
   }
@@ -2130,7 +2189,12 @@ class FilePreview {
       a.click()
       a.remove()
     } catch (/** @type {any} */ err) {
-      this.#ui.toast(t('networkError', { msg: err.message }), 'error')
+      const errorKey = getErrorMessage(err)
+      if (errorKey === 'networkError') {
+        this.#ui.toast(t('networkError', { msg: err.message }), 'error')
+      } else {
+        this.#ui.toast(t(/** @type {I18nKey} */ (errorKey)), 'error')
+      }
     }
   }
 }
@@ -2180,7 +2244,12 @@ class FileOperations {
       this.#ui.toast(t('renameSuccess', { name: newName }), 'success')
       await this.#explorer.refresh()
     } catch (/** @type {any} */ err) {
-      this.#ui.toast(t('networkError', { msg: err.message }), 'error')
+      const errorKey = getErrorMessage(err)
+      if (errorKey === 'networkError') {
+        this.#ui.toast(t('networkError', { msg: err.message }), 'error')
+      } else {
+        this.#ui.toast(t(/** @type {I18nKey} */ (errorKey)), 'error')
+      }
     }
   }
 
@@ -2214,7 +2283,12 @@ class FileOperations {
       this.#ui.toast(t('copySuccess', { name: dest }), 'success')
       await this.#explorer.refresh()
     } catch (/** @type {any} */ err) {
-      this.#ui.toast(t('networkError', { msg: err.message }), 'error')
+      const errorKey = getErrorMessage(err)
+      if (errorKey === 'networkError') {
+        this.#ui.toast(t('networkError', { msg: err.message }), 'error')
+      } else {
+        this.#ui.toast(t(/** @type {I18nKey} */ (errorKey)), 'error')
+      }
     }
   }
 
@@ -2249,7 +2323,12 @@ class FileOperations {
       this.#ui.toast(t('moveSuccess', { name: dest }), 'success')
       await this.#explorer.refresh()
     } catch (/** @type {any} */ err) {
-      this.#ui.toast(t('networkError', { msg: err.message }), 'error')
+      const errorKey = getErrorMessage(err)
+      if (errorKey === 'networkError') {
+        this.#ui.toast(t('networkError', { msg: err.message }), 'error')
+      } else {
+        this.#ui.toast(t(/** @type {I18nKey} */ (errorKey)), 'error')
+      }
     }
   }
 
@@ -2282,7 +2361,12 @@ class FileOperations {
       this.#ui.toast(t('deleteSuccess', { name }), 'success')
       await this.#explorer.refresh()
     } catch (/** @type {any} */ err) {
-      this.#ui.toast(t('networkError', { msg: err.message }), 'error')
+      const errorKey = getErrorMessage(err)
+      if (errorKey === 'networkError') {
+        this.#ui.toast(t('networkError', { msg: err.message }), 'error')
+      } else {
+        this.#ui.toast(t(/** @type {I18nKey} */ (errorKey)), 'error')
+      }
     }
   }
 
@@ -2297,7 +2381,12 @@ class FileOperations {
       a.click()
       a.remove()
     } catch (/** @type {any} */ err) {
-      this.#ui.toast(t('networkError', { msg: err.message }), 'error')
+      const errorKey = getErrorMessage(err)
+      if (errorKey === 'networkError') {
+        this.#ui.toast(t('networkError', { msg: err.message }), 'error')
+      } else {
+        this.#ui.toast(t(/** @type {I18nKey} */ (errorKey)), 'error')
+      }
     }
   }
 
@@ -3062,7 +3151,12 @@ class App {
         this.#ui.toast(t('folderCreated', { name }), 'success')
         await this.#explorer.refresh()
       } catch (/** @type {any} */ err) {
-        this.#ui.toast(t('networkError', { msg: err.message }), 'error')
+        const errorKey = getErrorMessage(err)
+        if (errorKey === 'networkError') {
+          this.#ui.toast(t('networkError', { msg: err.message }), 'error')
+        } else {
+          this.#ui.toast(t(/** @type {I18nKey} */ (errorKey)), 'error')
+        }
       }
     })
 

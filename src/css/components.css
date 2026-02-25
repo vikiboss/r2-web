@@ -604,11 +604,6 @@
     }
   }
 
-  /* Tab panel forms - reset form styles to behave like divs */
-  .config-tab-panel {
-    /* Inherits display: flex, padding, etc. from existing .config-tab-panel rules */
-  }
-
   /* Breadcrumb */
   .breadcrumb {
     display: flex;

@@ -1,7 +1,7 @@
 {
   "name": "R2 Web Manager",
   "short_name": "R2 Web",
-  "description": "纯客户端的 Cloudflare R2 存储桶文件管理器",
+  "description": "轻盈优雅的 Web 原生 Cloudflare R2 文件管理",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
