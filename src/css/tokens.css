@@ -48,7 +48,7 @@
     --z-upload-panel: 90;
     --z-context-menu: 200;
     --z-dialog: 300;
-    --z-toast: 400;
+    --z-toast: 2147483647;
     --z-tooltip: 2147483647;
 
     /* Theme colors — single declaration via light-dark() */

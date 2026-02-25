@@ -18,6 +18,7 @@
 
     <!-- Apple iOS -->
     <link rel="apple-touch-icon" href="favicon.ico" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="R2 Web" />
@@ -51,7 +52,7 @@
   <body>
     <!-- Config Dialog -->
     <dialog id="config-dialog">
-      <form id="config-form" method="dialog">
+      <div id="config-form">
         <div class="dialog-header">
           <h2 id="config-title">R2 Web</h2>
           <div class="dialog-header-actions">
@@ -95,7 +96,7 @@
           <!-- Tab Panels Container -->
           <div class="config-tab-panels">
             <!-- Tab 1: Preferences -->
-            <div class="config-tab-panel" role="tabpanel" data-panel="preferences">
+            <form class="config-tab-panel" role="tabpanel" data-panel="preferences">
               <div class="config-section">
                 <h3 id="config-section-theme">主题模式</h3>
                 <div class="field">
@@ -140,10 +141,10 @@
                   </select>
                 </div>
               </div>
-            </div>
+            </form>
 
             <!-- Tab 2: R2 Config -->
-            <div class="config-tab-panel" role="tabpanel" data-panel="r2" hidden>
+            <form class="config-tab-panel" role="tabpanel" data-panel="r2" hidden>
               <div class="config-section">
                 <h3 id="config-section-r2">R2 储存桶设置</h3>
                 <div class="field">
@@ -212,10 +213,10 @@
                   />
                 </div>
               </div>
-            </div>
+            </form>
 
             <!-- Tab 3: Upload -->
-            <div class="config-tab-panel" role="tabpanel" data-panel="upload" hidden>
+            <form class="config-tab-panel" role="tabpanel" data-panel="upload" hidden>
               <div class="config-section">
                 <h3 id="config-section-upload">上传设置</h3>
                 <div class="field">
@@ -249,10 +250,10 @@
                   </small>
                 </div>
               </div>
-            </div>
+            </form>
 
             <!-- Tab 4: Compression -->
-            <div class="config-tab-panel" role="tabpanel" data-panel="compression" hidden>
+            <form class="config-tab-panel" role="tabpanel" data-panel="compression" hidden>
               <div class="config-section">
                 <h3 id="config-section-compression">图片压缩</h3>
                 <div class="field">
@@ -296,7 +297,7 @@
                   </div>
                 </div>
               </div>
-            </div>
+            </form>
 
             <!-- Tab 5: About -->
             <div class="config-tab-panel" role="tabpanel" data-panel="about" hidden>
@@ -338,9 +339,9 @@
 
         <div class="dialog-footer">
           <button type="button" class="btn secondary" id="config-cancel">取消</button>
-          <button type="submit" class="btn primary" id="config-submit">保存</button>
+          <button type="button" class="btn primary" id="config-submit">保存</button>
         </div>
-      </form>
+      </div>
     </dialog>
 
     <!-- Hero (shown when not connected) -->

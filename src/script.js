@@ -1004,15 +1004,42 @@ class UIManager {
         '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
       info: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>',
     }
-    const container = $('#toast-container')
+
+    // Check if there's an open dialog - if so, create/use toast container in dialog's top layer
+    const openDialog = /** @type {HTMLDialogElement | null} */ (
+      document.querySelector('dialog[open]')
+    )
+
+    let container
+    if (openDialog) {
+      // Look for existing dialog toast container or create one
+      container = openDialog.querySelector('.toast-container-dialog')
+      if (!container) {
+        container = document.createElement('div')
+        container.className = 'toast-container-dialog'
+        container.style.cssText =
+          'position:fixed;bottom:16px;right:16px;display:flex;flex-direction:column;gap:8px;z-index:2147483647;pointer-events:none;'
+        openDialog.appendChild(container)
+      }
+    } else {
+      container = $('#toast-container')
+    }
+
     const el = document.createElement('div')
     el.className = `toast ${type}`
     el.innerHTML = `<span class="toast-icon">${icons[type]}</span><span>${message}</span>`
+
     container.appendChild(el)
     const duration = message.length > 80 ? TOAST_DURATION * 2 : TOAST_DURATION
     setTimeout(() => {
       el.classList.add('removing')
-      el.addEventListener('animationend', () => el.remove())
+      el.addEventListener('animationend', () => {
+        el.remove()
+        // Clean up dialog container if empty
+        if (container.classList.contains('toast-container-dialog') && !container.children.length) {
+          container.remove()
+        }
+      })
     }, duration)
   }
 
@@ -2691,7 +2718,6 @@ class App {
 
   #showConfigDialog() {
     const dialog = /** @type {HTMLDialogElement} */ ($('#config-dialog'))
-    const form = /** @type {HTMLFormElement} */ ($('#config-form'))
 
     // Tab switching logic
     const tabButtons = /** @type {NodeListOf<HTMLButtonElement>} */ (
@@ -2799,9 +2825,7 @@ class App {
       { once: true },
     )
 
-    form.onsubmit = async (/** @type {Event} */ e) => {
-      e.preventDefault()
-
+    $('#config-submit').onclick = async () => {
       // Save theme settings
       const newTheme = themeInput ? themeInput.value : 'auto'
       if (newTheme !== currentTheme) {
@@ -2837,6 +2861,12 @@ class App {
       dialog.close()
       await this.#connectAndLoad()
     }
+
+    // Prevent tab panel forms from submitting (they're only for data collection)
+    dialog.querySelectorAll('form.config-tab-panel').forEach(form => {
+      const formElement = /** @type {HTMLFormElement} */ (form)
+      formElement.onsubmit = (/** @type {Event} */ e) => e.preventDefault()
+    })
 
     dialog.showModal()
   }

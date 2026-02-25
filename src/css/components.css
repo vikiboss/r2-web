@@ -216,7 +216,8 @@
 
   /* Dialog inner panel — base styles */
   dialog > form,
-  dialog > .dialog-panel {
+  dialog > .dialog-panel,
+  dialog > #config-form {
     background: var(--bg-secondary);
     border-radius: var(--radius-xl);
     border: 1px solid var(--border);
@@ -360,7 +361,7 @@
   }
 
   /* Config dialog — wider for two-column layout */
-  #config-dialog > form {
+  #config-dialog > #config-form {
     width: min(820px, calc(100vw - 48px));
 
     @media (width <= 768px) {
@@ -592,7 +593,8 @@
   }
 
   dialog[open] > form,
-  dialog[open] > .dialog-panel {
+  dialog[open] > .dialog-panel,
+  dialog[open] > #config-form {
     opacity: 1;
     transform: scale(1);
 
@@ -600,6 +602,11 @@
       opacity: 0;
       transform: scale(0.98);
     }
+  }
+
+  /* Tab panel forms - reset form styles to behave like divs */
+  .config-tab-panel {
+    /* Inherits display: flex, padding, etc. from existing .config-tab-panel rules */
   }
 
   /* Breadcrumb */
@@ -1599,6 +1606,25 @@
     }
     &:hover {
       border-color: var(--text-tertiary);
+    }
+  }
+
+  /* Tooltip */
+  .tooltip {
+    position: fixed;
+    z-index: var(--z-tooltip);
+    padding: var(--sp-1) var(--sp-2);
+    background: var(--text-primary);
+    color: var(--bg-primary);
+    font-size: var(--text-xs);
+    border-radius: var(--radius-sm);
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity var(--duration-fast) var(--ease-out);
+
+    &.visible {
+      opacity: 1;
     }
   }
 }
