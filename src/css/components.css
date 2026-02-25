@@ -289,7 +289,7 @@
 
   /* Dialog body */
   .dialog-body {
-    padding: var(--sp-4) var(--sp-5);
+    padding: var(--sp-2) var(--sp-5);
     overflow-y: auto;
     flex: 1;
     min-height: 0;
@@ -494,8 +494,7 @@
       word-break: break-all;
       transition:
         border-color var(--duration-fast),
-        background var(--duration-fast),
-        box-shadow var(--duration-fast);
+        background var(--duration-fast);
       resize: vertical;
 
       &:focus {
@@ -878,7 +877,6 @@
       }
     }
   }
-
 
   /* Toast */
   .toast-container {
@@ -1387,23 +1385,177 @@
     gap: var(--sp-2);
   }
 
-  /* Config Dialog Sections Grid — Two columns on desktop, one on mobile */
-  .config-sections-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: var(--sp-8);
+  /* Config Tabs Navigation */
+  .config-tabs {
+    display: flex;
+    gap: var(--sp-1);
+    padding: var(--sp-2);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-md);
+    overflow-x: auto;
+    scroll-behavior: smooth;
 
-    @media (width <= 768px) {
-      grid-template-columns: 1fr;
-      gap: var(--sp-6);
+    /* Hide scrollbar but keep functionality */
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Mobile horizontal scroll */
+    @media (width <= 640px) {
+      padding: var(--sp-1);
+      gap: var(--sp-0-5);
     }
   }
 
-  /* Config Column Container */
-  .config-column {
+  .config-tab-btn {
+    flex-shrink: 0; /* Prevent button compression */
+    padding: var(--sp-2) var(--sp-4);
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all var(--duration-fast) var(--ease-out);
+
+    &:hover {
+      background: var(--bg-tertiary);
+      color: var(--text-primary);
+    }
+
+    &[aria-selected='true'] {
+      background: var(--bg-primary);
+      color: var(--accent);
+      border-color: var(--border-subtle);
+    }
+
+    @media (width <= 640px) {
+      padding: var(--sp-1-5) var(--sp-3);
+      font-size: var(--text-xs);
+    }
+  }
+
+  /* Config Tab Panels */
+  .config-tab-panels {
+    margin-top: var(--sp-2);
+    padding: var(--sp-2);
+    height: 360px;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    @media (width <= 768px) {
+      height: 300px;
+    }
+
+    @media (width <= 640px) {
+      height: 240px;
+    }
+  }
+
+  .config-tab-panel {
     display: flex;
     flex-direction: column;
     gap: var(--sp-6);
+    min-height: 100%;
+
+    &[hidden] {
+      display: none;
+    }
+  }
+
+  /* About Section Styles */
+  .about-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-4);
+    padding: var(--sp-8) var(--sp-4);
+    text-align: center;
+  }
+
+  .about-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--sp-3);
+  }
+
+  .about-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-lg);
+  }
+
+  .about-title {
+    font-size: var(--text-xl);
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  .about-version {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    padding: var(--sp-1) var(--sp-2);
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+  }
+
+  .about-desc {
+    font-size: var(--text-base);
+    color: var(--text-secondary);
+    max-width: 400px;
+    line-height: 1.6;
+  }
+
+  .about-links {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-2);
+    width: 100%;
+    max-width: 120px;
+  }
+
+  .about-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--sp-2);
+    padding: var(--sp-2) var(--sp-3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: all var(--duration-fast) var(--ease-out);
+
+    & .icon {
+      width: 18px;
+      height: 18px;
+    }
+
+    &:hover {
+      background: var(--bg-secondary);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+  }
+
+  .about-license {
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+
+    & #about-license-label {
+      margin-right: var(--sp-2);
+    }
+
+    & strong {
+      color: var(--text-primary);
+      font-family: var(--font-mono);
+    }
   }
 
   .config-section {

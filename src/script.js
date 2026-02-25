@@ -12,6 +12,7 @@ import { filesize } from 'filesize'
 import QRCode from 'qrcode'
 
 // --- Constants ---
+const VERSION = '1.2.0'
 const STORAGE_KEY = 'r2-manager-config'
 const THEME_KEY = 'r2-manager-theme'
 const LANG_KEY = 'r2-manager-lang'
@@ -135,8 +136,6 @@ const I18N = {
     compressModeHint: '本地：MozJPEG、libwebp、libavif、OxiPNG 优化器；Tinify：云服务',
     compressTinifyHint: 'Key 存储在本地，因 Tinify API 跨域问题会经过代理中转。',
     theme: '主题',
-    themeLight: '浅色',
-    themeDark: '深色',
     sort: '排序',
     sortName: '按名称',
     sortDate: '按日期',
@@ -176,11 +175,34 @@ const I18N = {
     tooltipCustomDomain: '自定义域名（可选），用于生成公开访问链接',
     tooltipFilenameTpl: '占位符: [name] [ext] [hash:N] [date:FORMAT] [timestamp] [uuid]',
     filenameTplHintDetailed:
-      '例一：[name]_[hash].[ext]\n结果：photo_a1b2c3.jpg\n\n例二：[date:YYYY-MM-DD]_[name].[ext]\n结果：2024-03-15_photo.jpg\n\n例三：[date:YYYY/MM]/[name].[ext]\n结果：2024/03/photo.jpg（当前目录的子目录）',
+      '占位符: [name] [ext] [hash:N] [date:FORMAT] [timestamp] [uuid]\n\n例一：[name]_[hash].[ext]\n结果：photo_a1b2c3.jpg\n\n例二：[date:YYYY-MM-DD]_[name].[ext]\n结果：2024-03-15_photo.jpg\n\n例三：[date:YYYY/MM]/[name].[ext]\n结果：2024/03/photo.jpg（当前目录的子目录）',
     tooltipCompressMode:
       '支持 JPEG/PNG/WebP/AVIF。本地压缩：使用 WebAssembly 编码器；Tinify：云服务，需 API Key',
     tooltipCompressLevel: '平衡模式 90% 质量，极致压缩 75% 质量',
     tooltipTinifyKey: 'Tinify API Key，本地存储，经代理转发以避免跨域',
+    tooltipTheme: '选择界面主题，支持浅色、深色或跟随系统设置',
+    tooltipLanguage: '切换界面显示语言',
+    tooltipDensity: '调整文件列表的行高与间距，影响显示密度',
+    // Tab labels
+    configTabPreferences: '偏好设置',
+    configTabR2: 'R2 设置',
+    configTabUpload: '上传设置',
+    configTabCompression: '压缩设置',
+    configTabAbout: '关于',
+    // Preferences section
+    configSectionTheme: '主题模式',
+    configSectionLanguage: '语言',
+    configSectionDensity: '布局紧凑度',
+    lblTheme: '主题',
+    lblLanguage: '界面语言',
+    lblDensity: '紧凑度',
+    themeLight: '浅色',
+    themeDark: '深色',
+    themeAuto: '跟随系统',
+    // About page
+    aboutDescription: '轻盈优雅的 Web 原生 Cloudflare R2 文件管理器',
+    aboutGithub: 'GitHub',
+    aboutLicense: '开源协议',
   },
   en: {
     appTitle: 'R2 Web',
@@ -284,8 +306,6 @@ const I18N = {
     compressTinifyHint:
       'Key is stored locally in your browser. Requests are proxied to avoid CORS issues with the Tinify API.',
     theme: 'Theme',
-    themeLight: 'Light',
-    themeDark: 'Dark',
     sort: 'Sort',
     sortName: 'By Name',
     sortDate: 'By Date',
@@ -326,11 +346,34 @@ const I18N = {
     tooltipCustomDomain: 'Custom Domain (optional), enables one-click public URL copying',
     tooltipFilenameTpl: 'Placeholders: [name] [ext] [hash:N] [date:FORMAT] [timestamp] [uuid]',
     filenameTplHintDetailed:
-      'Example 1: [name]_[hash].[ext]\nResult: photo_a1b2c3.jpg\n\nExample 2: [date:YYYY-MM-DD]_[name].[ext]\nResult: 2024-03-15_photo.jpg\n\nExample 3: [date:YYYY/MM]/[name].[ext]\nResult: 2024/03/photo.jpg (subdirs in current path)',
+      'Placeholders: [name] [ext] [hash:N] [date:FORMAT] [timestamp] [uuid]\n\nExample 1: [name]_[hash].[ext]\nResult: photo_a1b2c3.jpg\n\nExample 2: [date:YYYY-MM-DD]_[name].[ext]\nResult: 2024-03-15_photo.jpg\n\nExample 3: [date:YYYY/MM]/[name].[ext]\nResult: 2024/03/photo.jpg (subdirs in current path)',
     tooltipCompressMode:
       'Supports JPEG/PNG/WebP/AVIF. Local: WebAssembly encoders; Tinify: Cloud service, requires API Key',
     tooltipCompressLevel: 'Balanced: 90% quality; Extreme: 75% quality',
     tooltipTinifyKey: 'Tinify API Key, stored locally, proxied to avoid CORS issues',
+    tooltipTheme: 'Choose interface theme: light, dark, or follow system settings',
+    tooltipLanguage: 'Switch interface display language',
+    tooltipDensity: 'Adjust file list row height and spacing',
+    // Tab labels
+    configTabPreferences: 'Preferences',
+    configTabR2: 'R2 Config',
+    configTabUpload: 'Upload',
+    configTabCompression: 'Compression',
+    configTabAbout: 'About',
+    // Preferences section
+    configSectionTheme: 'Theme Mode',
+    configSectionLanguage: 'Language',
+    configSectionDensity: 'Layout Density',
+    lblTheme: 'Theme',
+    lblLanguage: 'Interface Language',
+    lblDensity: 'Density',
+    themeLight: 'Light',
+    themeDark: 'Dark',
+    themeAuto: 'Follow System',
+    // About page
+    aboutDescription: 'A pure client-side Cloudflare R2 bucket file manager',
+    aboutGithub: 'GitHub',
+    aboutLicense: 'License',
   },
   ja: {
     appTitle: 'R2 Web',
@@ -433,8 +476,6 @@ const I18N = {
     compressTinifyHint:
       'Tinify API の CORS 問題を回避するため、キーはブラウザにローカル保存され、リクエストはプロキシ経由になります。',
     theme: 'テーマ',
-    themeLight: 'ライト',
-    themeDark: 'ダーク',
     sort: '並び替え',
     sortName: '名前順',
     sortDate: '日付順',
@@ -475,11 +516,34 @@ const I18N = {
     tooltipCustomDomain: 'カスタムドメイン（任意）、公開 URL のワンクリックコピーを有効化',
     tooltipFilenameTpl: 'プレースホルダ: [name] [ext] [hash:N] [date:FORMAT] [timestamp] [uuid]',
     filenameTplHintDetailed:
-      '例1: [name]_[hash].[ext]\n結果: photo_a1b2c3.jpg\n\n例2: [date:YYYY-MM-DD]_[name].[ext]\n結果: 2024-03-15_photo.jpg\n\n例3: [date:YYYY/MM]/[name].[ext]\n結果: 2024/03/photo.jpg（現在のディレクトリ配下）',
+      'プレースホルダ: [name] [ext] [hash:N] [date:FORMAT] [timestamp] [uuid]\n\n例1: [name]_[hash].[ext]\n結果: photo_a1b2c3.jpg\n\n例2: [date:YYYY-MM-DD]_[name].[ext]\n結果: 2024-03-15_photo.jpg\n\n例3: [date:YYYY/MM]/[name].[ext]\n結果: 2024/03/photo.jpg（現在のディレクトリ配下）',
     tooltipCompressMode:
       'JPEG/PNG/WebP/AVIF 対応。ローカル: WebAssembly エンコーダー; Tinify: クラウドサービス、API Key が必要',
     tooltipCompressLevel: 'バランス: 90% 品質; 極限: 75% 品質',
     tooltipTinifyKey: 'Tinify API Key、ローカル保存、CORS 問題を回避するためプロキシ経由',
+    tooltipTheme: 'インターフェーステーマを選択：ライト、ダーク、またはシステム設定に従う',
+    tooltipLanguage: 'インターフェース表示言語を切り替え',
+    tooltipDensity: 'ファイルリストの行の高さと間隔を調整',
+    // Tab labels
+    configTabPreferences: '環境設定',
+    configTabR2: 'R2 設定',
+    configTabUpload: 'アップロード',
+    configTabCompression: '圧縮',
+    configTabAbout: 'について',
+    // Preferences section
+    configSectionTheme: 'テーマモード',
+    configSectionLanguage: '言語',
+    configSectionDensity: 'レイアウト密度',
+    lblTheme: 'テーマ',
+    lblLanguage: 'インターフェース言語',
+    lblDensity: '密度',
+    themeLight: 'ライト',
+    themeDark: 'ダーク',
+    themeAuto: 'システムに従う',
+    // About page
+    aboutDescription: '純粋なクライアントサイド Cloudflare R2 バケットファイルマネージャー',
+    aboutGithub: 'GitHub',
+    aboutLicense: 'ライセンス',
   },
 }
 
@@ -870,13 +934,28 @@ class R2Client {
 // ========================================================================
 class UIManager {
   initTheme() {
-    const saved = localStorage.getItem(THEME_KEY)
-    if (saved) {
-      document.documentElement.setAttribute('data-theme', saved)
+    const saved = localStorage.getItem(THEME_KEY) || 'auto'
+
+    if (saved === 'auto') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light')
     } else {
-      const dark = window.matchMedia('(prefers-color-scheme: dark)').matches
-      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light')
+      document.documentElement.setAttribute('data-theme', saved)
     }
+
+    // Listen to system theme changes (when set to auto)
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+      if (localStorage.getItem(THEME_KEY) === 'auto') {
+        const apply = () => {
+          document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light')
+        }
+        if (document.startViewTransition) {
+          document.startViewTransition(apply)
+        } else {
+          apply()
+        }
+      }
+    })
   }
 
   toggleTheme() {
@@ -893,12 +972,22 @@ class UIManager {
     }
   }
 
-  /** @param {string} theme */
+  /** @param {string} theme - 'light' | 'dark' | 'auto' */
   setTheme(theme) {
-    const apply = () => {
-      document.documentElement.setAttribute('data-theme', theme)
+    let effectiveTheme = theme
+
+    if (theme === 'auto') {
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+      effectiveTheme = prefersDark ? 'dark' : 'light'
+      localStorage.setItem(THEME_KEY, 'auto') // Save 'auto' preference
+    } else {
       localStorage.setItem(THEME_KEY, theme)
     }
+
+    const apply = () => {
+      document.documentElement.setAttribute('data-theme', effectiveTheme)
+    }
+
     if (document.startViewTransition) {
       document.startViewTransition(apply)
     } else {
@@ -2343,14 +2432,37 @@ class App {
     if (heroF7) heroF7.textContent = t('heroF7')
     const heroF8 = $('#hero-f8')
     if (heroF8) heroF8.textContent = t('heroF8')
-    const heroLangSelect = /** @type {HTMLSelectElement} */ ($('#hero-lang-select'))
-    if (heroLangSelect) heroLangSelect.value = currentLang
 
-    // Topbar language select
-    const topbarLangSelect = /** @type {HTMLSelectElement} */ ($('#topbar-lang-select'))
-    if (topbarLangSelect) topbarLangSelect.value = currentLang
+    // Config dialog — Tab labels
+    $('#tab-preferences').textContent = t('configTabPreferences')
+    $('#tab-r2').textContent = t('configTabR2')
+    $('#tab-upload').textContent = t('configTabUpload')
+    $('#tab-compression').textContent = t('configTabCompression')
+    $('#tab-about').textContent = t('configTabAbout')
 
-    // Config dialog — static elements by ID
+    // Config dialog — Preferences section
+    $('#config-section-theme').textContent = t('configSectionTheme')
+    $('#lbl-theme').textContent = t('lblTheme')
+    const themeSelect = $('#cfg-theme')
+    if (themeSelect) {
+      $('option[value="light"]', themeSelect).textContent = t('themeLight')
+      $('option[value="dark"]', themeSelect).textContent = t('themeDark')
+      $('option[value="auto"]', themeSelect).textContent = t('themeAuto')
+    }
+
+    $('#config-section-language').textContent = t('configSectionLanguage')
+    $('#lbl-language').textContent = t('lblLanguage')
+
+    $('#config-section-density').textContent = t('configSectionDensity')
+    $('#lbl-density').textContent = t('lblDensity')
+    const densitySelect = $('#cfg-density')
+    if (densitySelect) {
+      $('option[value="compact"]', densitySelect).textContent = t('densityCompact')
+      $('option[value="normal"]', densitySelect).textContent = t('densityNormal')
+      $('option[value="loose"]', densitySelect).textContent = t('densityLoose')
+    }
+
+    // Config dialog — R2 section
     $('#config-title').textContent = t('appTitle')
     $('#config-section-r2').textContent = t('r2Connection')
     $('#lbl-account-id').textContent = t('accountId')
@@ -2358,10 +2470,13 @@ class App {
     $('#lbl-secret-key').textContent = t('secretAccessKey')
     $('#lbl-bucket').textContent = t('bucketName')
     $('#lbl-custom-domain').textContent = t('customDomain')
+
+    // Config dialog — Upload section
     $('#config-section-upload').textContent = t('uploadSettings')
     $('#lbl-filename-tpl').textContent = t('filenameTpl')
     $('#filename-tpl-hint').textContent = t('filenameTplHintDetailed')
 
+    // Config dialog — Compression section
     $('#config-section-compression').textContent = t('compressionSettings')
     $('#lbl-compress-mode').textContent = t('compressMode')
 
@@ -2384,33 +2499,37 @@ class App {
     $('#config-submit').textContent = t('save')
     $('#config-dialog-close').dataset.tooltip = t('close')
 
-    // Config dialog help icon tooltips
+    // Config dialog — About section
+    $('#about-version').textContent = `v${VERSION}`
+    $('#about-description').textContent = t('aboutDescription')
+    $('#about-github').textContent = t('aboutGithub')
+    $('#about-license-label').textContent = t('aboutLicense')
+
+    // Config dialog help icon tooltips - Preferences
+    $('#help-theme').dataset.tooltip = t('tooltipTheme')
+    $('#help-language').dataset.tooltip = t('tooltipLanguage')
+    $('#help-density').dataset.tooltip = t('tooltipDensity')
+
+    // Config dialog help icon tooltips - R2
     $('#help-account-id').dataset.tooltip = t('tooltipAccountId')
     $('#help-access-key').dataset.tooltip = t('tooltipAccessKeyId')
     $('#help-secret-key').dataset.tooltip = t('tooltipSecretAccessKey')
     $('#help-bucket').dataset.tooltip = t('tooltipBucket')
     $('#help-custom-domain').dataset.tooltip = t('tooltipCustomDomain')
+
+    // Config dialog help icon tooltips - Upload & Compression
     $('#help-filename-tpl').dataset.tooltip = t('tooltipFilenameTpl')
     $('#help-compress-mode').dataset.tooltip = t('tooltipCompressMode')
     $('#help-compress-level').dataset.tooltip = t('tooltipCompressLevel')
     $('#help-tinify-key').dataset.tooltip = t('tooltipTinifyKey')
 
-    $('#density-select').dataset.tooltip = t('density')
-
     // Sort order tooltips
     $('#sort-asc-btn').dataset.tooltip = t('sortAsc')
     $('#sort-desc-btn').dataset.tooltip = t('sortDesc')
 
-    // View & density
+    // View
     $('#view-grid-btn').dataset.tooltip = t('viewGrid')
     $('#view-list-btn').dataset.tooltip = t('viewList')
-
-    const densitySelect = $('#density-select')
-    if (densitySelect) {
-      $('option[value="compact"]', densitySelect).textContent = t('densityCompact')
-      $('option[value="normal"]', densitySelect).textContent = t('densityNormal')
-      $('option[value="loose"]', densitySelect).textContent = t('densityLoose')
-    }
 
     // Sort buttons tooltips
     $('#sort-name-btn').dataset.tooltip = t('sortName')
@@ -2447,14 +2566,12 @@ class App {
     $('[data-action="delete"] span').textContent = t('delete')
 
     // Tooltips
-    $('#theme-toggle').dataset.tooltip = t('toggleTheme')
     $('#share-btn').dataset.tooltip = t('shareConfig')
     $('#settings-btn').dataset.tooltip = t('settings')
     $('#logout-btn').dataset.tooltip = t('logout')
     $('#refresh-btn').dataset.tooltip = t('refresh')
     $('#preview-download').dataset.tooltip = t('download')
     $('#preview-close').dataset.tooltip = t('close')
-    $('#hero-theme-toggle').dataset.tooltip = t('toggleTheme')
     $('#view-grid-btn').dataset.tooltip = t('viewGrid')
     $('#view-list-btn').dataset.tooltip = t('viewList')
     $('#upload-panel-close').dataset.tooltip = t('close')
@@ -2537,8 +2654,6 @@ class App {
   /** @param {string} density */
   #setDensity(density) {
     $('#file-browser').dataset.density = density
-    const densitySelect = /** @type {HTMLSelectElement} */ ($('#density-select'))
-    densitySelect.value = density
     localStorage.setItem(DENSITY_KEY, density)
   }
 
@@ -2572,18 +2687,49 @@ class App {
     $('#hero-connect-btn').addEventListener('click', () => {
       this.#showConfigDialog()
     })
-
-    $('#hero-theme-toggle').addEventListener('click', () => this.#ui.toggleTheme())
-
-    $('#hero-lang-select').addEventListener('change', (/** @type {Event} */ e) => {
-      setLang(/** @type {Lang} */ (/** @type {HTMLSelectElement} */ (e.target).value))
-      this.#applyI18nToHTML()
-    })
   }
 
   #showConfigDialog() {
     const dialog = /** @type {HTMLDialogElement} */ ($('#config-dialog'))
     const form = /** @type {HTMLFormElement} */ ($('#config-form'))
+
+    // Tab switching logic
+    const tabButtons = /** @type {NodeListOf<HTMLButtonElement>} */ (
+      dialog.querySelectorAll('.config-tab-btn')
+    )
+    const tabPanels = /** @type {NodeListOf<HTMLElement>} */ (
+      dialog.querySelectorAll('.config-tab-panel')
+    )
+
+    /**
+     * Switch Tab
+     * @param {string} tabId - Tab ID
+     */
+    const switchTab = tabId => {
+      tabButtons.forEach(btn => {
+        const isActive = btn.dataset.tab === tabId
+        btn.setAttribute('aria-selected', String(isActive))
+      })
+      tabPanels.forEach(panel => {
+        panel.hidden = panel.dataset.panel !== tabId
+      })
+    }
+
+    // Bind tab button click events
+    tabButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tabId = btn.dataset.tab
+        if (tabId) switchTab(tabId)
+      })
+    })
+
+    // Initialize: show first tab (preferences)
+    switchTab('preferences')
+
+    // Get all input elements (including new preference fields)
+    const themeInput = /** @type {HTMLSelectElement | null} */ ($('#cfg-theme'))
+    const languageInput = /** @type {HTMLSelectElement | null} */ ($('#cfg-language'))
+    const densityInput = /** @type {HTMLSelectElement | null} */ ($('#cfg-density'))
 
     // Pre-fill with existing config
     const cfg = this.#config.get()
@@ -2598,6 +2744,15 @@ class App {
     const compressModeInput = /** @type {HTMLSelectElement} */ ($('#cfg-compress-mode'))
     const compressLevelInput = /** @type {HTMLSelectElement} */ ($('#cfg-compress-level'))
     const tinifyKeyInput = /** @type {HTMLInputElement} */ ($('#cfg-tinify-key'))
+
+    // Pre-fill preference settings
+    const currentTheme = localStorage.getItem(THEME_KEY) || 'auto'
+    const savedLang = currentLang
+    const currentDensityValue = localStorage.getItem(DENSITY_KEY) || 'normal'
+
+    if (themeInput) themeInput.value = currentTheme
+    if (languageInput) languageInput.value = savedLang
+    if (densityInput) densityInput.value = currentDensityValue
 
     if (cfg.accountId) accountInput.value = cfg.accountId
     if (cfg.accessKeyId) accessInput.value = cfg.accessKeyId
@@ -2647,6 +2802,26 @@ class App {
     form.onsubmit = async (/** @type {Event} */ e) => {
       e.preventDefault()
 
+      // Save theme settings
+      const newTheme = themeInput ? themeInput.value : 'auto'
+      if (newTheme !== currentTheme) {
+        this.#ui.setTheme(newTheme)
+      }
+
+      // Save language settings
+      const newLang = languageInput ? languageInput.value : 'zh'
+      if (newLang !== savedLang) {
+        setLang(/** @type {Lang} */ (newLang))
+        this.#applyI18nToHTML()
+      }
+
+      // Save layout density settings
+      const newDensity = densityInput ? densityInput.value : 'normal'
+      if (newDensity !== currentDensityValue) {
+        this.#setDensity(newDensity)
+      }
+
+      // Save R2/Upload/Compression config
       this.#config.save({
         accountId: accountInput.value.trim(),
         accessKeyId: accessInput.value.trim(),
@@ -2667,9 +2842,6 @@ class App {
   }
 
   #bindGlobalEvents() {
-    // Theme toggle
-    $('#theme-toggle').addEventListener('click', () => this.#ui.toggleTheme())
-
     // Settings
     $('#settings-btn').addEventListener('click', () => this.#showConfigDialog())
 
@@ -2690,12 +2862,6 @@ class App {
       }
       const url = this.#config.getShareUrl()
       await this.#ui.showShareDialog(url)
-    })
-
-    // Topbar language select
-    $('#topbar-lang-select').addEventListener('change', (/** @type {Event} */ e) => {
-      setLang(/** @type {Lang} */ (/** @type {HTMLSelectElement} */ (e.target).value))
-      this.#applyI18nToHTML()
     })
 
     // Dismiss context menu
@@ -2902,11 +3068,6 @@ class App {
     // View toggle
     $('#view-grid-btn').addEventListener('click', () => this.#setView('grid'))
     $('#view-list-btn').addEventListener('click', () => this.#setView('list'))
-
-    // Density select
-    $('#density-select').addEventListener('change', (/** @type {Event} */ e) =>
-      this.#setDensity(/** @type {HTMLSelectElement} */ (e.target).value),
-    )
   }
 }
 

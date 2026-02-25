@@ -35,12 +35,12 @@
     <script type="importmap">
       {
         "imports": {
-          "aws4fetch": "https://esm.sh/aws4fetch@1.0.20",
-          "dayjs": "https://esm.sh/dayjs@1.11.19",
+          "@jsquash/avif": "https://esm.sh/@jsquash/avif@2.1.1",
           "@jsquash/jpeg": "https://esm.sh/@jsquash/jpeg@1.6.0",
           "@jsquash/oxipng": "https://esm.sh/@jsquash/oxipng@2.3.0",
           "@jsquash/webp": "https://esm.sh/@jsquash/webp@1.5.0",
-          "@jsquash/avif": "https://esm.sh/@jsquash/avif@2.1.1",
+          "aws4fetch": "https://esm.sh/aws4fetch@1.0.20",
+          "dayjs": "https://esm.sh/dayjs@1.11.19",
           "filesize": "https://esm.sh/filesize@11.0.13",
           "qrcode": "https://esm.sh/qrcode@1.5.4"
         }
@@ -73,9 +73,77 @@
         </div>
 
         <div class="dialog-body">
-          <div class="config-sections-grid">
-            <!-- Left Column: R2 Connection -->
-            <div class="config-column">
+          <!-- Tab Navigation -->
+          <div class="config-tabs" role="tablist">
+            <button type="button" class="config-tab-btn" role="tab" aria-selected="true" data-tab="preferences">
+              <span id="tab-preferences">偏好设置</span>
+            </button>
+            <button type="button" class="config-tab-btn" role="tab" data-tab="r2">
+              <span id="tab-r2">R2 设置</span>
+            </button>
+            <button type="button" class="config-tab-btn" role="tab" data-tab="upload">
+              <span id="tab-upload">上传设置</span>
+            </button>
+            <button type="button" class="config-tab-btn" role="tab" data-tab="compression">
+              <span id="tab-compression">压缩设置</span>
+            </button>
+            <button type="button" class="config-tab-btn" role="tab" data-tab="about">
+              <span id="tab-about">关于</span>
+            </button>
+          </div>
+
+          <!-- Tab Panels Container -->
+          <div class="config-tab-panels">
+            <!-- Tab 1: Preferences -->
+            <div class="config-tab-panel" role="tabpanel" data-panel="preferences">
+              <div class="config-section">
+                <h3 id="config-section-theme">主题模式</h3>
+                <div class="field">
+                  <div class="field-label">
+                    <label for="cfg-theme" id="lbl-theme">主题</label>
+                    <button type="button" class="help-icon" id="help-theme">?</button>
+                  </div>
+                  <select id="cfg-theme" name="theme">
+                    <option value="light">浅色</option>
+                    <option value="dark">深色</option>
+                    <option value="auto">跟随系统</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="config-section">
+                <h3 id="config-section-language">语言</h3>
+                <div class="field">
+                  <div class="field-label">
+                    <label for="cfg-language" id="lbl-language">界面语言</label>
+                    <button type="button" class="help-icon" id="help-language">?</button>
+                  </div>
+                  <select id="cfg-language" name="language">
+                    <option value="zh">简体中文</option>
+                    <option value="en">English</option>
+                    <option value="ja">日本語</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="config-section">
+                <h3 id="config-section-density">布局紧凑度</h3>
+                <div class="field">
+                  <div class="field-label">
+                    <label for="cfg-density" id="lbl-density">紧凑度</label>
+                    <button type="button" class="help-icon" id="help-density">?</button>
+                  </div>
+                  <select id="cfg-density" name="density">
+                    <option value="compact">紧凑</option>
+                    <option value="normal" selected>标准</option>
+                    <option value="loose">宽松</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 2: R2 Config -->
+            <div class="config-tab-panel" role="tabpanel" data-panel="r2" hidden>
               <div class="config-section">
                 <h3 id="config-section-r2">R2 储存桶设置</h3>
                 <div class="field">
@@ -146,8 +214,8 @@
               </div>
             </div>
 
-            <!-- Right Column: Upload & Compression -->
-            <div class="config-column">
+            <!-- Tab 3: Upload -->
+            <div class="config-tab-panel" role="tabpanel" data-panel="upload" hidden>
               <div class="config-section">
                 <h3 id="config-section-upload">上传设置</h3>
                 <div class="field">
@@ -181,7 +249,10 @@
                   </small>
                 </div>
               </div>
+            </div>
 
+            <!-- Tab 4: Compression -->
+            <div class="config-tab-panel" role="tabpanel" data-panel="compression" hidden>
               <div class="config-section">
                 <h3 id="config-section-compression">图片压缩</h3>
                 <div class="field">
@@ -223,6 +294,42 @@
                       placeholder="来自 tinify.com 的 Key"
                     />
                   </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 5: About -->
+            <div class="config-tab-panel" role="tabpanel" data-panel="about" hidden>
+              <div class="about-section">
+                <div class="about-header">
+                  <img src="favicon.ico" alt="R2 Web" class="about-icon" />
+                  <h2 class="about-title">R2 Web</h2>
+                  <p class="about-version" id="about-version">v1.0.0</p>
+                </div>
+
+                <p class="about-desc" id="about-description">
+                  轻盈优雅的 Web 原生 Cloudflare R2 文件管理器
+                </p>
+
+                <div class="about-links">
+                  <a
+                    href="https://github.com/vikiboss/r2-web"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="about-link"
+                  >
+                    <svg class="icon" viewBox="0 0 24 24" fill="currentColor">
+                      <path
+                        d="M12 .3a12 12 0 0 0-3.8 23.38c.6.12.83-.26.83-.57L9 21.07c-3.34.72-4.04-1.61-4.04-1.61-.55-1.39-1.34-1.76-1.34-1.76-1.08-.74.09-.73.09-.73 1.2.09 1.84 1.24 1.84 1.24 1.07 1.83 2.8 1.3 3.49 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.14-.3-.54-1.52.1-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6.02 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18a4.65 4.65 0 0 1 1.23 3.22c0 4.61-2.8 5.63-5.48 5.92.42.36.81 1.1.81 2.22l-.01 3.29c0 .31.21.69.82.57A12 12 0 0 0 12 .3"
+                      />
+                    </svg>
+                    <span id="about-github">GitHub</span>
+                  </a>
+                </div>
+
+                <div class="about-license">
+                  <span id="about-license-label">开源协议:</span>
+                  <strong>MIT License</strong>
                 </div>
               </div>
             </div>
@@ -407,45 +514,6 @@
           </div>
         </div>
       </div>
-      <div class="hero-footer">
-        <button type="button" class="icon-btn" id="hero-theme-toggle" data-tooltip="切换主题">
-          <svg
-            class="icon icon-sun"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="12" cy="12" r="5" />
-            <line x1="12" y1="1" x2="12" y2="3" />
-            <line x1="12" y1="21" x2="12" y2="23" />
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-            <line x1="1" y1="12" x2="3" y2="12" />
-            <line x1="21" y1="12" x2="23" y2="12" />
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-          </svg>
-          <svg
-            class="icon icon-moon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-          </svg>
-        </button>
-        <select id="hero-lang-select" class="toolbar-select">
-          <option value="zh">中文</option>
-          <option value="en">English</option>
-          <option value="ja">日本語</option>
-        </select>
-      </div>
     </section>
 
     <!-- App Shell -->
@@ -457,43 +525,6 @@
           <h1 class="topbar-title">R2 Web</h1>
         </div>
         <div class="flex items-center" style="gap: 4px">
-          <select id="topbar-lang-select" class="toolbar-select">
-            <option value="zh">简体中文</option>
-            <option value="en">English</option>
-            <option value="ja">日本語</option>
-          </select>
-          <button type="button" class="icon-btn" id="theme-toggle" data-tooltip="切换主题">
-            <svg
-              class="icon icon-sun"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <circle cx="12" cy="12" r="5" />
-              <line x1="12" y1="1" x2="12" y2="3" />
-              <line x1="12" y1="21" x2="12" y2="23" />
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-              <line x1="1" y1="12" x2="3" y2="12" />
-              <line x1="21" y1="12" x2="23" y2="12" />
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-            </svg>
-            <svg
-              class="icon icon-moon"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            >
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-            </svg>
-          </button>
           <button type="button" class="icon-btn" id="share-btn" data-tooltip="分享配置">
             <svg
               class="icon"
@@ -569,12 +600,6 @@
           </button>
         </div>
         <div class="flex items-center" style="gap: 8px">
-          <select id="density-select" class="toolbar-select" data-tooltip="密度">
-            <option value="compact">紧凑</option>
-            <option value="normal" selected>正常</option>
-            <option value="loose">宽松</option>
-          </select>
-
           <div class="btn-group view-toggle" role="group" aria-label="切换视图">
             <button
               type="button"
