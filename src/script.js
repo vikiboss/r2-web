@@ -12,7 +12,7 @@ import { filesize } from 'filesize'
 import QRCode from 'qrcode'
 
 // --- Constants ---
-const VERSION = '1.2.0'
+const VERSION = '1.2.1'
 const STORAGE_KEY = 'r2-manager-config'
 const THEME_KEY = 'r2-manager-theme'
 const LANG_KEY = 'r2-manager-lang'
@@ -168,21 +168,23 @@ const I18N = {
     deleting: '正在删除 "{name}"...',
     renaming: '正在重命名 "{name}" 为 "{destName}"...',
     // Config dialog tooltips
-    tooltipAccountId: 'Cloudflare 账户 ID，在 R2 控制台获取',
-    tooltipAccessKeyId: 'R2 API 访问密钥 ID',
-    tooltipSecretAccessKey: 'R2 API 密钥，仅存储在浏览器本地',
-    tooltipBucket: 'R2 存储桶名称',
-    tooltipCustomDomain: '自定义域名（可选），用于生成公开访问链接',
-    tooltipFilenameTpl: '占位符: [name] [ext] [hash:N] [date:FORMAT] [timestamp] [uuid]',
+    tooltipAccountId: 'Cloudflare 账户 ID，在 R2 控制台右上角可找到',
+    tooltipAccessKeyId: 'R2 API 访问密钥 ID，在 R2 设置中创建',
+    tooltipSecretAccessKey: 'R2 API 密钥，仅存储在浏览器本地，不会上传到任何服务器',
+    tooltipBucket: 'R2 存储桶名称，所有文件操作将在此桶下进行',
+    tooltipCustomDomain: '自定义域名（可选），配置后可一键复制文件的公开访问链接',
+    tooltipFilenameTpl: '文件名模板，支持多种占位符自动生成文件名和目录结构',
     filenameTplHintDetailed:
       '占位符: [name] [ext] [hash:N] [date:FORMAT] [timestamp] [uuid]\n\n例一：[name]_[hash].[ext]\n结果：photo_a1b2c3.jpg\n\n例二：[date:YYYY-MM-DD]_[name].[ext]\n结果：2024-03-15_photo.jpg\n\n例三：[date:YYYY/MM]/[name].[ext]\n结果：2024/03/photo.jpg（当前目录的子目录）',
     tooltipCompressMode:
-      '支持 JPEG/PNG/WebP/AVIF。本地压缩：使用 WebAssembly 编码器；Tinify：云服务，需 API Key',
-    tooltipCompressLevel: '平衡模式 90% 质量，极致压缩 75% 质量',
-    tooltipTinifyKey: 'Tinify API Key，本地存储，经代理转发以避免跨域',
-    tooltipTheme: '选择界面主题，支持浅色、深色或跟随系统设置',
-    tooltipLanguage: '切换界面显示语言',
-    tooltipDensity: '调整文件列表的行高与间距，影响显示密度',
+      '上传前压缩图片，支持 JPEG/PNG/WebP/AVIF 格式，可节省存储空间和带宽',
+    tooltipCompressLevel: '压缩质量，平衡模式保持高质量（90%），极致压缩更省空间（75%）',
+    tooltipTinifyKey: 'Tinify API Key，存储在本地，需通过代理访问以避免跨域问题',
+    tooltipTheme: '选择界面主题，支持浅色、深色或跟随系统设置自动切换',
+    tooltipLanguage: '切换界面显示语言，支持中文、英语和日语',
+    tooltipDensity: '调整文件列表的行高与间距，紧凑模式可显示更多内容',
+    tinifyKeyHintText: '还没有 API Key？',
+    tinifyKeyLink: '前往获取',
     // Tab labels
     configTabPreferences: '偏好设置',
     configTabR2: 'R2 设置',
@@ -336,21 +338,23 @@ const I18N = {
     deleting: 'Deleting "{name}"...',
     renaming: 'Renaming "{name}" to "{destName}"...',
     // Config dialog tooltips
-    tooltipAccountId: 'Cloudflare Account ID, found in R2 console',
-    tooltipAccessKeyId: 'R2 API Access Key ID',
-    tooltipSecretAccessKey: 'R2 API Secret Key, stored locally in browser only',
-    tooltipBucket: 'R2 Bucket Name',
-    tooltipCustomDomain: 'Custom Domain (optional), enables one-click public URL copying',
-    tooltipFilenameTpl: 'Placeholders: [name] [ext] [hash:N] [date:FORMAT] [timestamp] [uuid]',
+    tooltipAccountId: 'Cloudflare Account ID, found in the top-right corner of R2 console',
+    tooltipAccessKeyId: 'R2 API Access Key ID, create one in R2 settings',
+    tooltipSecretAccessKey: 'R2 API Secret Key, stored locally in browser only, never uploaded',
+    tooltipBucket: 'R2 Bucket Name, all file operations will be performed in this bucket',
+    tooltipCustomDomain: 'Custom Domain (optional), enables one-click public URL copying for files',
+    tooltipFilenameTpl: 'Filename template, supports placeholders for auto-generating names and folders',
     filenameTplHintDetailed:
       'Placeholders: [name] [ext] [hash:N] [date:FORMAT] [timestamp] [uuid]\n\nExample 1: [name]_[hash].[ext]\nResult: photo_a1b2c3.jpg\n\nExample 2: [date:YYYY-MM-DD]_[name].[ext]\nResult: 2024-03-15_photo.jpg\n\nExample 3: [date:YYYY/MM]/[name].[ext]\nResult: 2024/03/photo.jpg (subdirs in current path)',
     tooltipCompressMode:
-      'Supports JPEG/PNG/WebP/AVIF. Local: WebAssembly encoders; Tinify: Cloud service, requires API Key',
-    tooltipCompressLevel: 'Balanced: 90% quality; Extreme: 75% quality',
+      'Compress images before upload, supports JPEG/PNG/WebP/AVIF to save storage and bandwidth',
+    tooltipCompressLevel: 'Compression quality, Balanced maintains high quality (90%), Extreme saves more space (75%)',
     tooltipTinifyKey: 'Tinify API Key, stored locally, proxied to avoid CORS issues',
-    tooltipTheme: 'Choose interface theme: light, dark, or follow system settings',
-    tooltipLanguage: 'Switch interface display language',
-    tooltipDensity: 'Adjust file list row height and spacing',
+    tooltipTheme: 'Choose interface theme: light, dark, or follow system settings automatically',
+    tooltipLanguage: 'Switch interface display language, supports Chinese, English, and Japanese',
+    tooltipDensity: 'Adjust file list row height and spacing, compact mode shows more items',
+    tinifyKeyHintText: "Don't have an API Key?",
+    tinifyKeyLink: 'Get one here',
     // Tab labels
     configTabPreferences: 'Preferences',
     configTabR2: 'R2 Config',
@@ -503,21 +507,23 @@ const I18N = {
     deleting: '"{name}" を削除しています...',
     renaming: '"{name}" を "{destName}" に名前変更しています...',
     // Config dialog tooltips
-    tooltipAccountId: 'Cloudflare アカウント ID、R2 コンソールで取得',
-    tooltipAccessKeyId: 'R2 API アクセスキー ID',
-    tooltipSecretAccessKey: 'R2 API シークレットキー、ブラウザにのみローカル保存',
-    tooltipBucket: 'R2 バケット名',
-    tooltipCustomDomain: 'カスタムドメイン（任意）、公開 URL のワンクリックコピーを有効化',
-    tooltipFilenameTpl: 'プレースホルダ: [name] [ext] [hash:N] [date:FORMAT] [timestamp] [uuid]',
+    tooltipAccountId: 'Cloudflare アカウント ID、R2 コンソールの右上で確認できます',
+    tooltipAccessKeyId: 'R2 API アクセスキー ID、R2 設定で作成します',
+    tooltipSecretAccessKey: 'R2 API シークレットキー、ブラウザにのみ保存され、アップロードされません',
+    tooltipBucket: 'R2 バケット名、すべてのファイル操作はこのバケットで実行されます',
+    tooltipCustomDomain: 'カスタムドメイン（任意）、設定後ファイルの公開 URL をワンクリックでコピーできます',
+    tooltipFilenameTpl: 'ファイル名テンプレート、プレースホルダで名前とフォルダ構造を自動生成',
     filenameTplHintDetailed:
       'プレースホルダ: [name] [ext] [hash:N] [date:FORMAT] [timestamp] [uuid]\n\n例1: [name]_[hash].[ext]\n結果: photo_a1b2c3.jpg\n\n例2: [date:YYYY-MM-DD]_[name].[ext]\n結果: 2024-03-15_photo.jpg\n\n例3: [date:YYYY/MM]/[name].[ext]\n結果: 2024/03/photo.jpg（現在のディレクトリ配下）',
     tooltipCompressMode:
-      'JPEG/PNG/WebP/AVIF 対応。ローカル: WebAssembly エンコーダー; Tinify: クラウドサービス、API Key が必要',
-    tooltipCompressLevel: 'バランス: 90% 品質; 極限: 75% 品質',
+      'アップロード前に画像を圧縮、JPEG/PNG/WebP/AVIF 対応、ストレージと帯域幅を節約',
+    tooltipCompressLevel: '圧縮品質、バランスは高品質を維持（90%）、極限はさらに容量を節約（75%）',
     tooltipTinifyKey: 'Tinify API Key、ローカル保存、CORS 問題を回避するためプロキシ経由',
-    tooltipTheme: 'インターフェーステーマを選択：ライト、ダーク、またはシステム設定に従う',
-    tooltipLanguage: 'インターフェース表示言語を切り替え',
-    tooltipDensity: 'ファイルリストの行の高さと間隔を調整',
+    tooltipTheme: 'インターフェーステーマを選択：ライト、ダーク、またはシステム設定に自動追従',
+    tooltipLanguage: 'インターフェース表示言語を切り替え、中国語、英語、日本語に対応',
+    tooltipDensity: 'ファイルリストの行の高さと間隔を調整、コンパクトモードでより多く表示',
+    tinifyKeyHintText: 'API Key をお持ちでない場合は',
+    tinifyKeyLink: 'こちらから取得',
     // Tab labels
     configTabPreferences: '環境設定',
     configTabR2: 'R2 設定',
@@ -2587,6 +2593,10 @@ class App {
       $('option[value="extreme"]', compressLevelSelect).textContent = t('compressLevelExtreme')
     }
 
+    $('#lbl-tinify-key').textContent = 'Tinify API Key'
+    $('#tinify-key-hint-text').textContent = t('tinifyKeyHintText')
+    $('#tinify-key-link').textContent = t('tinifyKeyLink')
+
     $('#config-cancel').textContent = t('cancel')
     $('#config-submit').textContent = t('save')
     $('#config-dialog-close').dataset.tooltip = t('close')
@@ -2777,11 +2787,15 @@ class App {
 
   #bindHeroEvents() {
     $('#hero-connect-btn').addEventListener('click', () => {
-      this.#showConfigDialog()
+      this.#showConfigDialog('r2')
     })
   }
 
-  #showConfigDialog() {
+  /**
+   * Show Config Dialog
+   * @param {string} [defaultTab='preferences'] - Default tab to show ('preferences', 'r2', 'upload', 'compression', 'about')
+   */
+  #showConfigDialog(defaultTab = 'preferences') {
     const dialog = /** @type {HTMLDialogElement} */ ($('#config-dialog'))
 
     // Tab switching logic
@@ -2814,8 +2828,8 @@ class App {
       })
     })
 
-    // Initialize: show first tab (preferences)
-    switchTab('preferences')
+    // Initialize: show default tab
+    switchTab(defaultTab)
 
     // Get all input elements (including new preference fields)
     const themeInput = /** @type {HTMLSelectElement | null} */ ($('#cfg-theme'))

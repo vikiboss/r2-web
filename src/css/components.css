@@ -138,6 +138,26 @@
     }
   }
 
+  /* Field Hint (for links and help text below input) */
+  .field-hint {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-1);
+    font-size: var(--text-xs);
+    color: var(--text-tertiary);
+
+    & a {
+      color: var(--accent);
+      text-decoration: none;
+      transition: opacity var(--duration-fast) var(--ease-out);
+
+      &:hover {
+        opacity: 0.8;
+        text-decoration: underline;
+      }
+    }
+  }
+
   /* Help icon for form field tooltips */
   .help-icon {
     display: inline-flex;
