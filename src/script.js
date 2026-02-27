@@ -12,13 +12,14 @@ import { filesize } from 'filesize'
 import QRCode from 'qrcode'
 
 // --- Constants ---
-const VERSION = '1.2.1'
+const VERSION = '1.2.2'
 const STORAGE_KEY = 'r2-manager-config'
 const THEME_KEY = 'r2-manager-theme'
 const LANG_KEY = 'r2-manager-lang'
 const VIEW_KEY = 'r2-manager-view'
 const DENSITY_KEY = 'r2-manager-density'
 const SORT_BY_KEY = 'r2-manager-sort-by'
+const SORT_ORDER_KEY = 'r2-manager-sort-order'
 const PAGE_SIZE = 100
 const TOAST_DURATION = 3000
 const MAX_UPLOAD_SIZE = 300 * 1024 * 1024 // 300 MB
@@ -176,8 +177,7 @@ const I18N = {
     tooltipFilenameTpl: '文件名模板，支持多种占位符自动生成文件名和目录结构',
     filenameTplHintDetailed:
       '占位符: [name] [ext] [hash:N] [date:FORMAT] [timestamp] [uuid]\n\n例一：[name]_[hash].[ext]\n结果：photo_a1b2c3.jpg\n\n例二：[date:YYYY-MM-DD]_[name].[ext]\n结果：2024-03-15_photo.jpg\n\n例三：[date:YYYY/MM]/[name].[ext]\n结果：2024/03/photo.jpg（当前目录的子目录）',
-    tooltipCompressMode:
-      '上传前压缩图片，支持 JPEG/PNG/WebP/AVIF 格式，可节省存储空间和带宽',
+    tooltipCompressMode: '上传前压缩图片，支持 JPEG/PNG/WebP/AVIF 格式，可节省存储空间和带宽',
     tooltipCompressLevel: '压缩质量，平衡模式保持高质量（90%），极致压缩更省空间（75%）',
     tooltipTinifyKey: 'Tinify API Key，存储在本地，需通过代理访问以避免跨域问题',
     tooltipTheme: '选择界面主题，支持浅色、深色或跟随系统设置自动切换',
@@ -343,12 +343,14 @@ const I18N = {
     tooltipSecretAccessKey: 'R2 API Secret Key, stored locally in browser only, never uploaded',
     tooltipBucket: 'R2 Bucket Name, all file operations will be performed in this bucket',
     tooltipCustomDomain: 'Custom Domain (optional), enables one-click public URL copying for files',
-    tooltipFilenameTpl: 'Filename template, supports placeholders for auto-generating names and folders',
+    tooltipFilenameTpl:
+      'Filename template, supports placeholders for auto-generating names and folders',
     filenameTplHintDetailed:
       'Placeholders: [name] [ext] [hash:N] [date:FORMAT] [timestamp] [uuid]\n\nExample 1: [name]_[hash].[ext]\nResult: photo_a1b2c3.jpg\n\nExample 2: [date:YYYY-MM-DD]_[name].[ext]\nResult: 2024-03-15_photo.jpg\n\nExample 3: [date:YYYY/MM]/[name].[ext]\nResult: 2024/03/photo.jpg (subdirs in current path)',
     tooltipCompressMode:
       'Compress images before upload, supports JPEG/PNG/WebP/AVIF to save storage and bandwidth',
-    tooltipCompressLevel: 'Compression quality, Balanced maintains high quality (90%), Extreme saves more space (75%)',
+    tooltipCompressLevel:
+      'Compression quality, Balanced maintains high quality (90%), Extreme saves more space (75%)',
     tooltipTinifyKey: 'Tinify API Key, stored locally, proxied to avoid CORS issues',
     tooltipTheme: 'Choose interface theme: light, dark, or follow system settings automatically',
     tooltipLanguage: 'Switch interface display language, supports Chinese, English, and Japanese',
@@ -429,7 +431,8 @@ const I18N = {
     corsError:
       'CORS がまだ設定されていません。Cloudflare ダッシュボード → R2 → バケット設定で CORS ルールを追加してください。',
     networkError: 'ネットワーク接続に失敗しました: {msg}',
-    http401Error: '認証に失敗しました (401)、Access Key または Secret Key が無効または削除された可能性があります',
+    http401Error:
+      '認証に失敗しました (401)、Access Key または Secret Key が無効または削除された可能性があります',
     http403Error: 'アクセスが拒否されました (403)、API キーの権限を確認してください',
     http404Error: 'バケットが見つかりません (404)、Bucket Name を確認してください',
     uploadSuccess: '{count} 個のファイルをアップロードしました！',
@@ -509,9 +512,11 @@ const I18N = {
     // Config dialog tooltips
     tooltipAccountId: 'Cloudflare アカウント ID、R2 コンソールの右上で確認できます',
     tooltipAccessKeyId: 'R2 API アクセスキー ID、R2 設定で作成します',
-    tooltipSecretAccessKey: 'R2 API シークレットキー、ブラウザにのみ保存され、アップロードされません',
+    tooltipSecretAccessKey:
+      'R2 API シークレットキー、ブラウザにのみ保存され、アップロードされません',
     tooltipBucket: 'R2 バケット名、すべてのファイル操作はこのバケットで実行されます',
-    tooltipCustomDomain: 'カスタムドメイン（任意）、設定後ファイルの公開 URL をワンクリックでコピーできます',
+    tooltipCustomDomain:
+      'カスタムドメイン（任意）、設定後ファイルの公開 URL をワンクリックでコピーできます',
     tooltipFilenameTpl: 'ファイル名テンプレート、プレースホルダで名前とフォルダ構造を自動生成',
     filenameTplHintDetailed:
       'プレースホルダ: [name] [ext] [hash:N] [date:FORMAT] [timestamp] [uuid]\n\n例1: [name]_[hash].[ext]\n結果: photo_a1b2c3.jpg\n\n例2: [date:YYYY-MM-DD]_[name].[ext]\n結果: 2024-03-15_photo.jpg\n\n例3: [date:YYYY/MM]/[name].[ext]\n結果: 2024/03/photo.jpg（現在のディレクトリ配下）',
@@ -546,7 +551,8 @@ const I18N = {
 
 /** @typedef {keyof typeof I18N} Lang */
 /** @typedef {keyof typeof I18N.en} I18nKey */
-/** @typedef {{ accountId: string; accessKeyId: string; secretAccessKey: string; bucket: string; filenameTpl?: string; customDomain?: string; theme?: string; lang?: string; compressMode?: string; compressLevel?: string; tinifyKey?: string }} R2Config */
+/** @typedef {{ accountId?: string; accessKeyId?: string; secretAccessKey?: string; bucket?: string; filenameTpl?: string; customDomain?: string; compressMode?: string; compressLevel?: string; tinifyKey?: string }} AppConfig */
+/** @typedef {AppConfig & { theme?: string; lang?: string; view?: string; density?: string; sortBy?: string; sortOrder?: string }} SharePayload */
 /** @typedef {{ key: string; isFolder: boolean; size?: number; lastModified?: string }} FileItem */
 
 let currentLang = /** @type {Lang} */ (localStorage.getItem(LANG_KEY) || 'zh')
@@ -737,21 +743,21 @@ async function applyFilenameTemplate(template, file) {
 // ConfigManager
 // ========================================================================
 class ConfigManager {
-  /** @returns {R2Config} */
+  /** @returns {AppConfig} */
   load() {
     try {
       return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') || {}
     } catch {
-      return /** @type {R2Config} */ ({})
+      return /** @type {AppConfig} */ ({})
     }
   }
 
-  /** @param {R2Config} cfg */
+  /** @param {AppConfig} cfg */
   save(cfg) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cfg))
   }
 
-  /** @returns {R2Config} */
+  /** @returns {AppConfig} */
   get() {
     return this.load()
   }
@@ -776,19 +782,39 @@ class ConfigManager {
   }
 
   toBase64() {
-    const cfg = this.load()
-    return btoa(unescape(encodeURIComponent(JSON.stringify(cfg))))
+    /** @type {SharePayload} */
+    const payload = {
+      ...this.load(),
+      theme: localStorage.getItem(THEME_KEY) || undefined,
+      lang: localStorage.getItem(LANG_KEY) || undefined,
+      view: localStorage.getItem(VIEW_KEY) || undefined,
+      density: localStorage.getItem(DENSITY_KEY) || undefined,
+      sortBy: localStorage.getItem(SORT_BY_KEY) || undefined,
+      sortOrder: localStorage.getItem(SORT_ORDER_KEY) || undefined,
+    }
+    return btoa(unescape(encodeURIComponent(JSON.stringify(payload))))
   }
 
   /** @param {string} b64 @returns {boolean} */
   loadFromBase64(b64) {
     try {
       const json = decodeURIComponent(escape(atob(b64)))
-      const cfg = JSON.parse(json)
-      if (cfg.accountId && cfg.accessKeyId && cfg.secretAccessKey && cfg.bucket) {
-        this.save(cfg)
-        return true
-      }
+      /** @type {SharePayload} */
+      const payload = JSON.parse(json)
+      if (!payload || typeof payload !== 'object' || Array.isArray(payload)) return false
+
+      // Split UI preferences to their individual keys
+      const { theme, lang, view, density, sortBy, sortOrder, ...r2Config } = payload
+      if (theme) localStorage.setItem(THEME_KEY, theme)
+      if (lang) localStorage.setItem(LANG_KEY, lang)
+      if (view) localStorage.setItem(VIEW_KEY, view)
+      if (density) localStorage.setItem(DENSITY_KEY, density)
+      if (sortBy) localStorage.setItem(SORT_BY_KEY, sortBy)
+      if (sortOrder) localStorage.setItem(SORT_ORDER_KEY, sortOrder)
+
+      // Save R2/upload/compression config only if payload has any R2 fields
+      if (Object.values(r2Config).some(Boolean)) this.save(r2Config)
+      return true
     } catch {
       /* invalid base64 or JSON */
     }
@@ -1108,9 +1134,7 @@ class UIManager {
     }
 
     // 动态生成骨架卡片
-    skeletonGrid.innerHTML = Array(count)
-      .fill('<div class="skeleton-card"></div>')
-      .join('')
+    skeletonGrid.innerHTML = Array(count).fill('<div class="skeleton-card"></div>').join('')
     skeletonGrid.hidden = false
     $('#file-grid').hidden = true
     $('#empty-state').hidden = true
@@ -1751,7 +1775,7 @@ class FileExplorer {
 /**
  * Compress image file based on configuration
  * @param {File} file - Original file
- * @param {R2Config} config - R2Config object
+ * @param {AppConfig} config - AppConfig object
  * @param {function(string):void} onStatus - Callback to update status text
  * @returns {Promise<File>}
  */
@@ -2486,9 +2510,12 @@ class App {
         const cleanUrl = new URL(window.location.href)
         cleanUrl.searchParams.delete('config')
         window.history.replaceState({}, '', cleanUrl.toString())
-        // If lang is in config, apply it
-        const cfg = this.#config.get()
-        if (cfg.lang) setLang(/** @type {Lang} */ (cfg.lang))
+        // Apply runtime effects for lang and theme (individual keys already written by loadFromBase64)
+        const lang = localStorage.getItem(LANG_KEY)
+        if (lang) setLang(/** @type {Lang} */ (lang))
+        const theme = localStorage.getItem(THEME_KEY)
+        if (theme) this.#ui.setTheme(theme)
+        // density/view/sortBy/sortOrder are restored by #restoreViewPrefs() later
       }
     }
 
@@ -2711,12 +2738,6 @@ class App {
       this.#preview = new FilePreview(this.#r2, this.#ui)
       this.#ops = new FileOperations(this.#r2, this.#ui, this.#explorer, this.#config)
 
-      // Apply theme from config
-      const cfg = this.#config.get()
-      if (cfg.theme) {
-        this.#ui.setTheme(cfg.theme)
-      }
-
       this.#hideHero()
       $('#app').hidden = false
       this.#restoreViewPrefs()
@@ -2740,9 +2761,11 @@ class App {
     const view = localStorage.getItem(VIEW_KEY) || 'grid'
     const density = localStorage.getItem(DENSITY_KEY) || 'normal'
     const sortBy = localStorage.getItem(SORT_BY_KEY) || 'name'
+    const sortOrder = /** @type {'asc' | 'desc'} */ (localStorage.getItem(SORT_ORDER_KEY) || 'asc')
     this.#setView(view)
     this.#setDensity(density)
     this.#setSortBy(sortBy)
+    this.#setSortOrder(sortOrder)
   }
 
   /** @param {string} view */
@@ -2774,6 +2797,7 @@ class App {
     $('#sort-asc-btn').setAttribute('aria-pressed', String(order === 'asc'))
     $('#sort-desc-btn').setAttribute('aria-pressed', String(order === 'desc'))
     if (this.#explorer) this.#explorer.setSortOrder(order)
+    localStorage.setItem(SORT_ORDER_KEY, order)
   }
 
   #showHero() {
@@ -2924,7 +2948,7 @@ class App {
         this.#setDensity(newDensity)
       }
 
-      // Save R2/Upload/Compression config
+      // Save R2/upload/compression config
       this.#config.save({
         accountId: accountInput.value.trim(),
         accessKeyId: accessInput.value.trim(),
