@@ -102,6 +102,7 @@ class App {
         return
       }
       await this.#showUnlock()
+      if (!this.#config.isValid()) this.#showHero()
       return
     }
 
@@ -122,22 +123,34 @@ class App {
         unlockError.hidden = false
         return
       }
-      const ok = await this.#config.unlock(password, unlockRemember.checked)
-      if (ok) {
-        unlockDialog.close()
-        unlockPassword.value = ''
-        unlockError.hidden = true
-        await this.#connectAndLoad()
-        this.#resetInactivityTimer()
-      } else {
-        unlockError.textContent = t('unlockFailed')
-        unlockError.hidden = false
+      try {
+        const ok = await this.#config.unlock(password, unlockRemember.checked)
+        if (ok) {
+          unlockDialog.close()
+          unlockPassword.value = ''
+          unlockError.hidden = true
+          await this.#connectAndLoad()
+          this.#resetInactivityTimer()
+        } else {
+          unlockError.textContent = t('unlockFailed')
+          unlockError.hidden = false
+        }
+      } catch (/** @type {any} */ err) {
+        if (err?.code === 'CRYPTO_UNAVAILABLE') {
+          unlockError.textContent = t('cryptoUnavailable')
+          unlockError.hidden = false
+        } else {
+          throw err
+        }
       }
     }
 
     unlockPassword.onkeydown = (e) => {
       if (e.key === 'Enter') unlockBtn.click()
     }
+
+    const unlockCloseBtn = $('#unlock-dialog-close')
+    if (unlockCloseBtn) unlockCloseBtn.onclick = () => unlockDialog.close()
 
     const setPwDialog = /** @type {HTMLDialogElement} */ ($('#set-password-dialog'))
     const setPwInput = /** @type {HTMLInputElement} */ ($('#set-password-input'))
@@ -148,6 +161,8 @@ class App {
     const setPwError = $('#set-password-error')
 
     setPwCancel.onclick = () => setPwDialog.close()
+    const setPwCloseBtn = $('#set-password-close')
+    if (setPwCloseBtn) setPwCloseBtn.onclick = () => setPwDialog.close()
     setPwBtn.onclick = () => this.#onSetPasswordConfirm(setPwDialog, setPwInput, setPwConfirm, setPwRemember, setPwError)
     setPwConfirm.onkeydown = (e) => {
       if (e.key === 'Enter') this.#onSetPasswordConfirm(setPwDialog, setPwInput, setPwConfirm, setPwRemember, setPwError)
@@ -173,20 +188,29 @@ class App {
       errorEl.hidden = false
       return
     }
-    const cfg = this.#pendingConfigToSave
-    if (cfg) {
-      await this.#config.encryptAndSave(cfg, password)
-      if (remember.checked) sessionStorage.setItem(REMEMBER_PW_KEY, password)
-    } else if (this.#config.isLegacy()) {
-      await this.#config.migrateLegacy(password, remember.checked)
+    try {
+      const cfg = this.#pendingConfigToSave
+      if (cfg) {
+        await this.#config.encryptAndSave(cfg, password)
+        if (remember.checked) sessionStorage.setItem(REMEMBER_PW_KEY, password)
+      } else if (this.#config.isLegacy()) {
+        await this.#config.migrateLegacy(password, remember.checked)
+      }
+      this.#pendingConfigToSave = null
+      dialog.close()
+      input.value = ''
+      confirm.value = ''
+      errorEl.hidden = true
+      await this.#connectAndLoad()
+      this.#resetInactivityTimer()
+    } catch (/** @type {any} */ err) {
+      if (err?.code === 'CRYPTO_UNAVAILABLE') {
+        errorEl.textContent = t('cryptoUnavailable')
+        errorEl.hidden = false
+      } else {
+        throw err
+      }
     }
-    this.#pendingConfigToSave = null
-    dialog.close()
-    input.value = ''
-    confirm.value = ''
-    errorEl.hidden = true
-    await this.#connectAndLoad()
-    this.#resetInactivityTimer()
   }
 
   /** @type {import('./config-manager.js').AppConfig | null} */
@@ -233,15 +257,11 @@ class App {
     $('#unlock-remember-text').textContent = t('rememberPassword')
     $('#unlock-desc').textContent = ''
     $('#unlock-error').hidden = true
-    const onCancel = (/** @type {Event} */ e) => e.preventDefault()
-    dialog.addEventListener('cancel', onCancel)
     dialog.showModal()
     await new Promise((resolve) => {
       const check = () => {
-        if (!dialog.open) {
-          dialog.removeEventListener('cancel', onCancel)
-          resolve()
-        } else setTimeout(check, 100)
+        if (!dialog.open) resolve()
+        else setTimeout(check, 100)
       }
       check()
     })
@@ -359,7 +379,12 @@ class App {
 
     $('#config-cancel').textContent = t('cancel')
     $('#config-submit').textContent = t('save')
-    $('#config-dialog-close').dataset.tooltip = t('close')
+    const configClose = $('#config-dialog-close')
+    if (configClose) configClose.dataset.tooltip = t('close')
+    const unlockClose = $('#unlock-dialog-close')
+    if (unlockClose) unlockClose.dataset.tooltip = t('close')
+    const setPwClose = $('#set-password-close')
+    if (setPwClose) setPwClose.dataset.tooltip = t('close')
 
     $('#about-version').textContent = `v${VERSION}`
     $('#about-updated').textContent = `${t('aboutUpdatedLabel')}: ${dayjs(UPDATED_AT).format(

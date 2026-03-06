@@ -354,68 +354,80 @@
     }
   }
 
-  /* Unlock / Set Password dialog */
-  dialog > .unlock-form {
-    opacity: 0;
-    transform: scale(0.98);
-    transition:
-      opacity var(--duration-normal) var(--ease-out),
-      transform var(--duration-normal) var(--ease-out);
+  /* Unlock / Set Password dialog — compact width */
+  .unlock-dialog-panel {
+    width: min(400px, calc(100vw - 48px));
+
+    @media (width <= 640px) {
+      width: calc(100vw - 24px);
+    }
   }
 
-  .unlock-form {
-    background: var(--bg-secondary);
-    border-radius: var(--radius-xl);
-    border: 1px solid var(--border);
-    padding: var(--sp-5);
-    width: min(360px, calc(100vw - 48px));
+  .unlock-desc {
+    margin: 0 0 var(--sp-4);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
 
-    & h2 {
-      margin: 0 0 var(--sp-3);
-      font-size: var(--text-lg);
-      font-weight: 600;
-      color: var(--text-primary);
-    }
+  .unlock-desc:empty {
+    display: none;
+  }
 
-    & .unlock-desc {
-      margin: 0 0 var(--sp-4);
-      font-size: var(--text-sm);
-      color: var(--text-secondary);
-      line-height: 1.5;
-    }
+  .unlock-remember {
+    margin-bottom: 0;
+  }
 
-    & .unlock-remember {
-      margin-top: var(--sp-2);
-    }
+  .unlock-dialog-panel .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    font-size: var(--text-sm);
+    color: var(--text-secondary);
+    cursor: pointer;
 
-    & .checkbox-label {
-      display: flex;
-      align-items: center;
-      gap: var(--sp-2);
-      font-size: var(--text-sm);
-      color: var(--text-secondary);
-      cursor: pointer;
-    }
+    & input[type='checkbox'] {
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      min-width: 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      background: var(--bg-primary);
+      display: grid;
+      place-content: center;
+      transition: border-color var(--duration-fast), background var(--duration-fast);
 
-    & .unlock-error {
-      margin: var(--sp-2) 0 0;
-      font-size: var(--text-sm);
-      color: var(--text-error, #dc2626);
-    }
+      &:checked {
+        border-color: var(--accent);
+        background: var(--accent);
+      }
 
-    & .unlock-actions {
-      display: flex;
-      justify-content: flex-end;
-      gap: var(--sp-2);
-      margin-top: var(--sp-5);
+      &:checked::before {
+        content: '✓';
+        font-size: 11px;
+        font-weight: bold;
+        color: white;
+        line-height: 1;
+      }
+
+      &:focus-visible {
+        outline: 2px solid color-mix(in oklab, var(--accent) 60%, transparent);
+        outline-offset: 2px;
+      }
     }
+  }
+
+  .unlock-error {
+    margin: var(--sp-2) 0 0;
+    font-size: var(--text-sm);
+    color: var(--text-danger);
   }
 
   /* Dialog inner panel — base styles */
   dialog > form,
   dialog > .dialog-panel,
-  dialog > #config-form,
-  dialog > .unlock-form {
+  dialog > #config-form {
     background: var(--bg-secondary);
     border-radius: var(--radius-xl);
     border: 1px solid var(--border);
@@ -811,8 +823,7 @@
 
   dialog[open] > form,
   dialog[open] > .dialog-panel,
-  dialog[open] > #config-form,
-  dialog[open] > .unlock-form {
+  dialog[open] > #config-form {
     opacity: 1;
     transform: scale(1);
 

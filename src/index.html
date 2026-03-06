@@ -53,21 +53,35 @@
   <body>
     <!-- Unlock Dialog -->
     <dialog id="unlock-dialog">
-      <div class="unlock-form">
-        <h2 id="unlock-title">输入密码解锁</h2>
-        <p id="unlock-desc" class="unlock-desc"></p>
-        <div class="field">
-          <label for="unlock-password" id="unlock-password-label">密码</label>
-          <input type="password" id="unlock-password" class="input" autocomplete="current-password" placeholder="" />
+      <div class="dialog-panel unlock-dialog-panel">
+        <div class="dialog-header">
+          <h2 id="unlock-title">输入密码解锁</h2>
+          <div class="dialog-header-actions">
+            <button type="button" class="icon-btn sm" id="unlock-dialog-close" data-tooltip="关闭">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
         </div>
-        <div class="field unlock-remember">
-          <label class="checkbox-label">
-            <input type="checkbox" id="unlock-remember" checked />
-            <span id="unlock-remember-text">记住密码（无操作 10 分钟后失效）</span>
-          </label>
+        <div class="dialog-body">
+          <p id="unlock-desc" class="unlock-desc"></p>
+          <div class="field">
+            <div class="field-label">
+              <label for="unlock-password" id="unlock-password-label">密码</label>
+            </div>
+            <input type="password" id="unlock-password" autocomplete="current-password" placeholder="" />
+          </div>
+          <div class="field unlock-remember">
+            <label class="checkbox-label">
+              <input type="checkbox" id="unlock-remember" checked />
+              <span id="unlock-remember-text">记住密码（无操作 10 分钟后失效）</span>
+            </label>
+          </div>
+          <p id="unlock-error" class="unlock-error" hidden></p>
         </div>
-        <p id="unlock-error" class="unlock-error" hidden></p>
-        <div class="unlock-actions">
+        <div class="dialog-footer">
           <button type="button" class="btn primary" id="unlock-btn">解锁</button>
         </div>
       </div>
@@ -75,25 +89,41 @@
 
     <!-- Set Password Dialog (for migration / first save / link load) -->
     <dialog id="set-password-dialog">
-      <div class="unlock-form">
-        <h2 id="set-password-title">设置密码</h2>
-        <p id="set-password-desc" class="unlock-desc"></p>
-        <div class="field">
-          <label for="set-password-input">密码</label>
-          <input type="password" id="set-password-input" class="input" autocomplete="new-password" placeholder="" />
+      <div class="dialog-panel unlock-dialog-panel">
+        <div class="dialog-header">
+          <h2 id="set-password-title">设置密码</h2>
+          <div class="dialog-header-actions">
+            <button type="button" class="icon-btn sm" id="set-password-close" data-tooltip="关闭">
+              <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            </button>
+          </div>
         </div>
-        <div class="field">
-          <label for="set-password-confirm">确认密码</label>
-          <input type="password" id="set-password-confirm" class="input" autocomplete="new-password" placeholder="" />
+        <div class="dialog-body">
+          <p id="set-password-desc" class="unlock-desc"></p>
+          <div class="field">
+            <div class="field-label">
+              <label for="set-password-input">密码</label>
+            </div>
+            <input type="password" id="set-password-input" autocomplete="new-password" placeholder="" />
+          </div>
+          <div class="field">
+            <div class="field-label">
+              <label for="set-password-confirm">确认密码</label>
+            </div>
+            <input type="password" id="set-password-confirm" autocomplete="new-password" placeholder="" />
+          </div>
+          <div class="field unlock-remember">
+            <label class="checkbox-label">
+              <input type="checkbox" id="set-password-remember" checked />
+              <span id="set-password-remember-text">记住密码（无操作 10 分钟后失效）</span>
+            </label>
+          </div>
+          <p id="set-password-error" class="unlock-error" hidden></p>
         </div>
-        <div class="field unlock-remember">
-          <label class="checkbox-label">
-            <input type="checkbox" id="set-password-remember" checked />
-            <span id="set-password-remember-text">记住密码（无操作 10 分钟后失效）</span>
-          </label>
-        </div>
-        <p id="set-password-error" class="unlock-error" hidden></p>
-        <div class="unlock-actions">
+        <div class="dialog-footer">
           <button type="button" class="btn secondary" id="set-password-cancel">取消</button>
           <button type="button" class="btn primary" id="set-password-btn">设置并保存</button>
         </div>

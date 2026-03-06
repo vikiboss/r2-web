@@ -214,6 +214,7 @@ const I18N = {
     setPasswordForLinkTitle: '设置密码以加密存储',
     setPasswordForLinkDesc: '从链接加载的配置需要设置密码后才能保存。',
     rememberPassword: '记住密码（无操作 10 分钟后失效）',
+    cryptoUnavailable: '配置加密需要 HTTPS 或 localhost，请通过安全地址访问。',
   },
   en: {
     appTitle: 'R2 Web',
@@ -437,6 +438,7 @@ const I18N = {
     setPasswordForLinkTitle: 'Set password to save',
     setPasswordForLinkDesc: 'Config loaded from link needs a password to be saved.',
     rememberPassword: 'Remember password (expires after 10 min of inactivity)',
+    cryptoUnavailable: 'Config encryption requires HTTPS or localhost. Please use a secure URL.',
   },
   ja: {
     appTitle: 'R2 Web',
@@ -661,6 +663,7 @@ const I18N = {
     setPasswordForLinkTitle: '保存するにはパスワードを設定',
     setPasswordForLinkDesc: 'リンクから読み込んだ設定を保存するにはパスワードが必要です。',
     rememberPassword: 'パスワードを記憶（10分間操作がなければ無効）',
+    cryptoUnavailable: '設定の暗号化には HTTPS または localhost が必要です。セキュアな URL でアクセスしてください。',
   },
 }
 

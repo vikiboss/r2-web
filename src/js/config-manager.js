@@ -17,12 +17,30 @@ const AES_KEY_LEN = 256
 /** @typedef {AppConfig & { theme?: string; lang?: string; view?: string; density?: string; sortBy?: string; sortOrder?: string }} SharePayload */
 
 /**
+ * Ensure Web Crypto API is available (requires HTTPS or localhost)
+ * @returns {void}
+ * @throws {Error} when crypto.subtle is unavailable
+ */
+/**
+ * @typedef {Error & { code?: string }} CryptoError
+ */
+
+function ensureCrypto() {
+  if (!crypto?.subtle) {
+    const err = /** @type {CryptoError} */ (new Error('Config encryption requires secure context'))
+    err.code = 'CRYPTO_UNAVAILABLE'
+    throw err
+  }
+}
+
+/**
  * Derive AES key from password using PBKDF2
  * @param {string} password
  * @param {Uint8Array} salt
  * @returns {Promise<CryptoKey>}
  */
 async function deriveKey(password, salt) {
+  ensureCrypto()
   const enc = new TextEncoder()
   const keyMaterial = await crypto.subtle.importKey(
     'raw',
