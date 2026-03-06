@@ -1,14 +1,15 @@
 {
   "name": "r2-web",
   "private": true,
-  "version": "1.4.0",
+  "version": "1.4.1",
   "type": "module",
   "packageManager": "pnpm@10.30.3",
   "author": "Viki <hi@viki.moe> (https://github.com/vikiboss)",
   "license": "MIT",
   "scripts": {
+    "dev": "bun --port 4444 ./src/index.html",
     "typecheck": "tsc --noEmit --project jsconfig.json",
-    "release": "bumpp --no-push && changelogithub --dry && node ./scripts/release.mts && git add . && git commit -m \"chore: release version ${npm_package_version}\" && git push --follow-tags"
+    "release": "bumpp --no-push && changelogithub --dry && node ./scripts/release.mts && git add . && git commit -m \"chore: release $(git describe --tags --abbrev=0)\" && git push --follow-tags"
   },
   "dependencies": {
     "@jsquash/avif": "^2.1.1",
