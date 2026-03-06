@@ -362,10 +362,68 @@
     }
   }
 
+  /* Unlock / Set Password dialog */
+  dialog > .unlock-form {
+    opacity: 0;
+    transform: scale(0.98);
+    transition:
+      opacity var(--duration-normal) var(--ease-out),
+      transform var(--duration-normal) var(--ease-out);
+  }
+
+  .unlock-form {
+    background: var(--bg-secondary);
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--border);
+    padding: var(--sp-5);
+    width: min(360px, calc(100vw - 48px));
+
+    & h2 {
+      margin: 0 0 var(--sp-3);
+      font-size: var(--text-lg);
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    & .unlock-desc {
+      margin: 0 0 var(--sp-4);
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    & .unlock-remember {
+      margin-top: var(--sp-2);
+    }
+
+    & .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: var(--sp-2);
+      font-size: var(--text-sm);
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    & .unlock-error {
+      margin: var(--sp-2) 0 0;
+      font-size: var(--text-sm);
+      color: var(--text-error, #dc2626);
+    }
+
+    & .unlock-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: var(--sp-2);
+      margin-top: var(--sp-5);
+    }
+  }
+
   /* Dialog inner panel — base styles */
   dialog > form,
   dialog > .dialog-panel,
-  dialog > #config-form {
+  dialog > #config-form,
+  dialog > .unlock-form {
     background: var(--bg-secondary);
     border-radius: var(--radius-xl);
     border: 1px solid var(--border);
@@ -761,7 +819,8 @@
 
   dialog[open] > form,
   dialog[open] > .dialog-panel,
-  dialog[open] > #config-form {
+  dialog[open] > #config-form,
+  dialog[open] > .unlock-form {
     opacity: 1;
     transform: scale(1);
 

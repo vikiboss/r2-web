@@ -1,4 +1,7 @@
 import { App } from './js/app.js'
 
-// Boot
+if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  navigator.serviceWorker.register('sw.js', { scope: './' }).catch(() => {})
+}
+
 new App()

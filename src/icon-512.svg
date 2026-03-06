@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="64" fill="#F6821F"/>
+  <path d="M256 140c-48 0-90 26-112 66-22-10-46-16-70-16-70 0-126 56-126 126s56 126 126 126h192c70 0 126-56 126-126s-56-126-126-126c-24 0-48 6-70 16-22-40-64-66-112-66z" fill="white" opacity="0.95"/>
+  <text x="256" y="305" font-family="system-ui,sans-serif" font-size="96" font-weight="bold" fill="#F6821F" text-anchor="middle">R2</text>
+</svg>

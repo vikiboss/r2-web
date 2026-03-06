@@ -7,6 +7,8 @@ import {
   DENSITY_KEY,
   SORT_BY_KEY,
   SORT_ORDER_KEY,
+  REMEMBER_PW_KEY,
+  INACTIVITY_TIMEOUT_MS,
 } from './constants.js'
 import { ConfigManager } from './config-manager.js'
 import { FileExplorer } from './file-explorer.js'
@@ -37,6 +39,8 @@ class App {
   /** @type {FileOperations | null} */
   #ops = null
   #appEventsBound = false
+  /** @type {ReturnType<typeof setTimeout> | null} */
+  #inactivityTimer = null
 
   constructor() {
     this.#config = new ConfigManager()
@@ -45,11 +49,22 @@ class App {
 
     this.#ui.initTheme()
     this.#ui.initTooltip()
+    this.#applyI18nToHTML()
+    this.#bindGlobalEvents()
+    this.#bindHeroEvents()
+    this.#bindUnlockDialogs()
+    this.#bindInactivity()
 
+    this.#init()
+  }
+
+  async #init() {
     const urlParams = new URLSearchParams(window.location.search)
     const configParam = urlParams.get('config')
+
     if (configParam) {
-      if (this.#config.loadFromBase64(configParam)) {
+      const result = this.#config.loadFromBase64(configParam)
+      if (result.ok) {
         const cleanUrl = new URL(window.location.href)
         cleanUrl.searchParams.delete('config')
         window.history.replaceState({}, '', cleanUrl.toString())
@@ -58,21 +73,200 @@ class App {
         const theme = localStorage.getItem(THEME_KEY)
         if (theme) this.#ui.setTheme(theme)
       }
-    }
-
-    this.#applyI18nToHTML()
-
-    if (this.#config.isValid()) {
-      this.#connectAndLoad()
-      if (configParam) {
-        setTimeout(() => this.#ui.toast(t('configLoadedFromUrl'), 'success'), 500)
+      if (result.ok && result.r2Config) {
+        await this.#showSetPasswordAndSave(result.r2Config, 'link')
+        if (this.#config.isValid()) {
+          setTimeout(() => this.#ui.toast(t('configLoadedFromUrl'), 'success'), 500)
+        } else {
+          this.#showHero()
+        }
+        return
       }
-    } else {
-      this.#showHero()
     }
 
-    this.#bindGlobalEvents()
-    this.#bindHeroEvents()
+    if (!this.#config.hasStoredConfig()) {
+      this.#showHero()
+      return
+    }
+
+    if (this.#config.isEncrypted() || this.#config.isLegacy()) {
+      const autoOk = await this.#config.tryAutoUnlock()
+      if (autoOk) {
+        await this.#connectAndLoad()
+        this.#resetInactivityTimer()
+        return
+      }
+      if (this.#config.isLegacy()) {
+        await this.#showSetPasswordAndSave(null, 'migrate')
+        if (!this.#config.isValid()) this.#showHero()
+        return
+      }
+      await this.#showUnlock()
+      return
+    }
+
+    this.#showHero()
+  }
+
+  #bindUnlockDialogs() {
+    const unlockDialog = /** @type {HTMLDialogElement} */ ($('#unlock-dialog'))
+    const unlockPassword = /** @type {HTMLInputElement} */ ($('#unlock-password'))
+    const unlockRemember = /** @type {HTMLInputElement} */ ($('#unlock-remember'))
+    const unlockBtn = $('#unlock-btn')
+    const unlockError = $('#unlock-error')
+
+    unlockBtn.onclick = async () => {
+      const password = unlockPassword.value
+      if (!password) {
+        unlockError.textContent = t('passwordEmpty')
+        unlockError.hidden = false
+        return
+      }
+      const ok = await this.#config.unlock(password, unlockRemember.checked)
+      if (ok) {
+        unlockDialog.close()
+        unlockPassword.value = ''
+        unlockError.hidden = true
+        await this.#connectAndLoad()
+        this.#resetInactivityTimer()
+      } else {
+        unlockError.textContent = t('unlockFailed')
+        unlockError.hidden = false
+      }
+    }
+
+    unlockPassword.onkeydown = (e) => {
+      if (e.key === 'Enter') unlockBtn.click()
+    }
+
+    const setPwDialog = /** @type {HTMLDialogElement} */ ($('#set-password-dialog'))
+    const setPwInput = /** @type {HTMLInputElement} */ ($('#set-password-input'))
+    const setPwConfirm = /** @type {HTMLInputElement} */ ($('#set-password-confirm'))
+    const setPwRemember = /** @type {HTMLInputElement} */ ($('#set-password-remember'))
+    const setPwBtn = $('#set-password-btn')
+    const setPwCancel = $('#set-password-cancel')
+    const setPwError = $('#set-password-error')
+
+    setPwCancel.onclick = () => setPwDialog.close()
+    setPwBtn.onclick = () => this.#onSetPasswordConfirm(setPwDialog, setPwInput, setPwConfirm, setPwRemember, setPwError)
+    setPwConfirm.onkeydown = (e) => {
+      if (e.key === 'Enter') this.#onSetPasswordConfirm(setPwDialog, setPwInput, setPwConfirm, setPwRemember, setPwError)
+    }
+  }
+
+  /**
+   * @param {HTMLDialogElement} dialog
+   * @param {HTMLInputElement} input
+   * @param {HTMLInputElement} confirm
+   * @param {HTMLInputElement} remember
+   * @param {HTMLElement} errorEl
+   */
+  async #onSetPasswordConfirm(dialog, input, confirm, remember, errorEl) {
+    const password = input.value
+    if (!password) {
+      errorEl.textContent = t('passwordEmpty')
+      errorEl.hidden = false
+      return
+    }
+    if (password !== confirm.value) {
+      errorEl.textContent = t('passwordMismatch')
+      errorEl.hidden = false
+      return
+    }
+    const cfg = this.#pendingConfigToSave
+    if (cfg) {
+      await this.#config.encryptAndSave(cfg, password)
+      if (remember.checked) sessionStorage.setItem(REMEMBER_PW_KEY, password)
+    } else if (this.#config.isLegacy()) {
+      await this.#config.migrateLegacy(password, remember.checked)
+    }
+    this.#pendingConfigToSave = null
+    dialog.close()
+    input.value = ''
+    confirm.value = ''
+    errorEl.hidden = true
+    await this.#connectAndLoad()
+    this.#resetInactivityTimer()
+  }
+
+  /** @type {import('./config-manager.js').AppConfig | null} */
+  #pendingConfigToSave = null
+
+  /**
+   * @param {import('./config-manager.js').AppConfig | null} cfg - null for migrate
+   * @param {'link' | 'migrate' | 'first'} mode
+   */
+  async #showSetPasswordAndSave(cfg, mode) {
+    this.#pendingConfigToSave = cfg
+    const dialog = /** @type {HTMLDialogElement} */ ($('#set-password-dialog'))
+    $('#set-password-title').textContent = t('setPasswordTitle')
+    const desc = $('#set-password-desc')
+    if (mode === 'link') {
+      desc.textContent = t('setPasswordForLinkDesc')
+    } else if (mode === 'migrate') {
+      desc.textContent = t('migratePasswordDesc')
+      $('#set-password-title').textContent = t('migratePasswordTitle')
+    } else {
+      desc.textContent = t('migratePasswordDesc')
+    }
+    $('#set-password-input').placeholder = t('setPasswordPlaceholder')
+    $('#set-password-confirm').placeholder = t('setPasswordConfirm')
+    $('#set-password-btn').textContent = t('setPasswordBtn')
+    $('#set-password-cancel').textContent = t('cancel')
+    $('#set-password-remember-text').textContent = t('rememberPassword')
+    $('#set-password-error').hidden = true
+    dialog.showModal()
+    await new Promise((resolve) => {
+      const check = () => {
+        if (!dialog.open) resolve()
+        else setTimeout(check, 100)
+      }
+      check()
+    })
+  }
+
+  async #showUnlock() {
+    const dialog = /** @type {HTMLDialogElement} */ ($('#unlock-dialog'))
+    $('#unlock-title').textContent = t('unlockTitle')
+    $('#unlock-password').placeholder = t('unlockPlaceholder')
+    $('#unlock-btn').textContent = t('unlockBtn')
+    $('#unlock-remember-text').textContent = t('rememberPassword')
+    $('#unlock-desc').textContent = ''
+    $('#unlock-error').hidden = true
+    const onCancel = (/** @type {Event} */ e) => e.preventDefault()
+    dialog.addEventListener('cancel', onCancel)
+    dialog.showModal()
+    await new Promise((resolve) => {
+      const check = () => {
+        if (!dialog.open) {
+          dialog.removeEventListener('cancel', onCancel)
+          resolve()
+        } else setTimeout(check, 100)
+      }
+      check()
+    })
+  }
+
+  #bindInactivity() {
+    const events = ['mousedown', 'keydown', 'scroll', 'touchstart']
+    events.forEach((ev) => {
+      document.addEventListener(ev, () => this.#resetInactivityTimer(), { passive: true })
+    })
+  }
+
+  #resetInactivityTimer() {
+    if (this.#inactivityTimer) clearTimeout(this.#inactivityTimer)
+    if (!this.#config.isUnlocked()) return
+    this.#inactivityTimer = setTimeout(() => {
+      this.#config.lock()
+      this.#hideHero()
+      $('#app').hidden = true
+      this.#showUnlockOverlay()
+    }, INACTIVITY_TIMEOUT_MS)
+  }
+
+  #showUnlockOverlay() {
+    this.#showUnlock()
   }
 
   #applyI18nToHTML() {
@@ -266,6 +460,13 @@ class App {
     $('#file-qr-desc').textContent = t('fileQrDesc')
     $('#file-qr-copy-text').textContent = t('copyLink')
 
+    $('#unlock-title').textContent = t('unlockTitle')
+    $('#unlock-password-label').textContent = t('unlockPlaceholder')
+    $('#unlock-btn').textContent = t('unlockBtn')
+    $('#unlock-remember-text').textContent = t('rememberPassword')
+    $('#set-password-title').textContent = t('setPasswordTitle')
+    $('#set-password-remember-text').textContent = t('rememberPassword')
+
     this.#ui.initTooltip()
   }
 
@@ -348,7 +549,15 @@ class App {
   }
 
   #bindHeroEvents() {
-    $('#hero-connect-btn').addEventListener('click', () => {
+    $('#hero-connect-btn').addEventListener('click', async () => {
+      if (this.#config.isLegacy()) {
+        await this.#showSetPasswordAndSave(null, 'migrate')
+        if (this.#config.isValid()) {
+          await this.#connectAndLoad()
+          this.#resetInactivityTimer()
+        }
+        return
+      }
       this.#showConfigDialog('r2')
     })
   }
@@ -391,7 +600,12 @@ class App {
     const languageInput = /** @type {HTMLSelectElement | null} */ ($('#cfg-language'))
     const densityInput = /** @type {HTMLSelectElement | null} */ ($('#cfg-density'))
 
-    const cfg = this.#config.get()
+    let cfg = /** @type {import('./config-manager.js').AppConfig} */ ({})
+    try {
+      if (this.#config.isUnlocked()) cfg = this.#config.get()
+    } catch {
+      /* not unlocked */
+    }
     const accountInput = /** @type {HTMLInputElement} */ ($('#cfg-account-id'))
     const accessInput = /** @type {HTMLInputElement} */ ($('#cfg-access-key'))
     const secretInput = /** @type {HTMLInputElement} */ ($('#cfg-secret-key'))
@@ -473,7 +687,7 @@ class App {
         this.#setDensity(newDensity)
       }
 
-      this.#config.save({
+      const newCfg = {
         accountId: accountInput.value.trim(),
         accessKeyId: accessInput.value.trim(),
         secretAccessKey: secretInput.value.trim(),
@@ -484,10 +698,23 @@ class App {
         compressMode: compressModeInput ? compressModeInput.value : 'none',
         compressLevel: compressLevelInput ? compressLevelInput.value : 'balanced',
         tinifyKey: tinifyKeyInput ? tinifyKeyInput.value.trim() : '',
-      })
+      }
 
+      if (!this.#config.isUnlocked()) {
+        if (!newCfg.accountId || !newCfg.accessKeyId || !newCfg.secretAccessKey || !newCfg.bucket) {
+          this.#ui.toast(t('authFailed'), 'error')
+          return
+        }
+        this.#pendingConfigToSave = newCfg
+        dialog.close()
+        await this.#showSetPasswordAndSave(newCfg, 'first')
+        return
+      }
+
+      await this.#config.save(newCfg)
       dialog.close()
       await this.#connectAndLoad()
+      this.#resetInactivityTimer()
     }
 
     dialog.querySelectorAll('form.config-tab-panel').forEach(form => {

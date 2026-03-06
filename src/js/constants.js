@@ -1,6 +1,8 @@
 export const VERSION = '1.4.0'
 export const UPDATED_AT = '2026-03-03T08:50:10.818Z'
 export const STORAGE_KEY = 'r2-manager-config'
+export const REMEMBER_PW_KEY = 'r2-manager-remember-pw'
+export const INACTIVITY_TIMEOUT_MS = 10 * 60 * 1000 // 10 minutes
 export const THEME_KEY = 'r2-manager-theme'
 export const LANG_KEY = 'r2-manager-lang'
 export const VIEW_KEY = 'r2-manager-view'

@@ -11,13 +11,14 @@
     <title>R2 Web</title>
 
     <!-- Favicon -->
+    <link rel="icon" href="icon-192.svg" type="image/svg+xml" />
     <link rel="icon" href="favicon.ico" sizes="any" />
 
     <!-- PWA Manifest -->
     <link rel="manifest" href="manifest.json" />
 
     <!-- Apple iOS -->
-    <link rel="apple-touch-icon" href="favicon.ico" />
+    <link rel="apple-touch-icon" href="icon-192.svg" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
@@ -25,7 +26,7 @@
 
     <!-- Windows Tiles -->
     <meta name="msapplication-TileColor" content="#F6821F" />
-    <meta name="msapplication-TileImage" content="favicon.ico" />
+    <meta name="msapplication-TileImage" content="icon-192.svg" />
 
     <!-- Theme Color -->
     <meta name="theme-color" content="#F6821F" />
@@ -50,6 +51,55 @@
     <script type="module" src="main.js"></script>
   </head>
   <body>
+    <!-- Unlock Dialog -->
+    <dialog id="unlock-dialog">
+      <div class="unlock-form">
+        <h2 id="unlock-title">输入密码解锁</h2>
+        <p id="unlock-desc" class="unlock-desc"></p>
+        <div class="field">
+          <label for="unlock-password" id="unlock-password-label">密码</label>
+          <input type="password" id="unlock-password" class="input" autocomplete="current-password" placeholder="" />
+        </div>
+        <div class="field unlock-remember">
+          <label class="checkbox-label">
+            <input type="checkbox" id="unlock-remember" checked />
+            <span id="unlock-remember-text">记住密码（无操作 10 分钟后失效）</span>
+          </label>
+        </div>
+        <p id="unlock-error" class="unlock-error" hidden></p>
+        <div class="unlock-actions">
+          <button type="button" class="btn primary" id="unlock-btn">解锁</button>
+        </div>
+      </div>
+    </dialog>
+
+    <!-- Set Password Dialog (for migration / first save / link load) -->
+    <dialog id="set-password-dialog">
+      <div class="unlock-form">
+        <h2 id="set-password-title">设置密码</h2>
+        <p id="set-password-desc" class="unlock-desc"></p>
+        <div class="field">
+          <label for="set-password-input">密码</label>
+          <input type="password" id="set-password-input" class="input" autocomplete="new-password" placeholder="" />
+        </div>
+        <div class="field">
+          <label for="set-password-confirm">确认密码</label>
+          <input type="password" id="set-password-confirm" class="input" autocomplete="new-password" placeholder="" />
+        </div>
+        <div class="field unlock-remember">
+          <label class="checkbox-label">
+            <input type="checkbox" id="set-password-remember" checked />
+            <span id="set-password-remember-text">记住密码（无操作 10 分钟后失效）</span>
+          </label>
+        </div>
+        <p id="set-password-error" class="unlock-error" hidden></p>
+        <div class="unlock-actions">
+          <button type="button" class="btn secondary" id="set-password-cancel">取消</button>
+          <button type="button" class="btn primary" id="set-password-btn">设置并保存</button>
+        </div>
+      </div>
+    </dialog>
+
     <!-- Config Dialog -->
     <dialog id="config-dialog">
       <div id="config-form">
