@@ -163,7 +163,7 @@ python3 -m http.server 5500 --directory src
 
 **Q: 凭证安全吗？**
 
-A: 凭证只存储在浏览器 localStorage，不会上传到任何服务器。建议使用只读权限的 API 令牌。
+A: 凭证只存储在浏览器 localStorage，不会上传到任何服务器。建议使用指定 bucket、非管理员读写权限的 API 令牌。
 
 **Q: 支持哪些浏览器？**
 

@@ -157,7 +157,7 @@ See [CLAUDE.md](./CLAUDE.md) for the full development guide.
 
 **Q: Are my credentials safe?**
 
-A: Credentials are stored only in your browser's localStorage and are never sent to any server. Using a read-only API token is recommended.
+A: Credentials are stored only in your browser's localStorage and are never sent to any server. It is recommended to use API tokens with permissions limited to the specific bucket and non-admin read/write access.
 
 **Q: Which browsers are supported?**
 
