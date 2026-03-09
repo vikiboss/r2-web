@@ -65,6 +65,23 @@ class R2Client {
     return { folders, files, isTruncated, nextToken }
   }
 
+  /**
+   * 检查对象是否存在，使用 ListObjectsV2 避免 HEAD 404 污染控制台
+   * @param {string} key
+   * @returns {Promise<boolean>}
+   */
+  async fileExists(key) {
+    const url = new URL(/** @type {ConfigManager} */ (this.#config).getBucketUrl())
+    url.searchParams.set('list-type', '2')
+    url.searchParams.set('max-keys', '1')
+    url.searchParams.set('prefix', key)
+    const res = await /** @type {AwsClient} */ (this.#client).fetch(url.toString())
+    if (!res.ok) return false
+    const text = await res.text()
+    const doc = new DOMParser().parseFromString(text, 'application/xml')
+    return [...doc.querySelectorAll('Contents > Key')].some((el) => el.textContent === key)
+  }
+
   /** @param {string} key @param {string} contentType */
   async putObjectSigned(key, contentType) {
     const url = `${/** @type {ConfigManager} */ (this.#config).getBucketUrl()}/${encodeS3Key(key)}`

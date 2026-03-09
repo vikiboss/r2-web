@@ -377,13 +377,7 @@ class UploadManager {
 
       // Check for existing file conflict
       if (conflictDecision !== 'overwrite-all') {
-        let exists = false
-        try {
-          await this.#r2.headObject(key)
-          exists = true
-        } catch {
-          exists = false
-        }
+        const exists = await this.#r2.fileExists(key)
         if (exists) {
           if (conflictDecision === 'skip-all') {
             skippedCount++
