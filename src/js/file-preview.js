@@ -18,6 +18,10 @@ class FilePreview {
   constructor(r2, ui) {
     this.#r2 = r2
     this.#ui = ui
+    const dialog = /** @type {HTMLDialogElement} */ ($('#preview-dialog'))
+    dialog.addEventListener('close', () => {
+      dialog.querySelectorAll('video, audio').forEach((el) => /** @type {HTMLMediaElement} */ (el).pause())
+    })
   }
 
   get currentKey() {
