@@ -30,6 +30,7 @@ class FileExplorer {
   #selection = new Map()
   /** @type {((count: number) => void) | null} */
   #onSelectionChange = null
+  #loadGen = 0
 
   /** @param {R2Client} r2 @param {UIManager} ui */
   constructor(r2, ui) {
@@ -159,6 +160,7 @@ class FileExplorer {
     this.#prefix = prefix
     this.#continuationToken = ''
     this.#loadedItems = []
+    this.#loadGen++
     $('#file-grid').innerHTML = ''
     $('#load-more').hidden = true
     $('#item-count').hidden = true
@@ -173,6 +175,7 @@ class FileExplorer {
 
   /** @param {boolean} isInitial @param {boolean} [bypassCache] */
   async #loadPage(isInitial, bypassCache = false) {
+    const gen = this.#loadGen
     if (isInitial) this.#ui.showSkeleton()
     try {
       const cacheKey = `${this.#prefix}::${this.#continuationToken}`
@@ -185,6 +188,8 @@ class FileExplorer {
         result = await this.#r2.listObjects(this.#prefix, this.#continuationToken)
         this.#cache.set(cacheKey, { data: result, ts: Date.now() })
       }
+
+      if (gen !== this.#loadGen) return
 
       this.#continuationToken = result.isTruncated ? result.nextToken : ''
 
@@ -395,6 +400,7 @@ class FileExplorer {
     this.invalidateCache(this.#prefix)
     this.#continuationToken = ''
     this.#loadedItems = []
+    this.#loadGen++
     $('#file-grid').innerHTML = ''
     this.#updateBreadcrumb()
     await this.#loadPage(true, true)
