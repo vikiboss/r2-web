@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="light dark" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' https://esm.sh 'unsafe-inline'; connect-src 'self' https:; style-src 'self' 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; worker-src blob:; frame-src 'none'; object-src 'none';"
+      content="default-src 'self'; script-src 'self' https://esm.run https://cdn.jsdelivr.net 'unsafe-inline' 'wasm-unsafe-eval'; connect-src 'self' https:; style-src 'self' 'unsafe-inline'; img-src 'self' https: data: blob:; media-src 'self' https: blob:; worker-src blob:; frame-src 'none'; object-src 'none';"
     />
     <meta name="description" content="轻盈优雅的 Web 原生 Cloudflare R2 文件管理器，一切皆在浏览器中完成。" />
     <title>R2 Web</title>
@@ -31,20 +31,20 @@
     <!-- Theme Color -->
     <meta name="theme-color" content="#F6821F" />
 
-    <link rel="preconnect" href="https://esm.sh" />
+    <link rel="preconnect" href="https://esm.run" />
     <link rel="preconnect" href="https://r2.cloudflarestorage.com" />
     <link rel="stylesheet" href="style.css" />
     <script type="importmap">
       {
         "imports": {
-          "@jsquash/avif": "https://esm.sh/@jsquash/avif@2.1.1",
-          "@jsquash/jpeg": "https://esm.sh/@jsquash/jpeg@1.6.0",
-          "@jsquash/oxipng": "https://esm.sh/@jsquash/oxipng@2.3.0",
-          "@jsquash/webp": "https://esm.sh/@jsquash/webp@1.5.0",
-          "aws4fetch": "https://esm.sh/aws4fetch@1.0.20",
-          "dayjs": "https://esm.sh/dayjs@1.11.19",
-          "filesize": "https://esm.sh/filesize@11.0.13",
-          "qrcode": "https://esm.sh/qrcode@1.5.4"
+          "@jsquash/avif": "https://esm.run/@jsquash/avif@2.1.1",
+          "@jsquash/jpeg": "https://esm.run/@jsquash/jpeg@1.6.0",
+          "@jsquash/oxipng": "https://esm.run/@jsquash/oxipng@2.3.0",
+          "@jsquash/webp": "https://esm.run/@jsquash/webp@1.5.0",
+          "aws4fetch": "https://esm.run/aws4fetch@1.0.20",
+          "dayjs": "https://esm.run/dayjs@1.11.19",
+          "filesize": "https://esm.run/filesize@11.0.13",
+          "qrcode": "https://esm.run/qrcode@1.5.4"
         }
       }
     </script>

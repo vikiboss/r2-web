@@ -7,7 +7,7 @@
   "author": "Viki <hi@viki.moe> (https://github.com/vikiboss)",
   "license": "MIT",
   "scripts": {
-    "dev": "npx serve ./src -p 5500",
+    "dev": "npx -y serve ./src -p 5500",
     "format": "prettier --write ./src/**/*.{ts,tsx,js,jsx,json,css,md,html} --no-error-on-unmatched-pattern",
     "typecheck": "tsc --noEmit --project tsconfig.json",
     "release": "bumpp"
